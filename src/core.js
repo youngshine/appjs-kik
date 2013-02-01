@@ -922,13 +922,19 @@ var App = function (utils, metrics, Pages, window, document, ImageLoader, Swappe
 				var scrollTop = parseInt( elem.getAttribute('data-last-scroll') );
 
 				if (scrollTop) {
-					if (noTimeout) {
-						elem._scrollTop(scrollTop);
-					}
-					else {
+					if ( !noTimeout ) {
 						setTimeout(function () {
 							elem._scrollTop(scrollTop);
+							setTimeout(function () {
+								elem._scrollTop(scrollTop);
+								setTimeout(function () {
+									elem._scrollTop(scrollTop);
+								}, 0);
+							}, 0);
 						}, 0);
+					}
+					else {
+						elem._scrollTop(scrollTop);
 					}
 				}
 			}
@@ -953,7 +959,6 @@ var App = function (utils, metrics, Pages, window, document, ImageLoader, Swappe
 		);
 
 		restorePageScrollPosition(page, true);
-		restorePageScrollPosition(page);
 	}
 
 
