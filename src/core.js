@@ -953,6 +953,7 @@ var App = function (utils, metrics, Pages, window, document, ImageLoader, Swappe
 		);
 
 		restorePageScrollPosition(page, true);
+		restorePageScrollPosition(page);
 	}
 
 
