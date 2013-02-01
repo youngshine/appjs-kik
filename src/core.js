@@ -925,12 +925,6 @@ var App = function (utils, metrics, Pages, window, document, ImageLoader, Swappe
 					if ( !noTimeout ) {
 						setTimeout(function () {
 							elem._scrollTop(scrollTop);
-							setTimeout(function () {
-								elem._scrollTop(scrollTop);
-								setTimeout(function () {
-									elem._scrollTop(scrollTop);
-								}, 0);
-							}, 0);
 						}, 0);
 					}
 					else {
