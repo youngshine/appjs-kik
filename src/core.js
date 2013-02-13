@@ -233,6 +233,9 @@ var App = function (utils, metrics, Pages, window, document, ImageLoader, Swappe
 				if ( !content.getAttribute('data-no-scroll') ) {
 					Scrollable(content);
 					content.className += ' app-scrollable';
+					if (utils.os.ios && utils.os.version < 6) {
+						content.className += ' app-scrollhack';
+					}
 				}
 			}
 		);
@@ -242,11 +245,17 @@ var App = function (utils, metrics, Pages, window, document, ImageLoader, Swappe
 			function (content) {
 				Scrollable(content);
 				content.className += ' app-scrollable';
+				if (utils.os.ios && utils.os.version < 6) {
+					content.className += ' app-scrollhack';
+				}
 			}
 		);
 	}
 
 	function startPageDestruction (pageName, page, args, pageManager) {
+		if (utils.os.ios && utils.os.version >= 6) {
+			return;
+		}
 		utils.forEach(
 			page.querySelectorAll('*'),
 			function (elem) {
@@ -755,110 +764,66 @@ var App = function (utils, metrics, Pages, window, document, ImageLoader, Swappe
 			newTitle = newBar.querySelector('.app-title');
 		}
 
-		if (!currentBar || !newBar || !currentContent || !newContent) {
+		if (!currentBar || !newBar || !currentContent || !newContent || !isVisible(currentBar) || !isVisible(newBar)) {
 			// proper iOS transition not possible, fallback to normal
 			Swapper(oldPage, page, options, callback);
 			return;
 		}
 
-		var finishTitleTransition = performNativeIOSTitleTransition(
-			currentTitle, newTitle,
-			(options.transition === 'slide-left')
-		);
+		var slideLeft   = (options.transition === 'slide-left'),
+			slideLength = window.innerWidth * 0.5,
+			transitions = [
+				{
+					opacityEnd : 0 ,
+					elem       : currentBar
+				},
+				{
+					transitionStart : 'translate3d(0,0,0)' ,
+					transitionEnd   : 'translate3d('+(slideLeft?-100:100)+'%,0,0)' ,
+					elem            : currentContent
+				},
+				{
+					transitionStart : 'translate3d('+(slideLeft?100:-100)+'%,0,0)' ,
+					transitionEnd   : 'translate3d(0,0,0)' ,
+					elem            : newContent
+				}
+			];
 
-		var count = 2;
-
-		Swapper(currentBar    , newBar    , 'fade-off', swapDone);
-		Swapper(currentContent, newContent, options   , swapDone);
-
-		function swapDone () {
-			if (--count === 0) {
-				cleanup();
-			}
+		if (currentTitle) {
+			transitions.push({
+				opacityStart    : 1 ,
+				opacityEnd      : 0 ,
+				transitionStart : 'translate3d(0,0,0)' ,
+				transitionEnd   : 'translate3d('+(slideLeft?-slideLength:slideLength)+'px,0,0)' ,
+				elem            : currentTitle
+			});
+		}
+		if (newTitle) {
+			transitions.push({
+				opacityStart    : 0 ,
+				opacityEnd      : 1 ,
+				transitionStart : 'translate3d('+(slideLeft?slideLength:-slideLength)+'px,0,0)' ,
+				transitionEnd   : 'translate3d(0,0,0)' ,
+				elem            : newTitle
+			});
 		}
 
-		function cleanup () {
-			page.appendChild(newBar    );
-			page.appendChild(newContent);
-			oldPage.appendChild(currentBar    );
-			oldPage.appendChild(currentContent);
+		var oldPosition = page.style.position;
+		page.style.position = 'fixed';
+		oldPage.parentNode.insertBefore(page, oldPage);
+		oldPage.style.background = 'none';
 
-			oldPage.parentNode.insertBefore(page, oldPage);
+		utils.animate(transitions, 300, 'ease-in-out', function () {
 			oldPage.parentNode.removeChild(oldPage);
-
-			finishTitleTransition();
+			page.style.position = oldPosition;
 
 			callback();
-		}
+		});
 	}
 
-	function performNativeIOSTitleTransition (currentTitle, newTitle, reverse) {
-		var slideTimeout  = 300,
-			slideLength   = window.innerWidth * 0.5,
-			currentStyles = currentTitle && utils.getStyles(currentTitle, true),
-			newStyles     = newTitle && utils.getStyles(newTitle, true);
-
-		setInitialStyles(function () {
-			triggerAnimation();
-		});
-
-		return clearStyles;
-
-		function setInitialStyles (callback) {
-			if (currentTitle) {
-				utils.setTransform(currentTitle, 'translate3d(0,0,0)');
-				currentTitle.style['opacity'] = '1';
-			}
-			if (newTitle) {
-				utils.setTransform(newTitle, 'translate3d('+(reverse ? slideLength : -slideLength)+'px,0,0)');
-				newTitle.style['opacity'] = '0';
-			}
-
-			setTimeout(function () {
-				var transition = 'transform '+(slideTimeout/1000)+'s ease-in-out, opacity 0.3s ease-in-out';
-				if (currentTitle) {
-					utils.setTransition(currentTitle, transition);
-				}
-				if (newTitle) {
-					utils.setTransition(newTitle, transition);
-				}
-
-				setTimeout(function () {
-					callback();
-				}, 0);
-			}, 0);
-		}
-
-		function triggerAnimation () {
-			if (currentTitle) {
-				utils.setTransform(currentTitle, 'translate3d('+(reverse ? -slideLength : slideLength)+'px,0,0)');
-				currentTitle.style['opacity'] = '0';
-			}
-			if (newTitle) {
-				utils.setTransform(newTitle, 'translate3d(0,0,0)');
-				newTitle.style['opacity'] = '1';
-			}
-		}
-
-		function clearStyles () {
-			if (currentTitle) {
-				utils.setTransition(currentTitle, '');
-			}
-			if (newTitle) {
-				utils.setTransition(newTitle, '');
-			}
-
-			setTimeout(function () {
-				if (currentTitle) {
-					utils.setTransform(currentTitle, '');
-					currentTitle.style['opacity'] = currentStyles.opacity;
-				}
-				if (newTitle) {
-					utils.setTransform(newTitle, '');
-					newTitle.style['opacity'] = newStyles.opacity;
-				}
-			}, 0);
-		}
+	function isVisible (elem) {
+		var styles = utils.getStyles(elem);
+		return (styles.display !== 'none' && styles.opacity !== '0');
 	}
 
 	function getScrollableElems (page) {
