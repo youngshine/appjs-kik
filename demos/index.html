@@ -92,7 +92,7 @@
 			(function () {
 				var DEMOS = [
 					['Default', 'basic.html?style=default'],
-					['Base (no styles)', 'basic.html?']
+					['Base (no styles)', 'basic.html']
 				];
 
 				var list    = document.getElementById('demo-list'),
@@ -131,8 +131,13 @@
 						return;
 					}
 
-					iframes[0].src = demo[1] + '&_app_platform=android';
-					iframes[1].src = demo[1] + '&_app_platform=ios';
+					var url = demo[1];
+					if (url.indexOf('?') === -1) {
+						url += '?';
+					}
+					iframes[0].src = url + '&_app_platform=android';
+					iframes[1].src = url + '&_app_platform=ios';
+
 					active = demo;
 					renderButtons();
 				}
