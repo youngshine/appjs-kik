@@ -224,8 +224,17 @@ App._utils = function () {
 
 			var done = false;
 
-			function transitionFinished () {
-				if (done) {
+			function isTransitionElem (elem) {
+				for (var i=0, l=transitions.length; i<l; i++) {
+					if (elem === transitions[i].elem) {
+						return true;
+					}
+				}
+				return false;
+			}
+
+			function transitionFinished (e) {
+				if (done || !isTransitionElem(e.target)) {
 					return;
 				}
 				done = true;
