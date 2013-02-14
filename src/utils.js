@@ -1,8 +1,36 @@
 App._utils = function () {
+	var query = function (queryString) {
+		var re           = /([^&=]+)=([^&]+)/g,
+			decodedSpace = /\+/g;
+
+		var result = {},
+			m, key, value;
+
+		if (queryString) {
+			queryString = queryString.replace(decodedSpace, '%20');
+
+			while ((m = re.exec(queryString))) {
+				key   = decodeURIComponent( m[1] );
+				value = decodeURIComponent( m[2] );
+				result[ key ] = value;
+			}
+		}
+
+		return result;
+	}( window.location.href.split('?')[1] );
+
 	var os = function (userAgent) {
 		var name, version, match;
 
-		if (match = /\bCPU.*OS (\d+(_\d+)?)/i.exec(userAgent)) {
+		if (query['_app_platform'] === 'android') {
+			name    = 'android';
+			version = '4.2';
+		}
+		else if (query['_app_platform'] === 'ios') {
+			name    = 'ios';
+			version = '6.0';
+		}
+		else if (match = /\bCPU.*OS (\d+(_\d+)?)/i.exec(userAgent)) {
 			name    = 'ios';
 			version = match[1].replace('_', '.');
 		}
@@ -232,6 +260,7 @@ App._utils = function () {
 	}
 
 	return {
+		query         : query         ,
 		os            : os            ,
 		forEach       : forEach       ,
 		isArray       : isArray       ,

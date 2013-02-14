@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>App.js demos</title>
+
+		<style>
+			#wrapper {
+				margin: 24px auto;
+				width: 960px;
+			}
+
+			#demos {
+				float: left;
+				margin: 48px 48px 0 0;
+				width: 139px;
+			}
+			#demos .title {
+				font-size: 24px;
+				font-weight: bold;
+			}
+			#demos #demo-list {
+				margin: 0;
+				padding: 0;
+			}
+			#demos #demo-list li {
+				margin: 12px 0;
+				padding: 0;
+				list-style: none;
+			}
+
+			iframe {
+				border: 0;
+				width: 100%;
+				height: 100%;
+			}
+			#nexus {
+				float: left;
+				position: relative;
+				width: 295px;
+				height: 463px;
+				padding: 108px 25px 115px 29px;
+				background: url(nexus.png);
+			}
+			#nexus #back {
+				position: absolute;
+				bottom: 80px;
+				left: 38px;
+				width: 115px;
+				height: 35px;
+			}
+			#nexus #back:active {
+				background: url(back-active.png);
+			}
+			#iphone {
+				float: left;
+				position: relative;
+				margin-left: 48px;
+				padding: 119px 25px 108px 31px;
+				width: 320px;
+				height: 460px;
+				background: url(iphone.png);
+			}
+			#iphone iframe {
+				-webkit-border-radius: 6px;
+				-moz-border-radius: 6px;
+				border-radius: 6px;
+			}
+
+			.clear {
+				clear: both;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div id="wrapper">
+			<div id="demos">
+				<div class="title">Demos</div>
+				<ul id="demo-list"></ul>
+			</div>
+			<div id="nexus">
+				<iframe border="none"></iframe>
+				<a href="#" id="back"></a>
+			</div>
+			<div id="iphone">
+				<iframe border="none"></iframe>
+			</div>
+			<div class="clear"></div>
+		</div>
+
+		<script>
+			(function () {
+				var DEMOS = [
+					['Default', 'basic.html?style=default'],
+					['Base (no styles)', 'basic.html?']
+				];
+
+				var list    = document.getElementById('demo-list'),
+					iframes = document.getElementsByTagName('iframe'),
+					back    = document.getElementById('back'),
+					active;
+
+				back.onclick = goBack;
+				setDemo( DEMOS[0] );
+
+				function renderButtons () {
+					list.innerHTML = '';
+					for (var i=0, l=DEMOS.length; i<l; i++) {
+						renderButton( DEMOS[i] );
+					}
+				}
+
+				function renderButton (demo) {
+					var button = document.createElement('li'),
+						anchor = document.createElement('a' );
+					button.appendChild(anchor);
+					anchor.innerHTML = demo[0];
+					anchor.href = 'javascript:;'; // give button default style
+					if (demo === active) {
+						button.className += ' active';
+					}
+					anchor.onclick = function () {
+						setDemo(demo);
+					};
+					list.appendChild(button);
+				}
+
+				function setDemo (demo) {
+					if ( isMobile() ) {
+						window.location.href = demo[1];
+						return;
+					}
+
+					iframes[0].src = demo[1] + '&_app_platform=android';
+					iframes[1].src = demo[1] + '&_app_platform=ios';
+					active = demo;
+					renderButtons();
+				}
+
+				function goBack () {
+					try {
+						iframes[0].contentWindow.App.back();
+					}
+					catch (err) {}
+				}
+
+				function isMobile () {
+					if (navigator.userAgent.match(/Android/i)
+						|| navigator.userAgent.match(/webOS/i)
+						|| navigator.userAgent.match(/iPhone/i)
+						|| navigator.userAgent.match(/iPad/i)
+						|| navigator.userAgent.match(/iPod/i)
+						|| navigator.userAgent.match(/BlackBerry/i)
+						|| navigator.userAgent.match(/Windows Phone/i)) {
+						return true;
+					}
+					else {
+						return false;
+					}
+				}
+			}());
+		</script>
+	</body>
+</html>
