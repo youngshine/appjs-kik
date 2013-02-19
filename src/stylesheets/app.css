@@ -24,6 +24,9 @@ body {
 .app-android {
 	font-family: "Roboto", sans-serif;
 }
+.app-no-scrollbar ::-webkit-scrollbar {
+	width: 0 !important;
+}
 .clear {
 	clear: both;
 }

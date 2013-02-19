@@ -4,6 +4,7 @@ var App = function (utils, metrics, Pages, window, document, ImageLoader, Swappe
 		APP_IOS                           = 'app-ios',
 		APP_ANDROID                       = 'app-android',
 		APP_LOADED                        = 'app-loaded',
+		APP_NO_SCROLLBAR                  = 'app-no-scrollbar',
 		PAGE_SHOW_EVENT                   = 'appShow',
 		PAGE_HIDE_EVENT                   = 'appHide',
 		PAGE_BACK_EVENT                   = 'appBack',
@@ -90,6 +91,9 @@ var App = function (utils, metrics, Pages, window, document, ImageLoader, Swappe
 			else {
 				setDefaultTransition(DEFAULT_TRANSITION_ANDROID_OLD);
 			}
+		}
+		else {
+			document.body.className += ' ' + APP_NO_SCROLLBAR;
 		}
 	}
 

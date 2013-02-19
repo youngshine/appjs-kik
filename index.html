@@ -1,22 +1,31 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>App.js demos</title>
+		<title>App.js</title>
 
+		<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Open+Sans:300,400,600">
 		<style>
-			#wrapper {
+			#header {
+				position: relative;
 				margin: 24px auto;
 				width: 960px;
 			}
 
 			#demos {
 				float: left;
-				margin: 48px 48px 0 0;
-				width: 139px;
+				margin: 12px 12px 0;
+				width: 388px;
+				font-family: 'Open Sans', "Helvetica Neue", Helvetica, Arial, sans-serif;
 			}
 			#demos .title {
+				font-size: 72px;
+				font-weight: 600;
+				letter-spacing: 1px;
+			}
+			#demos .subtitle {
 				font-size: 24px;
-				font-weight: bold;
+				font-weight: 300;
+				letter-spacing: 1px;
 			}
 			#demos #demo-list {
 				margin: 0;
@@ -34,12 +43,13 @@
 				height: 100%;
 			}
 			#nexus {
-				float: left;
-				position: relative;
+				z-index: 2000;
+				position: absolute;
+				right: 0;
 				width: 295px;
 				height: 463px;
 				padding: 108px 25px 115px 29px;
-				background: url(nexus.png);
+				background: url(demos/nexus.png);
 			}
 			#nexus #back {
 				position: absolute;
@@ -49,21 +59,26 @@
 				height: 35px;
 			}
 			#nexus #back:active {
-				background: url(back-active.png);
+				background: url(demos/back-active.png);
 			}
 			#iphone {
-				float: left;
-				position: relative;
-				margin-left: 48px;
+				z-index: 2000;
+				position: absolute;
+				right: 172px;
 				padding: 119px 25px 108px 31px;
 				width: 320px;
 				height: 460px;
-				background: url(iphone.png);
+				background: url(demos/iphone.png);
 			}
 			#iphone iframe {
 				-webkit-border-radius: 5px;
 				-moz-border-radius: 5px;
 				border-radius: 5px;
+			}
+
+			#nexus.active,
+			#iphone.active {
+				z-index: 2001;
 			}
 
 			.clear {
@@ -73,26 +88,29 @@
 	</head>
 
 	<body>
-		<div id="wrapper">
+		<div id="header">
 			<div id="demos">
-				<div class="title">Demos</div>
+				<div class="title">app.js</div>
+				<div class="subtitle">mobile webapps made easy</div>
+				<div class="description"></div>
 				<ul id="demo-list"></ul>
 			</div>
 			<div id="nexus">
 				<iframe border="none"></iframe>
 				<a href="#" id="back"></a>
 			</div>
-			<div id="iphone">
+			<div id="iphone" class="active">
 				<iframe border="none"></iframe>
 			</div>
 			<div class="clear"></div>
 		</div>
+		<a href="https://github.com/kikinteractive/app"><img style="z-index: 2003; position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"></a>
 
 		<script>
 			(function () {
 				var DEMOS = [
-					['Default', 'basic.html?style=default'],
-					['Base (no styles)', 'basic.html']
+					['Default'         , 'demos/basic.html?style=default'],
+					['Base (no styles)', 'demos/basic.html'              ]
 				];
 
 				var list    = document.getElementById('demo-list'),
@@ -100,8 +118,30 @@
 					back    = document.getElementById('back'),
 					active;
 
+				stopImageDragging();
+				setupHover();
 				back.onclick = goBack;
-				setDemo( DEMOS[0] );
+				setDemo(DEMOS[0], true);
+
+				function stopImageDragging () {
+					iframes[0].parentNode.onmousedown = preventDefault;
+					iframes[1].parentNode.onmousedown = preventDefault;
+
+					function preventDefault (e) {
+						e.preventDefault();
+					}
+				}
+
+				function setupHover () {
+					iframes[0].parentNode.onmouseover = function () {
+						iframes[0].parentNode.className = 'active';
+						iframes[1].parentNode.className = '';
+					};
+					iframes[1].parentNode.onmouseover = function () {
+						iframes[1].parentNode.className = 'active';
+						iframes[0].parentNode.className = '';
+					};
+				}
 
 				function renderButtons () {
 					list.innerHTML = '';
@@ -125,9 +165,11 @@
 					list.appendChild(button);
 				}
 
-				function setDemo (demo) {
+				function setDemo (demo, noFallback) {
 					if ( isMobile() ) {
-						window.location.href = demo[1];
+						if ( !noFallback ) {
+							window.location.href = demo[1];
+						}
 						return;
 					}
 
