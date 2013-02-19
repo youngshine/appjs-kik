@@ -1,0 +1,52 @@
+.app-page, .app-content {
+    background: #121212;
+    color: #FFF;
+}
+.app-topbar {
+    background: #333;
+    font-weight: bold;
+}
+.app-topbar .app-button.left.active {
+    background: #1c1c1b;
+}
+.app-section,
+.app-list {
+    background: #323232;
+    border: none;
+}
+.app-section {
+    overflow: hidden;
+    border-radius: 4px;
+    -webkit-border-radius: 4px;
+}
+.app-section > .app-button:only-child {
+    border-radius: 4px;
+}
+.app-section .active,
+.app-list .active {
+    background: #1c1c1c;
+}
+.app-content .app-list > li,
+.app-content .app-section > * {
+    border-color: #141414;
+}
+
+.app-button.red {
+    background: #ca0214;
+}
+.app-button.red.active {
+    background: #93000d;
+}
+.app-button.green {
+    background: #79ad3f;
+}
+.app-button.green.active {
+    /* TODO (not in designer spec) */
+    background: purple;
+}
+.app-button.blue {
+    background: #1c6ccb;
+}
+.app-button.blue.active {
+    background: #1352a3;
+}

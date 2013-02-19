@@ -1,0 +1,75 @@
+.app-page, .app-content {
+    background: #e5e5e5;
+    color: #696969;
+}
+
+.app-topbar {
+    background: #fff;
+    color: #494e53;
+    font-weight: bold;
+    box-shadow: 0px 0px 3px #4c4c4c;
+}
+.app-topbar .app-button.active {
+    background: #d7d7d7;
+}
+
+.app-section,
+.app-list {
+    background: #fff;
+    border: none;
+}
+.app-section {
+    overflow: hidden;
+    border-radius: 4px;
+    -webkit-border-radius: 4px;
+}
+.app-section > .app-button:only-child {
+    border-radius: 4px;
+}
+.app-section .active,
+.app-list .active {
+    background: #f0f0f0;
+}
+.app-content .app-list > li,
+.app-content .app-section > * {
+    border-color: #dedede;
+}
+
+.app-list label {
+    background: transparent;
+    color: #0097fe;
+    border-bottom: 1px solid #0097fe;
+    padding-top: 10px;
+}
+.app-list > li,
+.app-list > li.app-button {
+    padding-left: 12px;
+}
+
+.app-button {
+    font-weight: bold;
+    color: #696969;
+}
+.app-button.red,
+.app-button.green,
+.app-button.blue {
+    color: #FFF;
+}
+.app-button.red {
+    background: #ca0214;
+}
+.app-button.red.active {
+    background: #93000d;
+}
+.app-button.green {
+    background: #79ad3f;
+}
+.app-button.green.active {
+    background: #428238;
+}
+.app-button.blue {
+    background: #1c6ccb;
+}
+.app-button.blue.active {
+    background: #1352a3;
+}

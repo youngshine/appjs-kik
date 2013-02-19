@@ -184,13 +184,13 @@ body {
 	border-bottom: none;
 }
 
-.app-content .app-button.green {
+.app-button.green {
 	background: #7F7;
 }
-.app-content .app-button.red {
+.app-button.red {
 	background: #F77;
 }
-.app-content .app-button.blue {
+.app-button.blue {
 	background: #77F;
 }
 
