@@ -20,13 +20,16 @@ App._utils = function () {
 	}( window.location.href.split('?')[1] );
 
 	var os = function (userAgent) {
-		var name, version, match;
+		var faked = false,
+			name, version, match;
 
 		if (query['_app_platform'] === 'android') {
+			faked   = true;
 			name    = 'android';
 			version = '4.2';
 		}
 		else if (query['_app_platform'] === 'ios') {
+			faked   = true;
 			name    = 'ios';
 			version = '6.0';
 		}
@@ -40,6 +43,7 @@ App._utils = function () {
 		}
 
 		var data = {
+			faked         : faked   ,
 			name          : name    ,
 			versionString : version ,
 			version       : version && parseFloat(version)

@@ -92,7 +92,8 @@ var App = function (utils, metrics, Pages, window, document, ImageLoader, Swappe
 				setDefaultTransition(DEFAULT_TRANSITION_ANDROID_OLD);
 			}
 		}
-		else {
+
+		if (utils.os.faked || (!utils.os.ios && !utils.os.android)) {
 			document.body.className += ' ' + APP_NO_SCROLLBAR;
 		}
 	}
