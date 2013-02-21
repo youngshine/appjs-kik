@@ -309,14 +309,15 @@ App.populator('home', function (page, args) {
 				<p>The populator and destructor of a page share the "this" context for convenience and ease of passing data.</p>
 <pre class="prettyprint linenums lang-js">
 App.populator('home', function (page, args) {
-  this.handleOrientation = function () {
-    // do something
-  };
-  $(window).on('orientationchange', this.handleOrientation);
+  this.timeout = setInterval(function () {
+    var title = $(page).find('.app-title');
+    title.text( new Date() );
+  }, 1000);
 }, function (page, args) {
-  $(window).off('orientationchange', this.handleOrientation);
+  clearInterval(this.timeout);
 });
 </pre>
+			<p>This block of code periodically sets the title of the page to the current time. Once the page is destroyed we want to stop setting the title otherwise that code would continue to run wastfully.</p>
 			</div>
 
 			<div id="navigation" class="section">
