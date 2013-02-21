@@ -291,7 +291,7 @@ App.load('contact', contact);
 /* in your javascript */
 App.populator('home', function (page) {
   $(page).on('appShow', function () {
-    // the user can see this page!
+    alert('annoy the user!');
   });
 });
 </pre>
@@ -344,10 +344,10 @@ App.load('home', function () {
 				<div id="navigation-back" class="subtitle">Back stack</div>
 				<p>As you navigate from page to page App.js mantains a history of the pages you have been to with the ability to navigate back to them. "App.back" is the conceptual reverse of "App.load" in that navigates back to the previous page load (destroying the current page when the navigation completes).</p>
 <pre class="prettyprint linenums lang-js">
-// load page1
+// load home
 // load page2
 App.back(function () {
-  // back to page1
+  // back to home
   // page2 destructor has been called
 });
 </pre>
