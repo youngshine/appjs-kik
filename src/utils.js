@@ -1,8 +1,39 @@
 App._utils = function () {
-	var os = function (userAgent) {
-		var name, version, match;
+	var query = function (queryString) {
+		var re           = /([^&=]+)=([^&]+)/g,
+			decodedSpace = /\+/g;
 
-		if (match = /\bCPU.*OS (\d+(_\d+)?)/i.exec(userAgent)) {
+		var result = {},
+			m, key, value;
+
+		if (queryString) {
+			queryString = queryString.replace(decodedSpace, '%20');
+
+			while ((m = re.exec(queryString))) {
+				key   = decodeURIComponent( m[1] );
+				value = decodeURIComponent( m[2] );
+				result[ key ] = value;
+			}
+		}
+
+		return result;
+	}( window.location.href.split('?')[1] );
+
+	var os = function (userAgent) {
+		var faked = false,
+			name, version, match;
+
+		if (query['_app_platform'] === 'android') {
+			faked   = true;
+			name    = 'android';
+			version = '4.2';
+		}
+		else if (query['_app_platform'] === 'ios') {
+			faked   = true;
+			name    = 'ios';
+			version = '6.0';
+		}
+		else if (match = /\bCPU.*OS (\d+(_\d+)?)/i.exec(userAgent)) {
 			name    = 'ios';
 			version = match[1].replace('_', '.');
 		}
@@ -12,6 +43,7 @@ App._utils = function () {
 		}
 
 		var data = {
+			faked         : faked   ,
 			name          : name    ,
 			versionString : version ,
 			version       : version && parseFloat(version)
@@ -136,13 +168,119 @@ App._utils = function () {
 		return width;
 	}
 
+	// this is tuned for use with the iOS transition
+	// be careful if using this elsewhere
+	function transitionElems (transitions, timeout, easing, callback) {
+		if (typeof transitions.length !== 'number') {
+			transitions = [ transitions ];
+		}
+
+		var opacities = transitions.map(function (transition) {
+			return transition.elem.style.opacity;
+		});
+
+		setInitialStyles(function () {
+			animateElems(function () {
+				restoreStyles(function () {
+					callback();
+				});
+			});
+		});
+
+		function setInitialStyles (callback) {
+			transitions.forEach(function (transition) {
+				if (typeof transition.transitionStart !== 'undefined') {
+					setTransform(transition.elem, transition.transitionStart);
+				}
+				if (typeof transition.opacityStart !== 'undefined') {
+					transition.elem.style.opacity = transition.opacityStart + '';
+				}
+			});
+
+			setTimeout(function () {
+				var transitionString = 'transform '+(timeout/1000)+'s ease-in-out, opacity '+(timeout/1000)+'s ease-in-out';
+				transitions.forEach(function (transition) {
+					setTransition(transition.elem, transitionString);
+				});
+
+				setTimeout(callback, 0);
+			}, 0);
+		}
+
+		function animateElems (callback) {
+			transitions.forEach(function (transition) {
+				if (typeof transition.transitionEnd !== 'undefined') {
+					setTransform(transition.elem, transition.transitionEnd);
+				}
+				if (typeof transition.opacityEnd !== 'undefined') {
+					transition.elem.style.opacity = transition.opacityEnd + '';
+				}
+			});
+
+			transitions.forEach(function (transition) {
+				transition.elem.addEventListener('webkitTransitionEnd' , transitionFinished , false);
+				transition.elem.addEventListener('transitionend'       , transitionFinished , false);
+				transition.elem.addEventListener('oTransitionEnd'      , transitionFinished , false);
+				transition.elem.addEventListener('otransitionend'      , transitionFinished , false);
+				transition.elem.addEventListener('MSTransitionEnd'     , transitionFinished , false);
+				transition.elem.addEventListener('transitionend'       , transitionFinished , false);
+			});
+
+			var done = false;
+
+			function isTransitionElem (elem) {
+				for (var i=0, l=transitions.length; i<l; i++) {
+					if (elem === transitions[i].elem) {
+						return true;
+					}
+				}
+				return false;
+			}
+
+			function transitionFinished (e) {
+				if (done || !isTransitionElem(e.target)) {
+					return;
+				}
+				done = true;
+
+				transitions.forEach(function (transition) {
+					transition.elem.removeEventListener('webkitTransitionEnd' , transitionFinished);
+					transition.elem.removeEventListener('transitionend'       , transitionFinished);
+					transition.elem.removeEventListener('oTransitionEnd'      , transitionFinished);
+					transition.elem.removeEventListener('otransitionend'      , transitionFinished);
+					transition.elem.removeEventListener('MSTransitionEnd'     , transitionFinished);
+					transition.elem.removeEventListener('transitionend'       , transitionFinished);
+				});
+
+				callback();
+			}
+		}
+
+		function restoreStyles (callback) {
+			transitions.forEach(function (transition) {
+				setTransition(transition.elem, '');
+			});
+
+			setTimeout(function () {
+				transitions.forEach(function (transition, i) {
+					setTransform(transition.elem, '');
+					transition.elem.style.opacity = opacities[i];
+				});
+
+				callback();
+			}, 0);
+		}
+	}
+
 	return {
+		query         : query         ,
 		os            : os            ,
 		forEach       : forEach       ,
 		isArray       : isArray       ,
 		isNode        : isNode        ,
 		setTransform  : setTransform  ,
 		setTransition : setTransition ,
+		animate       : transitionElems ,
 		getStyles     : getStyles     ,
 		getTotalWidth : getTotalWidth
 	};

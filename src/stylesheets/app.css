@@ -24,6 +24,10 @@ body {
 .app-android {
 	font-family: "Roboto", sans-serif;
 }
+.app-no-scrollbar ::-webkit-scrollbar {
+	height: 0 !important;
+	width: 0 !important;
+}
 .clear {
 	clear: both;
 }
@@ -109,7 +113,7 @@ body {
 	position: relative;
 	background: #FFF;
 }
-.app-ios .app-scrollable > * {
+.app-scrollhack > * {
 	/*
 		terrible hack to make elements render
 		properly in scrollable regions

@@ -105,15 +105,33 @@
 
 <script>
 	(function (window, document) {
-		var style = window.location.href.split('?')[1];
+		var query = function (queryString) {
+			var re           = /([^&=]+)=([^&]+)/g,
+				decodedSpace = /\+/g;
 
-		if ( !style ) {
+			var result = {},
+				m, key, value;
+
+			if (queryString) {
+				queryString = queryString.replace(decodedSpace, '%20');
+
+				while ((m = re.exec(queryString))) {
+					key   = decodeURIComponent( m[1] );
+					value = decodeURIComponent( m[2] );
+					result[ key ] = value;
+				}
+			}
+
+			return result;
+		}( window.location.href.split('?')[1] );
+
+		if ( !query.style ) {
 			return;
 		}
 
 		var link  = document.createElement('link');
 		link.rel = 'stylesheet';
-		link.href = '../src/stylesheets/'+style+'.css';
+		link.href = '../src/stylesheets/'+query.style+'.css';
 		document.querySelector('head').appendChild(link);
 	})(window, document);
 </script>
