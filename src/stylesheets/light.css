@@ -118,6 +118,11 @@
 .app-ios .app-button.blue.active {
 	background: -webkit-linear-gradient(#1f5fb5, #1a7ce8);
 }
+.app-ios .app-section .active,
+.app-ios .app-list .active {
+	background: -webkit-linear-gradient(#058cf5, #015ee6);
+	color: #fff;
+}
 
 /******************
  * Android Styles *
