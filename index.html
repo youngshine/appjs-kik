@@ -94,6 +94,10 @@
 &lt;html&gt;
   &lt;head&gt;
     &lt;title&gt;My App&lt;/title&gt;
+    &lt;meta name="viewport" content="width=device-width,
+                                   initial-scale=1.0,
+                                   maximum-scale=1.0,
+                                   user-scalable=no"&gt;
     &lt;link rel="stylesheet" href="http://cdn.kik.com/app/1/default.css"&gt;
   &lt;/head&gt;
   &lt;body&gt;
@@ -111,6 +115,7 @@
 					<li><b>app.js</b> is the core module containing all library functionality.</li>
 					<li><b>default.css</b> is the default stylesheet provided with App.js. It contains iOS/Android styles for all included widgets.</li>
 					<li><b><a href="http://zeptojs.com/">zepto.js</a></b> is jQuery-like library focusing on being lightweight and mobile-friendly. It is <b>not</b> a dependency for App.js but still nice to have for writing concise, cross-platform code. Replace this with <a href="http://jquery.com">jQuery</a> if you so desire.</li>
+					<li>The meta viewport tag simply insures that the window is sized correctly on whatever device it runs on. This is important to get consistent sizing and scale across different platforms.</li>
 					<li>The comment about "pages" is where you HTML page elements will go, as described in the <a href="#pages">next section</a>.</li>
 					<li>The comment about "javascript" is where your <a href="#populators">populators</a> and <a href="#navigation">navigation</a> code will go.</li>
 				</ul>
