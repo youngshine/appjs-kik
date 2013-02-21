@@ -2,22 +2,23 @@
 
 /* Page */
 .app-page, .app-content {
-	background: #e5e5e5;
+	background: #EEE;
 	color: #696969;
 }
 
 /* Topbar */
 .app-topbar {
-	background: #fff;
-	color: #494e53;
+	background: #222;
+	color: #c8c8c8;
 	font-weight: bold;
-	box-shadow: 0px 0px 3px #4c4c4c;
+	box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.5);
 }
 .app-title {
 	font-size: 20px;
 }
 .app-topbar .app-button.active {
-	background: #d7d7d7;
+	background: #3c3c3c;
+	color: #CCC;
 }
 
 /* Lists */
@@ -28,19 +29,22 @@
 }
 .app-section {
 	overflow: hidden;
-	border-radius: 4px;
-	-webkit-border-radius: 4px;
+	border-radius: 3px;
+	-webkit-border-radius: 3px;
+	-webkit-box-shadow: 0 0 3px rgba(0, 0, 0, 0.1);
+	border-bottom: 1px solid #DDD;
 }
 .app-section > .app-button:only-child {
-	border-radius: 4px;
+	border-radius: 3px;
 }
 .app-section .active,
 .app-list .active {
-	background: #f0f0f0;
+	background: #F7F7F7;
+	color: #0099cc;
 }
 .app-content .app-list > li,
 .app-content .app-section > * {
-	border-color: #dedede;
+	border-color: #EEE;
 }
 .app-list > li {
 	font-weight: bold;
@@ -49,7 +53,6 @@
 /* Buttons */
 .app-button {
 	font-weight: bold;
-	color: #696969;
 }
 .app-button.red,
 .app-button.green,
@@ -80,11 +83,18 @@
  * iOS Styles *
  **************/
 .app-ios .app-topbar {
-	background: -webkit-linear-gradient(#f8f8f8, #c4c4c4);
-	border-bottom: 1px solid #898989;
-	color: #000;
-	font-weight: bold;
-	text-shadow: 0px 1px 1px #e1e1e1;
+	background: -webkit-linear-gradient(#525252, #1f1e1f);
+	border-top: 0.5px solid #797979;
+	border-bottom: 1px solid #000;
+	/*color: #c8c8c8;
+	font-weight: bold;*/
+	text-shadow: 0px -1px 1px #1d1e1e;
+}
+.app-ios .app-list > label {
+	background: -webkit-linear-gradient(#95a4ae, #98a3aa);
+	border-top: 1px solid #81929f;
+	border-bottom: 1px solid #949ea6;
+	text-shadow: 0px 1px 1px #666b6f;
 }
 .app-ios .app-button.red {
 	background: -webkit-linear-gradient(#e30015, #b10413);
@@ -107,4 +117,24 @@
 }
 .app-ios .app-button.blue.active {
 	background: -webkit-linear-gradient(#1f5fb5, #1a7ce8);
+}
+
+/******************
+ * Android Styles *
+ ******************/
+.app-android .app-list > label {
+	background: none;
+	color: inherit;
+	font-weight: bold;
+	text-transform: uppercase;
+	font-size: 12px;
+	padding-left: 8px;
+	padding-top: 12px;
+	border-bottom: 2px solid #CCC;
+	margin: 0 18px;
+}
+.app-android .app-list > li,
+.app-android .app-list > li.app-button {
+	margin: 0 18px;
+	padding-left: 8px;
 }
