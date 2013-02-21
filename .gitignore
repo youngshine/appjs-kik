@@ -2,3 +2,5 @@
 builds
 app.zip
 *~
+*.kate-swp
+
