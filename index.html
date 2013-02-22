@@ -413,5 +413,22 @@ catch (err) {
 		<div id="footer">&copy; 2013 Kik Interactive Inc.</div>
 
 		<script src="demos/main.js"></script>
+
+		<script async="async" defer="defer">
+			var _gaq = _gaq || [];
+			_gaq.push(['_setAccount', 'UA-36047984-14']);
+			_gaq.push(['_trackPageview']);
+
+			(function () {
+				var ga   = document.createElement('script');
+				ga.type  = 'text/javascript';
+				ga.async = true;
+				ga.defer = true;
+				ga.src   = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+
+				var s = document.getElementsByTagName('script')[0];
+				s.parentNode.insertBefore(ga, s);
+			})();
+		</script>
 	</body>
 </html>
