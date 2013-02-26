@@ -60,6 +60,7 @@ var App = function (utils, metrics, Pages, window, document, ImageLoader, Swappe
 		initialised  = false,
 		isAndroid401 = false,
 		customEvents = null,
+		forceIScroll = ('APP_FORCE_ISCROLL' in window) ? !!window['APP_FORCE_ISCROLL'] : false,
 		defaultTransition, reverseTransition,
 		current, currentNode;
 
@@ -236,11 +237,7 @@ var App = function (utils, metrics, Pages, window, document, ImageLoader, Swappe
 			page.querySelectorAll('.app-content'),
 			function (content) {
 				if ( !content.getAttribute('data-no-scroll') ) {
-					Scrollable(content);
-					content.className += ' app-scrollable';
-					if (utils.os.ios && utils.os.version < 6) {
-						content.className += ' app-scrollhack';
-					}
+					setupScroller(content);
 				}
 			}
 		);
@@ -248,13 +245,17 @@ var App = function (utils, metrics, Pages, window, document, ImageLoader, Swappe
 		utils.forEach(
 			page.querySelectorAll('[data-scrollable]'),
 			function (content) {
-				Scrollable(content);
-				content.className += ' app-scrollable';
-				if (utils.os.ios && utils.os.version < 6) {
-					content.className += ' app-scrollhack';
-				}
+				setupScroller(content);
 			}
 		);
+	}
+
+	function setupScroller (content) {
+		Scrollable(content, forceIScroll);
+		content.className += ' app-scrollable';
+		if (!forceIScroll && utils.os.ios && utils.os.version < 6) {
+			content.className += ' app-scrollhack';
+		}
 	}
 
 	function startPageDestruction (pageName, page, args, pageManager) {
