@@ -740,11 +740,16 @@ var App = function (utils, metrics, Pages, window, document, ImageLoader, Swappe
 		}
 
 		uiBlockedTask(function (unblockUI) {
-			if ( !shouldUseNativeIOSTransition(options) ) {
-				Swapper(currentNode, page, options, cleanup);
+			if ( shouldUseNativeIOSTransition(options) ) {
+				performNativeIOSTransition(page, options, cleanup);
+			}
+			else if (options.transition === 'instant') {
+				Swapper(currentNode, page, options, function () {
+					setTimeout(cleanup, 0);
+				});
 			}
 			else {
-				performNativeIOSTransition(page, options, cleanup);
+				Swapper(currentNode, page, options, cleanup);
 			}
 
 			function cleanup () {
