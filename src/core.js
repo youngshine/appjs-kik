@@ -314,7 +314,7 @@ var App = function (utils, metrics, Pages, window, document, ImageLoader, Swappe
 	}
 
 	function destroyPage (page) {
-		var pageName = page.getAttribute('data-page');
+		var pageName = page.getAttribute(PAGE_NAME);
 		startPageDestruction(pageName, page, {}, {});
 		finishPageDestruction(pageName, page, {}, {});
 	}
@@ -1023,6 +1023,10 @@ var App = function (utils, metrics, Pages, window, document, ImageLoader, Swappe
 		catch (err) {}
 	}
 
+	function destroyStack () {
+		delete localStorage[STACK_KEY];
+	}
+
 	function setupRestoreFunction () {
 		var storedStack, lastPage;
 
@@ -1143,8 +1147,9 @@ var App = function (utils, metrics, Pages, window, document, ImageLoader, Swappe
 				break;
 
 			case 'string':
-				options = args;
-				args    = {};
+				callback = options;
+				options  = args;
+				args     = {};
 				break;
 
 			case 'object':
@@ -1530,6 +1535,10 @@ var App = function (utils, metrics, Pages, window, document, ImageLoader, Swappe
 
 	App.saveStack = function () {
 		saveStack();
+	};
+
+	App.destroyStack = function () {
+		destroyStack();
 	};
 
 

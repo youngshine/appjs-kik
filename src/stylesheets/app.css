@@ -17,7 +17,6 @@ body {
 	-webkit-user-select: none;
 	-moz-user-select: none;
 	user-select: none;
-	text-rendering: optimizeLegibility;
 	-webkit-tap-highlight-color: rgba(0,0,0,0);
 	overflow: hidden;
 }
