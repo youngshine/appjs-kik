@@ -6,17 +6,17 @@ App._Pages = function () {
 	function addPage (page, pageName) {
 		if ( !pageName ) {
 			pageName = page.getAttribute(PAGE_NAME);
+		}
 
-			if ( !pageName ) {
-				var className = page.className || '',
-					matcher   = /\b(\S+)\-page\b/g,
-					match;
-				//TODO: figure out why this doesnt work on old android
-				while (match = matcher.exec(className)) {
-					if (match[1] !== 'app') {
-						pageName = match[1];
-						break;
-					}
+		if ( !pageName ) {
+			var className = page.className || '',
+				matcher   = /\b(\S+)\-page\b/g,
+				match;
+			//TODO: figure out why this doesnt work on old android
+			while (match = matcher.exec(className)) {
+				if (match[1] !== 'app') {
+					pageName = match[1];
+					break;
 				}
 			}
 		}
@@ -26,7 +26,9 @@ App._Pages = function () {
 		}
 
 		page.setAttribute(PAGE_NAME, pageName);
-		page.parentNode.removeChild(page);
+		if (page.parentNode) {
+			page.parentNode.removeChild(page);
+		}
 		pages[pageName] = page.cloneNode(true);
 	}
 

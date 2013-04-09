@@ -105,8 +105,7 @@ var App = function (utils, metrics, Pages, window, document, ImageLoader, Swappe
 		}
 		initialised = true;
 
-		var pageNodes = document.getElementsByClassName(PAGE_CLASS),
-			page, pageName, match;
+		var pageNodes = document.getElementsByClassName(PAGE_CLASS);
 
 		for (var i=pageNodes.length; i--;) {
 			Pages.add( pageNodes[i] );

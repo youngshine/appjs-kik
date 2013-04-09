@@ -5,6 +5,16 @@
 
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 	<link rel="stylesheet" href="../src/stylesheets/app.css">
+	<style>
+		body.demo-cursor {
+			cursor: pointer;
+			cursor: url(finger.png) 25 25, pointer;
+		}
+		body.demo-cursor:active {
+			cursor: pointer;
+			cursor: url(finger-active.png) 25 25, pointer;
+		}
+	</style>
 </head>
 
 
@@ -133,6 +143,10 @@
 		link.rel = 'stylesheet';
 		link.href = '../src/stylesheets/'+query.style+'.css';
 		document.querySelector('head').appendChild(link);
+
+		if (query._app_platform) {
+			document.body.className += ' demo-cursor';
+		}
 	})(window, document);
 </script>
 
