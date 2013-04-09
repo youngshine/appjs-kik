@@ -60,6 +60,7 @@ var App = function (utils, metrics, Pages, window, document, ImageLoader, Swappe
 		initialised  = false,
 		isAndroid401 = false,
 		customEvents = null,
+		forceIScroll = ('APP_FORCE_ISCROLL' in window) ? !!window['APP_FORCE_ISCROLL'] : false,
 		defaultTransition, reverseTransition,
 		current, currentNode;
 
@@ -104,8 +105,7 @@ var App = function (utils, metrics, Pages, window, document, ImageLoader, Swappe
 		}
 		initialised = true;
 
-		var pageNodes = document.getElementsByClassName(PAGE_CLASS),
-			page, pageName, match;
+		var pageNodes = document.getElementsByClassName(PAGE_CLASS);
 
 		for (var i=pageNodes.length; i--;) {
 			Pages.add( pageNodes[i] );
@@ -236,11 +236,7 @@ var App = function (utils, metrics, Pages, window, document, ImageLoader, Swappe
 			page.querySelectorAll('.app-content'),
 			function (content) {
 				if ( !content.getAttribute('data-no-scroll') ) {
-					Scrollable(content);
-					content.className += ' app-scrollable';
-					if (utils.os.ios && utils.os.version < 6) {
-						content.className += ' app-scrollhack';
-					}
+					setupScroller(content);
 				}
 			}
 		);
@@ -248,13 +244,17 @@ var App = function (utils, metrics, Pages, window, document, ImageLoader, Swappe
 		utils.forEach(
 			page.querySelectorAll('[data-scrollable]'),
 			function (content) {
-				Scrollable(content);
-				content.className += ' app-scrollable';
-				if (utils.os.ios && utils.os.version < 6) {
-					content.className += ' app-scrollhack';
-				}
+				setupScroller(content);
 			}
 		);
+	}
+
+	function setupScroller (content) {
+		Scrollable(content, forceIScroll);
+		content.className += ' app-scrollable';
+		if (!forceIScroll && utils.os.ios && utils.os.version < 6) {
+			content.className += ' app-scrollhack';
+		}
 	}
 
 	function startPageDestruction (pageName, page, args, pageManager) {
@@ -313,7 +313,7 @@ var App = function (utils, metrics, Pages, window, document, ImageLoader, Swappe
 	}
 
 	function destroyPage (page) {
-		var pageName = page.getAttribute('data-page');
+		var pageName = page.getAttribute(PAGE_NAME);
 		startPageDestruction(pageName, page, {}, {});
 		finishPageDestruction(pageName, page, {}, {});
 	}
@@ -739,11 +739,16 @@ var App = function (utils, metrics, Pages, window, document, ImageLoader, Swappe
 		}
 
 		uiBlockedTask(function (unblockUI) {
-			if ( !shouldUseNativeIOSTransition(options) ) {
-				Swapper(currentNode, page, options, cleanup);
+			if ( shouldUseNativeIOSTransition(options) ) {
+				performNativeIOSTransition(page, options, cleanup);
+			}
+			else if (options.transition === 'instant') {
+				Swapper(currentNode, page, options, function () {
+					setTimeout(cleanup, 0);
+				});
 			}
 			else {
-				performNativeIOSTransition(page, options, cleanup);
+				Swapper(currentNode, page, options, cleanup);
 			}
 
 			function cleanup () {
@@ -1017,6 +1022,10 @@ var App = function (utils, metrics, Pages, window, document, ImageLoader, Swappe
 		catch (err) {}
 	}
 
+	function destroyStack () {
+		delete localStorage[STACK_KEY];
+	}
+
 	function setupRestoreFunction () {
 		var storedStack, lastPage;
 
@@ -1137,8 +1146,9 @@ var App = function (utils, metrics, Pages, window, document, ImageLoader, Swappe
 				break;
 
 			case 'string':
-				options = args;
-				args    = {};
+				callback = options;
+				options  = args;
+				args     = {};
 				break;
 
 			case 'object':
@@ -1524,6 +1534,10 @@ var App = function (utils, metrics, Pages, window, document, ImageLoader, Swappe
 
 	App.saveStack = function () {
 		saveStack();
+	};
+
+	App.destroyStack = function () {
+		destroyStack();
 	};
 
 

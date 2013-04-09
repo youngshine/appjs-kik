@@ -116,7 +116,8 @@ window.prettyPrint && prettyPrint();
 			heightDiff   = Math.max(0, menuHeight - windowHeight),
 			scrollTop    = document.documentElement.scrollTop || document.body.scrollTop,
 			topMargin    = 760 + heightDiff,
-			minWidth     = 960;
+			minWidth     = 960,
+			isBottom     = (0 >= document.body.clientHeight-scrollTop-windowHeight-64);
 
 		if ((scrollTop < topMargin) || (windowWidth < minWidth)) {
 			menu.style.position = 'static';
@@ -129,12 +130,17 @@ window.prettyPrint && prettyPrint();
 		var closestOffset = Infinity,
 			closest;
 
-		for (var i=0, l=menuLinks.length; i<l; i++) {
-			var offset = Math.abs(menuLinks[i][1].offsetTop - scrollTop);
-			if (offset < closestOffset) {
-				closest       = menuLinks[i][0];
-				closestOffset = offset;
+		if ( !isBottom ) {
+			for (var i=0, l=menuLinks.length; i<l; i++) {
+				var offset = Math.abs(menuLinks[i][1].offsetTop - scrollTop);
+				if (offset < closestOffset) {
+					closest       = menuLinks[i][0];
+					closestOffset = offset;
+				}
 			}
+		}
+		else {
+			closest = menuLinks[menuLinks.length-1][0];
 		}
 
 		for (var i=0, l=menuLinks.length; i<l; i++) {
