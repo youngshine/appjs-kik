@@ -49,7 +49,11 @@ var App = function (utils, metrics, Pages, window, document, ImageLoader, Swappe
 			'glideon-right'  : 'glideoff-right' ,
 			'glideoff-right' : 'slideon-right'  ,
 			'glideon-left'   : 'glideoff-left'  ,
-			'glideoff-left'  : 'slideon-left'
+			'glideoff-left'  : 'slideon-left'   ,
+			'glideon-down'  : 'glideoff-down'   ,
+			'glideoff-down' : 'slideon-down'    ,
+			'glideon-up'    : 'glideoff-up'     ,
+			'glideoff-up'   : 'slideon-up'
 		};
 
 	var App          = {},
