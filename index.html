@@ -64,7 +64,7 @@
 				<a class="menu-section-title" href="#pages-sections">Sections</a>
 
 				<a class="menu-section" href="#populators">Populators</a>
-				<a class="menu-section-title" href="#populators-arguments">Arguments & Templating</a>
+				<a class="menu-section-title" href="#populators-arguments">Arguments &amp; Templating</a>
 				<a class="menu-section-title" href="#populators-events">Events</a>
 				<a class="menu-section-title" href="#populators-destructors">Destructors</a>
 
@@ -73,13 +73,8 @@
 				<a class="menu-section-title" href="#navigation-transitions">Transitions</a>
 				<a class="menu-section-title" href="#navigation-restore">Restore</a>
 
-<!--
-				<a class="menu-section" href="#styles">Styles</a>
-				<a class="menu-section-title" href="#TODO">TODO</a>
-
-				<a class="menu-section" href="#other">Other</a>
-				<a class="menu-section-title" href="#TODO">TODO</a>
--->
+				<a class="menu-section" href="#styles">Styling</a>
+				<a class="menu-section-title" href="#styles-platforms">Platform styles</a>
 			</div>
 
 			<div id="start" class="section">
@@ -133,7 +128,7 @@
 			<div id="pages" class="section">
 				<div class="title">Page basics</div>
 
-				<p>Note: all the HTML widgets provided below can be styled as described in the <a href="#styles">Styles section</a>.</p>
+				<p>Note: all the HTML widgets provided below can be styled as described in the <a href="#styles">styling section</a>.</p>
 				<p>App.js pages a HTML elements that have certain generic components like a topbar and content area. Note that while these components are completely optional the "app-page" format is the only requirement of your HTML.</p>
 <pre class="prettyprint linenums lang-html">
 &lt;div class="app-page" data-page="home"&gt;
@@ -250,15 +245,16 @@ App.load('home');
 App.populator('home', function (page) {
   // this runs whenever a 'home' page is loaded
   // 'page' is the HTML app-page element
-  var button = $(page).find('.app-button');
-  button.on('click', function () {
-    alert('button was clicked!');
-  });
+  $(page)
+    .find('.app-button')
+    .on('click', function () {
+      alert('button was clicked!');
+    });
 });
 </pre>
 				<p>If you have described multiple pages in your HTML, you will want to create a populator for each of them so that they can be constructed properly whenever loaded.</p>
 
-				<div id="populators-arguments" class="subtitle">Arguments & Templating</div>
+				<div id="populators-arguments" class="subtitle">Arguments &amp; Templating</div>
 				<p>Populators can have dynamic arguments so that you can construct a page slightly different depending on the input. For example, if I am creating a contact list app I will want a to load a contact page for any given contact in my list. What we will do is describe a generic contact page with blank fields and fill them in depending on which contact the page is being loaded for.</p>
 				<p>To load a page with special arguments simply add an JSON object to the "App.load" call and you'll be able to use that object in the populator accordingly.</p>
 <pre class="prettyprint linenums lang-html">
@@ -318,15 +314,16 @@ App.populator('home', function (page, args) {
 				<p>The populator and destructor of a page share the "this" context for convenience and ease of passing data.</p>
 <pre class="prettyprint linenums lang-js">
 App.populator('home', function (page, args) {
-  this.timeout = setInterval(function () {
-    var title = $(page).find('.app-title');
-    title.text( new Date() );
+  this.interval = setInterval(function () {
+    $(page)
+      .find('.app-title')
+      .text( new Date() );
   }, 1000);
 }, function (page, args) {
-  clearInterval(this.timeout);
+  clearInterval(this.interval);
 });
 </pre>
-			<p>This block of code periodically sets the title of the page to the current time. Once the page is destroyed we want to stop setting the title otherwise that code would continue to run wastfully.</p>
+				<p>This block of code periodically sets the title of the page to the current time. Once the page is destroyed we want to stop setting the title otherwise that code would continue to run wastfully.</p>
 			</div>
 
 			<div id="navigation" class="section">
@@ -400,6 +397,43 @@ try {
 catch (err) {
   // else start from scratch
   App.load('home');
+}
+</pre>
+			</div>
+
+
+
+
+			<div id="styles" class="section">
+				<div class="title">Styling</div>
+
+				<p>App.js provides a default stylesheet called default.css (as used in the demo at the top of this page). default.css is meant to serve as a good starting point for prototyping and an example for stylesheet creation.</p>
+<pre class="prettyprint linenums lang-html">
+&lt;link rel="stylesheet" href="http://cdn.kik.com/app/1/default.css"&gt;
+&lt;style&gt;
+  /* put your additional styles here */
+&lt;/style&gt;
+</pre>
+				<p>There is a root CSS file called base.css that can be used as a starting point for creating stylesheets from scratch. It provides all the basic necessities for App.js while leaving all the custom styles up to your doing.</p>
+<pre class="prettyprint linenums lang-html">
+&lt;link rel="stylesheet" href="http://cdn.kik.com/app/1/base.css"&gt;
+&lt;style&gt;
+  /* create your custom stylesheet here */
+&lt;/style&gt;
+</pre>
+
+				<div id="styles-platforms" class="subtitle">Platform styles</div>
+				<p>It is often convenient to have styles that are specific to a platform. For example in the demo at the top of this page the topbar is styled slightly different on iOS and Android. iOS tends to prefer gradients and shadows while newer Android styles are often flat and without text shadows.</p>
+				<p>To accomodate this App.js adds classes to the body of the document denoting which platform it is running on. Using this class as a filtering selector can let you have separate styles for a single widget.</p>
+<pre class="prettyprint linenums lang-css">
+.my-widget {
+  /* cross-platform styles */
+}
+.app-ios .my-widget {
+  /* ios only styles */
+}
+.app-android .my-widget {
+  /* android only styles */
 }
 </pre>
 			</div>

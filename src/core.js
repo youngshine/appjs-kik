@@ -49,7 +49,11 @@ var App = function (utils, metrics, Pages, window, document, ImageLoader, Swappe
 			'glideon-right'  : 'glideoff-right' ,
 			'glideoff-right' : 'slideon-right'  ,
 			'glideon-left'   : 'glideoff-left'  ,
-			'glideoff-left'  : 'slideon-left'
+			'glideoff-left'  : 'slideon-left'   ,
+			'glideon-down'  : 'glideoff-down'   ,
+			'glideoff-down' : 'slideon-down'    ,
+			'glideon-up'    : 'glideoff-up'     ,
+			'glideoff-up'   : 'slideon-up'
 		};
 
 	var App          = {},
@@ -982,6 +986,7 @@ var App = function (utils, metrics, Pages, window, document, ImageLoader, Swappe
 		function triggerSizeFix () {
 			fixSizing();
 
+			//TODO: can we remove this yet? it would increase performance
 			// In an ideal world we wouldnt have to do this.
 			// Android client lies about its dimensions after
 			// events on occasion.
