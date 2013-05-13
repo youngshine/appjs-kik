@@ -1001,14 +1001,14 @@ var App = function (utils, metrics, Pages, window, document, ImageLoader, Swappe
 		setTimeout(triggerSizeFix, 0);
 
 		window.addEventListener('online', function () {
-			if (currentNode) {
-				firePageEvent(currentNode, PAGE_ONLINE_EVENT);
-			}
+			stack.forEach(function (pageInfo) {
+				firePageEvent(pageInfo[1], PAGE_ONLINE_EVENT);
+			});
 		}, false);
 		window.addEventListener('offline', function () {
-			if (currentNode) {
-				firePageEvent(currentNode, PAGE_OFFLINE_EVENT);
-			}
+			stack.forEach(function (pageInfo) {
+				firePageEvent(pageInfo[1], PAGE_OFFLINE_EVENT);
+			});
 		}, false);
 
 		return triggerSizeFix;
