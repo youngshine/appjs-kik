@@ -38,12 +38,21 @@ window.prettyPrint && prettyPrint();
 (function (window, document) {
 	var iframes       = document.getElementsByTagName('iframe'),
 		iframeBlocker = document.getElementById('iframe-blocker'),
+		apps          = document.getElementsByClassName('app'),
 		phones        = document.getElementsByClassName('phones')[0];
 
 	checkDesktopSimulationSupport();
 	stopImageDragging();
 	setupHover();
-	setDemo();
+	setDemo('demos/basic.html?style=default');
+
+	for (var i=0, l=apps.length; i<l; i++) {
+		apps[i].onclick = function () {
+			var app = this.getAttribute('data-app');
+			setDemo('http://'+app+'.kik.com/?');
+			window.scrollTo(0, 0);
+		};
+	}
 
 	function checkDesktopSimulationSupport () {
 		var m = /Safari\/([\d.]+)/.exec(navigator.userAgent);
@@ -76,8 +85,7 @@ window.prettyPrint && prettyPrint();
 		};
 	}
 
-	function setDemo () {
-		var url = 'demos/basic.html?style=default';
+	function setDemo (url) {
 		iframes[0].src = url + '&_app_platform=android';
 		iframes[1].src = url + '&_app_platform=ios';
 	}
@@ -115,7 +123,7 @@ window.prettyPrint && prettyPrint();
 			windowWidth  = document.documentElement.clientWidth,
 			heightDiff   = Math.max(0, menuHeight - windowHeight),
 			scrollTop    = document.documentElement.scrollTop || document.body.scrollTop,
-			topMargin    = 760 + heightDiff,
+			topMargin    = 1035 + heightDiff,
 			minWidth     = 960,
 			isBottom     = (0 >= document.body.clientHeight-scrollTop-windowHeight-64);
 
