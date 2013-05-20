@@ -138,22 +138,6 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 		return page;
 	}
 
-	function startPageDestruction (pageName, page, args, pageManager) {
-		if (utils.os.ios && utils.os.version >= 6) {
-			return;
-		}
-		utils.forEach(
-			page.querySelectorAll('*'),
-			function (elem) {
-				elem.style['-webkit-overflow-scrolling'] = '';
-			}
-		);
-	}
-
-	function finishPageDestruction (pageName, page, args, pageManager) {
-		Pages.unpopulate(pageName, pageManager, page, args);
-	}
-
 
 
 	function navigate (handler) {
@@ -186,8 +170,8 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 
 	function destroyPage (page) {
 		var pageName = page.getAttribute(PAGE_NAME);
-		startPageDestruction(pageName, page, {}, {});
-		finishPageDestruction(pageName, page, {}, {});
+		Pages.startDestruction(pageName, {}, page, {});
+		Pages.finishDestruction(pageName, {}, page, {});
 	}
 
 	function loadPage (pageName, args, options, callback) {
@@ -266,7 +250,7 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 
 			Pages.fixContent(page);
 
-			startPageDestruction(oldPage[0], oldPage[1], oldPage[3], oldPage[4]);
+			Pages.startDestruction(oldPage[0], oldPage[4], oldPage[1], oldPage[3]);
 
 			Pages.restoreScrollPosition(page);
 
@@ -290,7 +274,7 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 				firePageEvent(page, PAGE_SHOW_EVENT);
 
 				setTimeout(function () {
-					finishPageDestruction(oldPage[0], oldPage[1], oldPage[3], oldPage[4]);
+					Pages.finishDestruction(oldPage[0], oldPage[4], oldPage[1], oldPage[3]);
 
 					unlock();
 					callback();
@@ -376,7 +360,7 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 
 				stack.pop();
 
-				startPageDestruction(oldData[0], oldData[1], oldData[3], oldData[4]);
+				Pages.startDestruction(oldData[0], oldPage[4], oldData[1], oldData[3]);
 
 				firePageEvent(oldPage, PAGE_BACK_EVENT);
 				Pages.restoreScrollStyle(newPage);
@@ -384,7 +368,7 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 				firePageEvent(newPage, PAGE_SHOW_EVENT);
 
 				setTimeout(function () {
-					finishPageDestruction(oldData[0], oldData[1], oldData[3], oldData[4]);
+					Pages.finishDestruction(oldData[0], oldPage[4], oldData[1], oldData[3]);
 					unlock();
 					callback();
 				}, 0);
@@ -427,8 +411,8 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 		var deadPages = stack.splice(startIndex, endIndex - startIndex);
 
 		deadPages.forEach(function (pageData) {
-			startPageDestruction(pageData[0], pageData[1], pageData[3], pageData[4]);
-			finishPageDestruction(pageData[0], pageData[1], pageData[3], pageData[4]);
+			Pages.startDestruction(pageData[0], pageData[4], pageData[1], pageData[3]);
+			Pages.finishDestruction(pageData[0], pageData[4], pageData[1], pageData[3]);
 		});
 	}
 

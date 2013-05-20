@@ -19,7 +19,9 @@ App._Pages = function (window, document, Scrollable, utils) {
 		populate       : populatePage   ,
 		unpopulate     : unpopulatePage ,
 
-		finishGeneration : finishPageGeneration ,
+		finishGeneration  : finishPageGeneration  ,
+		startDestruction  : startPageDestruction  ,
+		finishDestruction : finishPageDestruction ,
 
 		fixTitle   : fixPageTitle     ,
 		fixContent : fixContentHeight ,
@@ -121,6 +123,16 @@ App._Pages = function (window, document, Scrollable, utils) {
 		setupScrollers(page);
 	}
 
+	function startPageDestruction (pageName, pageManager, page, args) {
+		if (!utils.os.ios || utils.os.version < 6) {
+			disableScrolling(page);
+		}
+	}
+
+	function finishPageDestruction (pageName, pageManager, page, args) {
+		unpopulatePage(pageName, pageManager, page, args);
+	}
+
 
 
 	/* Page layout */
@@ -210,6 +222,15 @@ App._Pages = function (window, document, Scrollable, utils) {
 		if (!forceIScroll && utils.os.ios && utils.os.version < 6) {
 			content.className += ' app-scrollhack';
 		}
+	}
+
+	function disableScrolling (page) {
+		utils.forEach(
+			page.querySelectorAll('*'),
+			function (elem) {
+				elem.style['-webkit-overflow-scrolling'] = '';
+			}
+		);
 	}
 
 	function getScrollableElems (page) {
@@ -305,6 +326,4 @@ App._Pages = function (window, document, Scrollable, utils) {
 
 
 // startPageGeneration
-// startPageDestruction
-// finishPageDestruction
 // generatePage
