@@ -102,17 +102,13 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 
 
 	function startPageGeneration (pageName, args, pageManager) {
-		if ( !Pages.has(pageName) ) {
-			throw TypeError(pageName + ' is not a known page');
-		}
-
 		var page = Pages.clone(pageName);
 
 		insureCustomEventing(page, [PAGE_SHOW_EVENT, PAGE_HIDE_EVENT, PAGE_BACK_EVENT, PAGE_FORWARD_EVENT, PAGE_LAYOUT_EVENT, PAGE_ONLINE_EVENT, PAGE_OFFLINE_EVENT]);
 
 		metrics.watchPage(page, pageName, args);
 
-		setContentHeight(page);
+		Pages.fixContent(page);
 
 		utils.forEach(
 			page.querySelectorAll('.app-button'),
@@ -143,50 +139,12 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 
 		firePageEvent(page, PAGE_LAYOUT_EVENT);
 
-		var topbar = page.querySelector('.app-topbar');
-
-		if (topbar) {
-			topbar.addEventListener('DOMNodeInsertedIntoDocument', function () {
-				fixPageTitle(this);
-				firePageEvent(page, PAGE_LAYOUT_EVENT);
-			}, false);
-		}
+		page.addEventListener('DOMNodeInsertedIntoDocument', function () {
+			Pages.fixTitle(page);
+			firePageEvent(page, PAGE_LAYOUT_EVENT);
+		}, false);
 
 		return page;
-	}
-
-	function fixPageTitle (topbar) {
-		if ( !topbar ) {
-			return;
-		}
-
-		var title = topbar.querySelector('.app-title');
-
-		if ( !title ) {
-			return;
-		}
-
-		if ( !title.getAttribute('data-autosize') ) {
-			return;
-		}
-
-		var margin      = 0,
-			leftButton  = topbar.querySelector('.left.app-button'),
-			rightButton = topbar.querySelector('.right.app-button');
-
-		if (leftButton) {
-			var leftStyles = utils.getStyles(leftButton),
-				leftPos    = utils.getTotalWidth(leftStyles) + parseInt(leftStyles.left || 0) + 4;
-			margin = Math.max(margin, leftPos);
-		}
-
-		if (rightButton) {
-			var rightStyles = utils.getStyles(rightButton),
-				rightPos    = utils.getTotalWidth(rightStyles) + parseInt(rightStyles.right || 0) + 4;
-			margin = Math.max(margin, rightPos);
-		}
-
-		title.style.width = (window.innerWidth-margin*2) + 'px';
 	}
 
 	function finishPageGeneration (pageName, page, args, pageManager) {
@@ -347,7 +305,7 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 
 			firePageEvent(oldPage[1], PAGE_BACK_EVENT);
 
-			setContentHeight(page);
+			Pages.fixContent(page);
 
 			startPageDestruction(oldPage[0], oldPage[1], oldPage[3], oldPage[4]);
 
@@ -426,7 +384,7 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 				newPage = newData[1],
 				options = oldData[2];
 
-			setContentHeight(newPage);
+			Pages.fixContent(newPage);
 
 			// startPageDestruction(oldData[0], oldData[1], oldData[3], oldData[4]);
 
@@ -707,7 +665,7 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 			}
 
 			function cleanup () {
-				setContentHeight(currentNode);
+				Pages.fixContent(currentNode);
 				unblockUI();
 				callback();
 			}
@@ -898,35 +856,10 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 
 
 
-	function setContentHeight (page) {
-		var topbar  = page.querySelector('.app-topbar'),
-			content = page.querySelector('.app-content');
-
-		if ( !content ) {
-			return;
-		}
-
-		var height = window.innerHeight;
-
-		if ( !topbar ) {
-			content.style.height = height + 'px';
-			return;
-		}
-
-		var topbarStyles = document.defaultView.getComputedStyle(topbar, null),
-			topbarHeight = utils.os.android ? 48 : 44;
-
-		if (topbarStyles.height) {
-			topbarHeight = parseInt(topbarStyles.height) || 0;
-		}
-
-		content.style.height = (height - topbarHeight) + 'px';
-	}
-
 	function setupListeners () {
 		function fixContentHeight () {
 			if (currentNode) {
-				setContentHeight(currentNode);
+				Pages.fixContent(currentNode);
 			}
 		}
 		function fixSizing () {

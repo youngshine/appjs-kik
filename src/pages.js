@@ -1,4 +1,4 @@
-App._Pages = function (window, document) {
+App._Pages = function (window, document, utils) {
 	var PAGE_NAME  = 'data-page',
 		PAGE_CLASS = 'app-page',
 		APP_LOADED = 'app-loaded';
@@ -8,6 +8,21 @@ App._Pages = function (window, document) {
 		populators   = [],
 		unpopulators = [];
 
+	return {
+		add            : addPage        ,
+		has            : hasPage        ,
+		clone          : clonePage      ,
+		addPopulator   : addPopulator   ,
+		addUnpopulator : addUnpopulator ,
+		populate       : populatePage   ,
+		unpopulate     : unpopulatePage ,
+		fixTitle       : fixPageTitle   ,
+		fixContent     : fixContentHeight
+	};
+
+
+
+	/* Page elements */
 
 	function preloadPages () {
 		if (preloaded) {
@@ -46,10 +61,15 @@ App._Pages = function (window, document) {
 	}
 
 	function clonePage (pageName) {
-		preloadPages();
+		if ( !hasPage(pageName) ) {
+			throw TypeError(pageName + ' is not a known page');
+		}
 		return pages[pageName].cloneNode(true);
 	}
 
+
+
+	/* Page populators */
 
 	function addPopulator (pageName, populator) {
 		if ( !populators[pageName] ) {
@@ -84,16 +104,66 @@ App._Pages = function (window, document) {
 	}
 
 
-	return {
-		add            : addPage        ,
-		has            : hasPage        ,
-		clone          : clonePage      ,
-		addPopulator   : addPopulator   ,
-		addUnpopulator : addUnpopulator ,
-		populate       : populatePage   ,
-		unpopulate     : unpopulatePage
-	};
-}(window, document);
+
+	/* Page layout */
+
+	function fixContentHeight (page) {
+		var topbar  = page.querySelector('.app-topbar'),
+			content = page.querySelector('.app-content');
+
+		if ( !content ) {
+			return;
+		}
+
+		var height = window.innerHeight;
+
+		if ( !topbar ) {
+			content.style.height = height + 'px';
+			return;
+		}
+
+		var topbarStyles = document.defaultView.getComputedStyle(topbar, null),
+			topbarHeight = utils.os.android ? 48 : 44;
+
+		if (topbarStyles.height) {
+			topbarHeight = parseInt(topbarStyles.height) || 0;
+		}
+
+		content.style.height = (height - topbarHeight) + 'px';
+	}
+
+	function fixPageTitle (page) {
+		var topbar = page.querySelector('.app-topbar');
+
+		if ( !topbar ) {
+			return;
+		}
+
+		var title = topbar.querySelector('.app-title');
+
+		if (!title || !title.getAttribute('data-autosize') ) {
+			return;
+		}
+
+		var margin      = 0,
+			leftButton  = topbar.querySelector('.left.app-button'),
+			rightButton = topbar.querySelector('.right.app-button');
+
+		if (leftButton) {
+			var leftStyles = utils.getStyles(leftButton),
+				leftPos    = utils.getTotalWidth(leftStyles) + parseInt(leftStyles.left || 0) + 4;
+			margin = Math.max(margin, leftPos);
+		}
+
+		if (rightButton) {
+			var rightStyles = utils.getStyles(rightButton),
+				rightPos    = utils.getTotalWidth(rightStyles) + parseInt(rightStyles.right || 0) + 4;
+			margin = Math.max(margin, rightPos);
+		}
+
+		title.style.width = (window.innerWidth-margin*2) + 'px';
+	}
+}(window, document, App._utils);
 
 
 // startPageGeneration
@@ -108,6 +178,3 @@ App._Pages = function (window, document) {
 // savePageScrollStyle
 // restorePageScrollPosition
 // restorePageScrollStyle
-
-// fixPageTitle
-// setContentHeight
