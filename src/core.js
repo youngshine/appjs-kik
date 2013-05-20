@@ -1,8 +1,5 @@
 var App = function (window, document, Swapper, Dialog, App, utils, Pages) {
-	var APP_IOS                           = 'app-ios',
-		APP_ANDROID                       = 'app-android',
-		APP_NO_SCROLLBAR                  = 'app-no-scrollbar',
-		STACK_KEY                         = '__APP_JS_STACK__' + window.location.pathname,
+	var STACK_KEY                         = '__APP_JS_STACK__' + window.location.pathname,
 		DEFAULT_TRANSITION_IOS            = 'slide-left',
 		DEFAULT_TRANSITION_ANDROID        = 'implode-out',
 		DEFAULT_TRANSITION_ANDROID_OLD    = 'fade-on',
@@ -52,35 +49,335 @@ var App = function (window, document, Swapper, Dialog, App, utils, Pages) {
 		defaultTransition, reverseTransition,
 		current, currentNode;
 
+	if (utils.os.ios) {
+		setDefaultTransition(DEFAULT_TRANSITION_IOS);
+	}
+	else if (utils.os.android) {
+		if (utils.os.version >= 4) {
+			setDefaultTransition(DEFAULT_TRANSITION_ANDROID);
+		}
+		else if ((utils.os.version < 2.3) || /LT15a/i.test(navigator.userAgent)) {
+			setDefaultTransition(DEFAULT_TRANSITION_ANDROID_GHETTO);
+		}
+		else {
+			setDefaultTransition(DEFAULT_TRANSITION_ANDROID_OLD);
+		}
+	}
+
+	App.current = function () {
+		return current;
+	};
+
+	App.load = function (pageName, args, options, callback) {
+		if (typeof pageName !== 'string') {
+			throw TypeError('page name must be a string, got ' + pageName);
+		}
+
+		switch (typeof args) {
+			case 'function':
+				callback = args;
+				args     = {};
+				options  = {};
+				break;
+
+			case 'undefined':
+				args = {};
+				break;
+
+			case 'string':
+				callback = options;
+				options  = args;
+				args     = {};
+				break;
+
+			case 'object':
+				break;
+
+			default:
+				throw TypeError('page arguments must be an object if defined, got ' + args);
+		}
+
+		switch (typeof options) {
+			case 'function':
+				callback = options;
+				options  = {};
+				break;
+
+			case 'undefined':
+				options = {};
+				break;
+
+			case 'string':
+				options = { transition : options };
+				break;
+
+			case 'object':
+				break;
+
+			default:
+				throw TypeError('options must be an object if defined, got ' + options);
+		}
+
+		switch (typeof callback) {
+			case 'undefined':
+				callback = function () {};
+				break;
+
+			case 'function':
+				break;
+
+			default:
+				throw TypeError('callback must be a function if defined, got ' + callback);
+		}
+
+		return loadPage(pageName, args, options, callback);
+	};
+
+	App.back = function (options, callback) {
+		switch (typeof options) {
+			case 'function':
+				callback = options;
+				options  = {};
+				break;
+
+			case 'undefined':
+				options  = {};
+				break;
+
+			case 'string':
+				options = { transition : options };
+				break;
+
+			case 'object':
+				break;
+
+			default:
+				throw TypeError('options must be an object if defined, got ' + options);
+		}
+
+		switch (typeof callback) {
+			case 'undefined':
+				callback = function () {};
+				break;
+
+			case 'function':
+				break;
+
+			default:
+				throw TypeError('callback must be a function if defined, got ' + callback);
+		}
+
+		return navigateBack(options, callback);
+	};
+
+	App.setDefaultTransition = function (transition) {
+		if (typeof transition === 'object') {
+			switch (utils.os.name) {
+				case 'android':
+					transition = transition.android;
+					if ((utils.os.version < 4) && transition.androidFallback) {
+						transition = transition.androidFallback;
+					}
+					break;
+
+				case 'ios':
+					transition = transition.ios;
+					if ((utils.os.version < 5) && transition.iosFallback) {
+						transition = transition.iosFallback;
+					}
+					break;
+
+				default:
+					transition = transition.fallback;
+					break;
+			}
+
+			if ( !transition ) {
+				return;
+			}
+		}
+
+		if (typeof transition !== 'string') {
+			throw TypeError('transition must be a string if defined, got ' + transition);
+		}
+
+		if ( !(transition in REVERSE_TRANSITION) ) {
+			throw TypeError('invalid transition type, got ' + transition);
+		}
+
+		setDefaultTransition(transition);
+	};
+
+	App.getDefaultTransition = function () {
+		return defaultTransition;
+	};
+
+	App.getReverseTransition = function () {
+		return reverseTransition;
+	};
+
+	App.getStack = function () {
+		return fetchStack();
+	};
+
+	App.getPage = function (index) {
+		var stackSize = stack.length - 1;
+
+		switch (typeof index) {
+			case 'undefined':
+				index = stackSize;
+				break;
+			case 'number':
+				if (Math.abs(index) > stackSize) {
+					throw TypeError('absolute index cannot be greater than stack size, got ' + index);
+				}
+				if (index < 0) {
+					index = stackSize + index;
+				}
+				break;
+			default:
+				throw TypeError('page index must be a number if defined, got ' + index);
+		}
+		return fetchPage(index);
+	};
+
+	App.removeFromStack = function (startIndex, endIndex) {
+		// minus 1 because last item on stack is current page (which is untouchable)
+		var stackSize = stack.length - 1;
+
+		switch (typeof startIndex) {
+			case 'undefined':
+				startIndex = 0;
+				break;
+
+			case 'number':
+				if (Math.abs(startIndex) > stackSize) {
+					throw TypeError('absolute start index cannot be greater than stack size, got ' + startIndex);
+				}
+				if (startIndex < 0) {
+					startIndex = stackSize + startIndex;
+				}
+				break;
+
+			default:
+				throw TypeError('start index must be a number if defined, got ' + startIndex);
+		}
+
+		switch (typeof endIndex) {
+			case 'undefined':
+				endIndex = stackSize;
+				break;
+
+			case 'number':
+				if (Math.abs(endIndex) > stackSize) {
+					throw TypeError('absolute end index cannot be greater than stack size, got ' + endIndex);
+				}
+				if (endIndex < 0) {
+					endIndex = stackSize + endIndex;
+				}
+				break;
+
+			default:
+				throw TypeError('end index must be a number if defined, got ' + endIndex);
+		}
+
+		if (startIndex > endIndex) {
+			throw TypeError('start index cannot be greater than end index');
+		}
+
+		removeFromStack(startIndex, endIndex);
+	};
+
+	App.addToStack = function (index, newPages) {
+		// minus 1 because last item on stack is current page (which is untouchable)
+		var stackSize = stack.length - 1;
+
+		switch (typeof index) {
+			case 'undefined':
+				index = 0;
+				break;
+
+			case 'number':
+				if (Math.abs(index) > stackSize) {
+					throw TypeError('absolute index cannot be greater than stack size, got ' + index);
+				}
+				if (index < 0) {
+					index = stackSize + index;
+				}
+				break;
+
+			default:
+				throw TypeError('index must be a number if defined, got ' + index);
+		}
+
+		if ( !utils.isArray(newPages) ) {
+			throw TypeError('added pages must be an array, got ' + newPages);
+		}
+
+		newPages = newPages.slice();
+
+		newPages.forEach(function (page, i) {
+			if (typeof page === 'string') {
+				page = [page, {}];
+			}
+			else if ( utils.isArray(page) ) {
+				page = page.slice();
+			}
+			else {
+				throw TypeError('page description must be an array (page name, arguments), got ' + page);
+			}
+
+			if (typeof page[0] !== 'string') {
+				throw TypeError('page name must be a string, got ' + page[0]);
+			}
+
+			switch (typeof page[1]) {
+				case 'undefined':
+					page[1] = {};
+					break;
+
+				case 'object':
+					break;
+
+				default:
+					throw TypeError('page arguments must be an object if defined, got ' + page[1]);
+			}
+
+			switch (typeof page[2]) {
+				case 'undefined':
+					page[2] = {};
+					break;
+
+				case 'object':
+					break;
+
+				default:
+					throw TypeError('page options must be an object if defined, got ' + page[2]);
+			}
+
+			newPages[i] = page;
+		});
+
+		addToStack(index, newPages);
+	};
+
+	App.saveStack = function () {
+		saveStack();
+	};
+
+	App.destroyStack = function () {
+		destroyStack();
+	};
+
+	App.dialog  = Dialog;
+	App.restore = setupRestoreFunction();
+	App._layout = setupListeners();
+
 
 
 	function setDefaultTransition (transition) {
 		defaultTransition = transition;
 		reverseTransition = REVERSE_TRANSITION[defaultTransition];
-	}
-
-	function config () {
-		if (utils.os.ios) {
-			document.body.className += ' ' + APP_IOS;
-			setDefaultTransition(DEFAULT_TRANSITION_IOS);
-		}
-		else if (utils.os.android) {
-			document.body.className += ' ' + APP_ANDROID;
-
-			if (utils.os.version >= 4) {
-				setDefaultTransition(DEFAULT_TRANSITION_ANDROID);
-			}
-			else if ((utils.os.version < 2.3) || /LT15a/i.test(navigator.userAgent)) {
-				setDefaultTransition(DEFAULT_TRANSITION_ANDROID_GHETTO);
-			}
-			else {
-				setDefaultTransition(DEFAULT_TRANSITION_ANDROID_OLD);
-			}
-		}
-
-		if (utils.os.faked || (!utils.os.ios && !utils.os.android)) {
-			document.body.className += ' ' + APP_NO_SCROLLBAR;
-		}
 	}
 
 
@@ -555,335 +852,4 @@ var App = function (window, document, Swapper, Dialog, App, utils, Pages) {
 			}
 		};
 	}
-
-
-
-	App.current = function () {
-		return current;
-	};
-
-
-
-	App.load = function (pageName, args, options, callback) {
-		if (typeof pageName !== 'string') {
-			throw TypeError('page name must be a string, got ' + pageName);
-		}
-
-		switch (typeof args) {
-			case 'function':
-				callback = args;
-				args     = {};
-				options  = {};
-				break;
-
-			case 'undefined':
-				args = {};
-				break;
-
-			case 'string':
-				callback = options;
-				options  = args;
-				args     = {};
-				break;
-
-			case 'object':
-				break;
-
-			default:
-				throw TypeError('page arguments must be an object if defined, got ' + args);
-		}
-
-		switch (typeof options) {
-			case 'function':
-				callback = options;
-				options  = {};
-				break;
-
-			case 'undefined':
-				options = {};
-				break;
-
-			case 'string':
-				options = { transition : options };
-				break;
-
-			case 'object':
-				break;
-
-			default:
-				throw TypeError('options must be an object if defined, got ' + options);
-		}
-
-		switch (typeof callback) {
-			case 'undefined':
-				callback = function () {};
-				break;
-
-			case 'function':
-				break;
-
-			default:
-				throw TypeError('callback must be a function if defined, got ' + callback);
-		}
-
-		return loadPage(pageName, args, options, callback);
-	};
-
-
-
-	App.back = function (options, callback) {
-		switch (typeof options) {
-			case 'function':
-				callback = options;
-				options  = {};
-				break;
-
-			case 'undefined':
-				options  = {};
-				break;
-
-			case 'string':
-				options = { transition : options };
-				break;
-
-			case 'object':
-				break;
-
-			default:
-				throw TypeError('options must be an object if defined, got ' + options);
-		}
-
-		switch (typeof callback) {
-			case 'undefined':
-				callback = function () {};
-				break;
-
-			case 'function':
-				break;
-
-			default:
-				throw TypeError('callback must be a function if defined, got ' + callback);
-		}
-
-		return navigateBack(options, callback);
-	};
-
-
-
-	App.setDefaultTransition = function (transition) {
-		if (typeof transition === 'object') {
-			switch (utils.os.name) {
-				case 'android':
-					transition = transition.android;
-					if ((utils.os.version < 4) && transition.androidFallback) {
-						transition = transition.androidFallback;
-					}
-					break;
-
-				case 'ios':
-					transition = transition.ios;
-					if ((utils.os.version < 5) && transition.iosFallback) {
-						transition = transition.iosFallback;
-					}
-					break;
-
-				default:
-					transition = transition.fallback;
-					break;
-			}
-
-			if ( !transition ) {
-				return;
-			}
-		}
-
-		if (typeof transition !== 'string') {
-			throw TypeError('transition must be a string if defined, got ' + transition);
-		}
-
-		if ( !(transition in REVERSE_TRANSITION) ) {
-			throw TypeError('invalid transition type, got ' + transition);
-		}
-
-		setDefaultTransition(transition);
-	};
-
-	App.getDefaultTransition = function () {
-		return defaultTransition;
-	};
-
-	App.getReverseTransition = function () {
-		return reverseTransition;
-	};
-
-
-
-	App.getStack = function () {
-		return fetchStack();
-	};
-
-	App.getPage = function (index) {
-		var stackSize = stack.length - 1;
-
-		switch (typeof index) {
-			case 'undefined':
-				index = stackSize;
-				break;
-			case 'number':
-				if (Math.abs(index) > stackSize) {
-					throw TypeError('absolute index cannot be greater than stack size, got ' + index);
-				}
-				if (index < 0) {
-					index = stackSize + index;
-				}
-				break;
-			default:
-				throw TypeError('page index must be a number if defined, got ' + index);
-		}
-		return fetchPage(index);
-	};
-
-
-
-	App.removeFromStack = function (startIndex, endIndex) {
-		// minus 1 because last item on stack is current page (which is untouchable)
-		var stackSize = stack.length - 1;
-
-		switch (typeof startIndex) {
-			case 'undefined':
-				startIndex = 0;
-				break;
-
-			case 'number':
-				if (Math.abs(startIndex) > stackSize) {
-					throw TypeError('absolute start index cannot be greater than stack size, got ' + startIndex);
-				}
-				if (startIndex < 0) {
-					startIndex = stackSize + startIndex;
-				}
-				break;
-
-			default:
-				throw TypeError('start index must be a number if defined, got ' + startIndex);
-		}
-
-		switch (typeof endIndex) {
-			case 'undefined':
-				endIndex = stackSize;
-				break;
-
-			case 'number':
-				if (Math.abs(endIndex) > stackSize) {
-					throw TypeError('absolute end index cannot be greater than stack size, got ' + endIndex);
-				}
-				if (endIndex < 0) {
-					endIndex = stackSize + endIndex;
-				}
-				break;
-
-			default:
-				throw TypeError('end index must be a number if defined, got ' + endIndex);
-		}
-
-		if (startIndex > endIndex) {
-			throw TypeError('start index cannot be greater than end index');
-		}
-
-		removeFromStack(startIndex, endIndex);
-	};
-
-
-
-	App.addToStack = function (index, newPages) {
-		// minus 1 because last item on stack is current page (which is untouchable)
-		var stackSize = stack.length - 1;
-
-		switch (typeof index) {
-			case 'undefined':
-				index = 0;
-				break;
-
-			case 'number':
-				if (Math.abs(index) > stackSize) {
-					throw TypeError('absolute index cannot be greater than stack size, got ' + index);
-				}
-				if (index < 0) {
-					index = stackSize + index;
-				}
-				break;
-
-			default:
-				throw TypeError('index must be a number if defined, got ' + index);
-		}
-
-		if ( !utils.isArray(newPages) ) {
-			throw TypeError('added pages must be an array, got ' + newPages);
-		}
-
-		newPages = newPages.slice();
-
-		newPages.forEach(function (page, i) {
-			if (typeof page === 'string') {
-				page = [page, {}];
-			}
-			else if ( utils.isArray(page) ) {
-				page = page.slice();
-			}
-			else {
-				throw TypeError('page description must be an array (page name, arguments), got ' + page);
-			}
-
-			if (typeof page[0] !== 'string') {
-				throw TypeError('page name must be a string, got ' + page[0]);
-			}
-
-			switch (typeof page[1]) {
-				case 'undefined':
-					page[1] = {};
-					break;
-
-				case 'object':
-					break;
-
-				default:
-					throw TypeError('page arguments must be an object if defined, got ' + page[1]);
-			}
-
-			switch (typeof page[2]) {
-				case 'undefined':
-					page[2] = {};
-					break;
-
-				case 'object':
-					break;
-
-				default:
-					throw TypeError('page options must be an object if defined, got ' + page[2]);
-			}
-
-			newPages[i] = page;
-		});
-
-		addToStack(index, newPages);
-	};
-
-
-
-	App.saveStack = function () {
-		saveStack();
-	};
-
-	App.destroyStack = function () {
-		destroyStack();
-	};
-
-
-
-	config();
-
-
-	App.restore = setupRestoreFunction();
-	App._layout = setupListeners();
-
-	return App;
 }(window, document, Swapper, Dialog, App, App._utils, App._Pages);

@@ -51,6 +51,16 @@ App._utils = function (window, document, App) {
 
 		data[ name ] = true;
 
+		if (data.ios) {
+			document.body.className += ' app-ios';
+		}
+		else if (data.android) {
+			document.body.className += ' app-android';
+		}
+		if (data.faked || (!data.ios && !data.android)) {
+			document.body.className += ' app-no-scrollbar';
+		}
+
 		return data;
 	}(navigator.userAgent);
 
