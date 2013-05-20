@@ -1,4 +1,4 @@
-var App = function (utils, metrics, Pages, window, document, ImageLoader, Swapper, Clickable, Dialog, Scrollable) {
+var App = function (utils, metrics, Pages, window, document, Swapper, Clickable, Dialog, Scrollable) {
 	var PAGE_CLASS                        = 'app-page',
 		PAGE_NAME                         = 'data-page',
 		APP_IOS                           = 'app-ios',
@@ -161,21 +161,6 @@ var App = function (utils, metrics, Pages, window, document, ImageLoader, Swappe
 			var populator = data[0];
 			populator.call(pageManager, page, args);
 		});
-
-		utils.forEach(
-			page.querySelectorAll('img'),
-			function (image) {
-				if ( !image.getAttribute('data-auto-load') ) {
-					return;
-				}
-
-				var minWait = (utils.os.android ? 400 : 0),
-					url     = image.src;
-				image.src   = '';
-
-				ImageLoader(image, url, minWait);
-			}
-		);
 
 		if (isAndroid401) {
 			setupScrollers(page);
@@ -1572,4 +1557,4 @@ var App = function (utils, metrics, Pages, window, document, ImageLoader, Swappe
 	App._layout         = setupListeners();
 
 	return App;
-}(App._utils, App._metrics, App._Pages, window, document, ImageLoader, Swapper, Clickable, Dialog, Scrollable);
+}(App._utils, App._metrics, App._Pages, window, document, Swapper, Clickable, Dialog, Scrollable);

@@ -1,5 +1,5 @@
 /**
- * App.js v1.8.0
+ * App.js v1.9.7
  * Instant mobile web app creation
  * Copyright (c) 2012 Kik Interactive, http://kik.com
  * Released under the MIT license
