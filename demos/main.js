@@ -51,7 +51,12 @@ window.prettyPrint && prettyPrint();
 		apps[i].onclick = function () {
 			var app = this.getAttribute('data-app');
 			setDemo('http://'+app+'.kik.com/?');
-			window.scrollTo(0, 0);
+			if (window.scrollTo) {
+				window.scrollTo(0, 0);
+			}
+			else {
+				window.location.href = '#';
+			}
 		};
 	}
 
