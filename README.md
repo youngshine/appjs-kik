@@ -24,9 +24,9 @@ API Reference
 
 ### Page creation
 
-### `App.add`
+### `App.add(name, node)`
 
-//TODO
+Add an HTML element as a template for creation of pages of the specified name. **Note: this function is not called in normal cases and templates should normally be specified in your HTML body.**
 
 ### `App.populator`
 
