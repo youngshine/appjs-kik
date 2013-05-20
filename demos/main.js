@@ -44,7 +44,8 @@ window.prettyPrint && prettyPrint();
 	checkDesktopSimulationSupport();
 	stopImageDragging();
 	setupHover();
-	setDemo('demos/basic.html?style=default');
+	// setDemo('demos/basic.html?style=default');
+	setDemo();
 
 	for (var i=0, l=apps.length; i<l; i++) {
 		apps[i].onclick = function () {
@@ -86,6 +87,15 @@ window.prettyPrint && prettyPrint();
 	}
 
 	function setDemo (url) {
+		if ( !url ) {
+			url = 'http://'+([
+				'image-search',
+				'reddit',
+				'youtube',
+				'meme',
+				'sketch'
+			][Math.round(Math.random()*4)])+'.kik.com/?';
+		}
 		iframes[0].src = url + '&_app_platform=android';
 		iframes[1].src = url + '&_app_platform=ios';
 	}
