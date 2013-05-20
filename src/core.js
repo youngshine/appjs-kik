@@ -1,15 +1,7 @@
 var App = function (utils, metrics, Pages, window, document, Swapper, Clickable, Dialog, Scrollable) {
-	var PAGE_NAME                         = 'data-page',
-		APP_IOS                           = 'app-ios',
+	var APP_IOS                           = 'app-ios',
 		APP_ANDROID                       = 'app-android',
 		APP_NO_SCROLLBAR                  = 'app-no-scrollbar',
-		PAGE_SHOW_EVENT                   = 'appShow',
-		PAGE_HIDE_EVENT                   = 'appHide',
-		PAGE_BACK_EVENT                   = 'appBack',
-		PAGE_FORWARD_EVENT                = 'appForward',
-		PAGE_LAYOUT_EVENT                 = 'appLayout',
-		PAGE_ONLINE_EVENT                 = 'appOnline',
-		PAGE_OFFLINE_EVENT                = 'appOffline',
 		STACK_KEY                         = '__APP_JS_STACK__' + window.location.pathname,
 		DEFAULT_TRANSITION_IOS            = 'slide-left',
 		DEFAULT_TRANSITION_ANDROID        = 'implode-out',
@@ -58,8 +50,6 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 		stack        = [],
 		navQueue     = [],
 		navLock      = false,
-		customEvents = null,
-		forceIScroll = ('APP_FORCE_ISCROLL' in window) ? !!window['APP_FORCE_ISCROLL'] : false,
 		defaultTransition, reverseTransition,
 		current, currentNode;
 
@@ -96,50 +86,6 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 
 
 
-	function startPageGeneration (pageName, args, pageManager) {
-		var page = Pages.clone(pageName);
-
-		insureCustomEventing(page, [PAGE_SHOW_EVENT, PAGE_HIDE_EVENT, PAGE_BACK_EVENT, PAGE_FORWARD_EVENT, PAGE_LAYOUT_EVENT, PAGE_ONLINE_EVENT, PAGE_OFFLINE_EVENT]);
-
-		metrics.watchPage(page, pageName, args);
-
-		Pages.fixContent(page);
-
-		utils.forEach(
-			page.querySelectorAll('.app-button'),
-			function (button) {
-				Clickable(button);
-
-				var target = button.getAttribute('data-target'),
-					back   = button.getAttribute('data-back');
-
-				if (back) {
-					Clickable.sticky(button, function (callback) {
-						return navigateBack({}, callback);
-					});
-				}
-				else if (target) {
-					Clickable.sticky(button, function (callback) {
-						return loadPage(target, {}, {}, callback);
-					});
-				}
-			}
-		);
-
-		Pages.populate(pageName, pageManager, page, args);
-
-		firePageEvent(page, PAGE_LAYOUT_EVENT);
-
-		page.addEventListener('DOMNodeInsertedIntoDocument', function () {
-			Pages.fixTitle(page);
-			firePageEvent(page, PAGE_LAYOUT_EVENT);
-		}, false);
-
-		return page;
-	}
-
-
-
 	function navigate (handler) {
 		if (navLock) {
 			navQueue.push(handler);
@@ -159,26 +105,11 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 
 
 
-	function generatePage (pageName, args) {
-		var pageManager = {},
-			page        = startPageGeneration(pageName, args, pageManager);
-
-		Pages.finishGeneration(pageName, pageManager, page, args);
-
-		return page;
-	}
-
-	function destroyPage (page) {
-		var pageName = page.getAttribute(PAGE_NAME);
-		Pages.startDestruction(pageName, {}, page, {});
-		Pages.finishDestruction(pageName, {}, page, {});
-	}
-
 	function loadPage (pageName, args, options, callback) {
 		navigate(function (unlock) {
 			var oldNode     = currentNode,
 				pageManager = {},
-				page        = startPageGeneration(pageName, args, pageManager);
+				page        = Pages.startGeneration(pageName, pageManager, args);
 
 			if ( !current ) {
 				App.restore = null;
@@ -203,7 +134,7 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 				currentNode = page;
 				stack.push([ pageName, page, options, args, pageManager ]);
 				if (oldNode) {
-					firePageEvent(oldNode, PAGE_FORWARD_EVENT);
+					Pages.fire(oldNode, Pages.EVENTS.FORWARD);
 				}
 			}
 
@@ -215,9 +146,9 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 				callback();
 
 				if (oldNode) {
-					firePageEvent(oldNode, PAGE_HIDE_EVENT);
+					Pages.fire(oldNode, Pages.EVENTS.HIDE);
 				}
-				firePageEvent(page, PAGE_SHOW_EVENT);
+				Pages.fire(page, Pages.EVENTS.SHOW);
 			}
 		});
 
@@ -246,7 +177,7 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 				page       = data[1],
 				oldOptions = oldPage[2];
 
-			firePageEvent(oldPage[1], PAGE_BACK_EVENT);
+			Pages.fire(oldPage[1], Pages.EVENTS.BACK);
 
 			Pages.fixContent(page);
 
@@ -270,8 +201,8 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 			performTransition(page, newOptions, function () {
 				Pages.restoreScrollStyle(page);
 
-				firePageEvent(oldPage[1], PAGE_HIDE_EVENT);
-				firePageEvent(page, PAGE_SHOW_EVENT);
+				Pages.fire(oldPage[1], Pages.EVENTS.HIDE);
+				Pages.fire(page, Pages.EVENTS.SHOW);
 
 				setTimeout(function () {
 					Pages.finishDestruction(oldPage[0], oldPage[4], oldPage[1], oldPage[3]);
@@ -283,99 +214,6 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 
 			current     = pageName;
 			currentNode = page;
-		});
-
-		if (navigatedImmediately && (stackLength < 2)) {
-			return false;
-		}
-	}
-
-
-
-	// function customLoadTransition (pageName, args, options, handlePartialTransition) {
-		//TODO
-		// function (setPosition, callback) {
-		// 	setPosition(0.5);
-		// 	setPosition(0.6);
-		// 	setPosition(0.7);
-		// 	setPosition(0.8);
-		// 	setPosition(0.9);
-
-		// 	finishTransition(function () {
-		// 		// finished
-		// 	});
-		// }
-	// }
-
-	function customBackTransition (handlePartialTransition) {
-		if ( Dialog.status() ) {
-			Dialog.close();
-			return;
-		}
-
-		var stackLength = stack.length;
-
-		var navigatedImmediately = navigate(function (unlock) {
-			if (stack.length < 2) {
-				unlock();
-				return;
-			}
-
-			var oldData = stack[stack.length - 1],
-				newData = stack[stack.length - 2],
-				oldPage = oldData[1],
-				newPage = newData[1],
-				options = oldData[2];
-
-			Pages.fixContent(newPage);
-
-			Pages.restoreScrollPosition(newPage);
-
-			var newOptions = {};
-			for (var key in options) {
-				if (key === 'transition') {
-					newOptions[key] = REVERSE_TRANSITION[ options[key] ] || options[key];
-				}
-				else {
-					newOptions[key] = options[key];
-				}
-			}
-
-			if ( !newOptions.transition ) {
-				newOptions.transition = reverseTransition;
-			}
-
-			uiBlockedTask(function (unblockUI) {
-				handlePartialTransition(oldPage, newPage, function (status) {
-					finishTransition(status, unblockUI);
-				});
-			});
-
-			function finishTransition (status, callback) {
-				if ( !status ) {
-					unlock();
-					callback();
-					return;
-				}
-
-				stack.pop();
-
-				Pages.startDestruction(oldData[0], oldPage[4], oldData[1], oldData[3]);
-
-				firePageEvent(oldPage, PAGE_BACK_EVENT);
-				Pages.restoreScrollStyle(newPage);
-				firePageEvent(oldPage, PAGE_HIDE_EVENT);
-				firePageEvent(newPage, PAGE_SHOW_EVENT);
-
-				setTimeout(function () {
-					Pages.finishDestruction(oldData[0], oldPage[4], oldData[1], oldData[3]);
-					unlock();
-					callback();
-				}, 0);
-
-				current     = newData[0];
-				currentNode = newPage;
-			}
 		});
 
 		if (navigatedImmediately && (stackLength < 2)) {
@@ -429,7 +267,7 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 
 		newPages.forEach(function (pageData) {
 			var pageManager = {},
-				page        = startPageGeneration(pageData[0], pageData[1], pageManager);
+				page        = Pages.startGeneration(pageData[0], pageManager, pageData[1]);
 
 			Pages.finishGeneration(pageData[0], pageManager, page, pageData[1]);
 
@@ -458,91 +296,6 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 			navigate( navQueue.shift() );
 		}
 
-	}
-
-
-
-	function supportsCustomEventing () {
-		if (customEvents === null) {
-			try {
-				var elem = document.createElement('div'),
-					evt  = document.createEvent('CustomEvent');
-				evt.initEvent('fooBarFace', false, true);
-				elem.dispatchEvent(evt);
-				customEvents = true;
-			}
-			catch (err) {
-				customEvents = false;
-			}
-		}
-
-		return customEvents;
-	}
-
-	function insureCustomEventing (page, names) {
-		if (page._brokenEvents || supportsCustomEventing()) {
-			return;
-		}
-
-		page._brokenEvents = true;
-		page._addEventListener    = page.addEventListener;
-		page._removeEventListener = page.removeEventListener;
-
-		var listeners = {};
-
-		names.forEach(function (name) {
-			listeners[name] = [];
-		});
-
-		page.addEventListener = function (name, listener) {
-			if (names.indexOf(name) === -1) {
-				page._addEventListener.apply(this, arguments);
-				return;
-			}
-
-			var eventListeners = listeners[name];
-
-			if (eventListeners.indexOf(listener) === -1) {
-				eventListeners.push(listener);
-			}
-		};
-
-		page.removeEventListener = function (name, listener) {
-			if (names.indexOf(name) === -1) {
-				page._removeEventListener.apply(this, arguments);
-				return;
-			}
-
-			var eventListeners = listeners[name],
-				index          = eventListeners.indexOf(listener);
-
-			if (index !== -1) {
-				eventListeners.splice(index, 1);
-			}
-		};
-
-		page._trigger = function (name) {
-			if (names.indexOf(name) === -1) {
-				return;
-			}
-
-			listeners[name].forEach(function (listener) {
-				setTimeout(function () {
-					listener.call(page, {});
-				}, 0);
-			});
-		};
-	}
-
-	function firePageEvent (page, eventName) {
-		if (page._brokenEvents) {
-			page._trigger(eventName);
-			return;
-		}
-
-		var event = document.createEvent('CustomEvent');
-		event.initEvent(eventName, false, true);
-		page.dispatchEvent(event);
 	}
 
 
@@ -692,17 +445,6 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 
 
 
-	function addPopulator (pageName, populator, unpopulator) {
-		if (populator) {
-			Pages.addPopulator(pageName, populator  );
-		}
-		if (unpopulator) {
-			Pages.addUnpopulator(pageName, unpopulator);
-		}
-	}
-
-
-
 	function setupListeners () {
 		function fixContentHeight () {
 			if (currentNode) {
@@ -712,7 +454,7 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 		function fixSizing () {
 			fixContentHeight();
 			if (currentNode) {
-				firePageEvent(currentNode, PAGE_LAYOUT_EVENT);
+				Pages.fire(currentNode, Pages.EVENTS.LAYOUT);
 			}
 		}
 		function triggerSizeFix () {
@@ -734,12 +476,12 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 
 		window.addEventListener('online', function () {
 			stack.forEach(function (pageInfo) {
-				firePageEvent(pageInfo[1], PAGE_ONLINE_EVENT);
+				Pages.fire(pageInfo[1], Pages.EVENTS.ONLINE);
 			});
 		}, false);
 		window.addEventListener('offline', function () {
 			stack.forEach(function (pageInfo) {
-				firePageEvent(pageInfo[1], PAGE_OFFLINE_EVENT);
+				Pages.fire(pageInfo[1], Pages.EVENTS.OFFLINE);
 			});
 		}, false);
 
@@ -859,7 +601,12 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 				throw TypeError('page unpopulator must be a function, got ' + unpopulator);
 		}
 
-		addPopulator(pageName, populator, unpopulator);
+		if (populator) {
+			Pages.addPopulator(pageName, populator);
+		}
+		if (unpopulator) {
+			Pages.addUnpopulator(pageName, unpopulator);
+		}
 	};
 
 
@@ -926,7 +673,7 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 				throw TypeError('callback must be a function if defined, got ' + callback);
 		}
 
-		loadPage(pageName, args, options, callback);
+		return loadPage(pageName, args, options, callback);
 	};
 
 
@@ -970,74 +717,6 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 
 
 
-	// App.customLoad = function (pageName, args, options, handleCustomTransition) {
-	// 	if (typeof pageName !== 'string') {
-	// 		throw TypeError('page name must be a string, got ' + pageName);
-	// 	}
-
-	// 	switch (typeof args) {
-	// 		case 'function':
-	// 			handleCustomTransition = args;
-	// 			args     = {};
-	// 			options  = {};
-	// 			break;
-
-	// 		case 'undefined':
-	// 			args = {};
-	// 			break;
-
-	// 		case 'string':
-	// 			options = args;
-	// 			args    = {};
-	// 			break;
-
-	// 		case 'object':
-	// 			break;
-
-	// 		default:
-	// 			throw TypeError('page arguments must be an object if defined, got ' + args);
-	// 	}
-
-	// 	switch (typeof options) {
-	// 		case 'function':
-	// 			handleCustomTransition = options;
-	// 			options  = {};
-	// 			break;
-
-	// 		case 'undefined':
-	// 			options = {};
-	// 			break;
-
-	// 		case 'string':
-	// 			options = { transition : options };
-	// 			break;
-
-	// 		case 'object':
-	// 			break;
-
-	// 		default:
-	// 			throw TypeError('options must be an object if defined, got ' + options);
-	// 	}
-
-	// 	if (typeof handleCustomTransition !== 'function') {
-	// 		throw TypeError('transition handler must be a function, got ' + handleCustomTransition);
-	// 	}
-
-	// 	customLoadTransition(pageName, args, options, handleCustomTransition);
-	// };
-
-
-
-	App.customBack = function (handleCustomTransition) {
-		if (typeof handleCustomTransition !== 'function') {
-			throw TypeError('transition handler must be a function, got ' + handleCustomTransition);
-		}
-
-		customBackTransition(handleCustomTransition);
-	};
-
-
-
 	App.generate = function (pageName, args) {
 		if (typeof pageName !== 'string') {
 			throw TypeError('page name must be a string, got ' + pageName);
@@ -1055,7 +734,7 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 				throw TypeError('page arguments must be an object if defined, got ' + args);
 		}
 
-		return generatePage(pageName, args);
+		return Pages.generate(pageName, args);
 	};
 
 	App.destroy = function (page) {
@@ -1063,7 +742,7 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 			throw TypeError('page node must be a DOM node, got ' + page);
 		}
 
-		return destroyPage(page);
+		return Pages.destroy(page);
 	};
 
 

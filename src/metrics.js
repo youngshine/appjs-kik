@@ -1,4 +1,4 @@
-App._metrics = function (window) {
+App._metrics = function (window, App) {
 	var analyticsEnabled = false;
 
 	return {
@@ -44,4 +44,4 @@ App._metrics = function (window) {
 			addPageView(pageName, data);
 		}, false);
 	}
-}(window);
+}(window, App);

@@ -1,15 +1,29 @@
-App._Pages = function (window, document, Scrollable, utils) {
+App._Pages = function (window, document, Clickable, Scrollable, utils, metrics) {
 	var PAGE_NAME  = 'data-page',
 		PAGE_CLASS = 'app-page',
-		APP_LOADED = 'app-loaded';
+		APP_LOADED = 'app-loaded',
+		EVENTS = {
+			SHOW    : 'appShow'    ,
+			HIDE    : 'appHide'    ,
+			BACK    : 'appBack'    ,
+			FORWARD : 'appForward' ,
+			LAYOUT  : 'appLayout'  ,
+			ONLINE  : 'appOnline'  ,
+			OFFLINE : 'appOffline'
+		};
 
-	var preloaded    = false,
-		forceIScroll = !!window['APP_FORCE_ISCROLL'],
-		pages        = {},
-		populators   = [],
-		unpopulators = [];
+	var preloaded       = false,
+		hasCustomEvents = null,
+		customEvents    = null,
+		forceIScroll    = !!window['APP_FORCE_ISCROLL'],
+		pages           = {},
+		populators      = [],
+		unpopulators    = [];
 
 	return {
+		EVENTS : EVENTS        ,
+		fire   : firePageEvent ,
+
 		add   : addPage   ,
 		has   : hasPage   ,
 		clone : clonePage ,
@@ -19,6 +33,9 @@ App._Pages = function (window, document, Scrollable, utils) {
 		populate       : populatePage   ,
 		unpopulate     : unpopulatePage ,
 
+		generate          : generatePage          ,
+		destroy           : destroyPage           ,
+		startGeneration   : startPageGeneration   ,
 		finishGeneration  : finishPageGeneration  ,
 		startDestruction  : startPageDestruction  ,
 		finishDestruction : finishPageDestruction ,
@@ -118,6 +135,65 @@ App._Pages = function (window, document, Scrollable, utils) {
 
 
 	/* Page generation */
+
+	function generatePage (pageName, args) {
+		var pageManager = {},
+			page        = startPageGeneration(pageName, pageManager, args);
+
+		finishPageGeneration(pageName, pageManager, page, args);
+
+		return page;
+	}
+
+	function destroyPage (page) {
+		var pageName = page.getAttribute(PAGE_NAME);
+		startPageDestruction(pageName, {}, page, {});
+		finishPageDestruction(pageName, {}, page, {});
+	}
+
+	function startPageGeneration (pageName, pageManager, args) {
+		var page = clonePage(pageName);
+
+		insureCustomEventing(page);
+
+		metrics.watchPage(page, pageName, args);
+
+		fixContentHeight(page);
+
+		utils.forEach(
+			page.querySelectorAll('.app-button'),
+			function (button) {
+				Clickable(button);
+
+				var target = button.getAttribute('data-target'),
+					back   = button.getAttribute('data-back');
+
+				if (back) {
+					Clickable.sticky(button, function (callback) {
+						//TODO: make this nicer
+						return App.back({}, callback);
+					});
+				}
+				else if (target) {
+					Clickable.sticky(button, function (callback) {
+						//TODO: make this nicer
+						return App.load(target, {}, {}, callback);
+					});
+				}
+			}
+		);
+
+		populatePage(pageName, pageManager, page, args);
+
+		firePageEvent(page, EVENTS.LAYOUT);
+
+		page.addEventListener('DOMNodeInsertedIntoDocument', function () {
+			fixPageTitle(page);
+			firePageEvent(page, EVENTS.LAYOUT);
+		}, false);
+
+		return page;
+	}
 
 	function finishPageGeneration (pageName, pageManager, page, args) {
 		setupScrollers(page);
@@ -322,8 +398,103 @@ App._Pages = function (window, document, Scrollable, utils) {
 
 		restorePageScrollPosition(page, true);
 	}
-}(window, document, Scrollable, App._utils);
 
 
-// startPageGeneration
-// generatePage
+
+	/* Page eventing */
+
+	function supportsCustomEventing () {
+		if (hasCustomEvents === null) {
+			try {
+				var elem = document.createElement('div'),
+					evt  = document.createEvent('CustomEvent');
+				evt.initEvent('fooBarFace', false, true);
+				elem.dispatchEvent(evt);
+				hasCustomEvents = true;
+			}
+			catch (err) {
+				hasCustomEvents = false;
+			}
+		}
+
+		return hasCustomEvents;
+	}
+
+	function getCustomEvents () {
+		if ( !customEvents ) {
+			customEvents = [];
+			for (var eventKey in EVENTS) {
+				customEvents.push( EVENTS[eventKey] );
+			}
+		}
+
+		return customEvents;
+	}
+
+	function insureCustomEventing (page) {
+		if (page._brokenEvents || supportsCustomEventing()) {
+			return;
+		}
+
+		page._brokenEvents = true;
+		page._addEventListener    = page.addEventListener;
+		page._removeEventListener = page.removeEventListener;
+
+		var listeners = {},
+			names     = getCustomEvents();
+
+		names.forEach(function (name) {
+			listeners[name] = [];
+		});
+
+		page.addEventListener = function (name, listener) {
+			if (names.indexOf(name) === -1) {
+				page._addEventListener.apply(this, arguments);
+				return;
+			}
+
+			var eventListeners = listeners[name];
+
+			if (eventListeners.indexOf(listener) === -1) {
+				eventListeners.push(listener);
+			}
+		};
+
+		page.removeEventListener = function (name, listener) {
+			if (names.indexOf(name) === -1) {
+				page._removeEventListener.apply(this, arguments);
+				return;
+			}
+
+			var eventListeners = listeners[name],
+				index          = eventListeners.indexOf(listener);
+
+			if (index !== -1) {
+				eventListeners.splice(index, 1);
+			}
+		};
+
+		page._trigger = function (name) {
+			if (names.indexOf(name) === -1) {
+				return;
+			}
+
+			listeners[name].forEach(function (listener) {
+				setTimeout(function () {
+					listener.call(page, {});
+				}, 0);
+			});
+		};
+	}
+
+	function firePageEvent (page, eventName) {
+		if (page._brokenEvents) {
+			page._trigger(eventName);
+			return;
+		}
+
+		var event = document.createEvent('CustomEvent');
+		event.initEvent(eventName, false, true);
+		page.dispatchEvent(event);
+	}
+}(window, document, Clickable, Scrollable, App._utils, App._metrics);
