@@ -138,36 +138,6 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 		return page;
 	}
 
-	function finishPageGeneration (pageName, page, args, pageManager) {
-		setupScrollers(page);
-	}
-
-	function setupScrollers (page) {
-		utils.forEach(
-			page.querySelectorAll('.app-content'),
-			function (content) {
-				if ( !content.getAttribute('data-no-scroll') ) {
-					setupScroller(content);
-				}
-			}
-		);
-
-		utils.forEach(
-			page.querySelectorAll('[data-scrollable]'),
-			function (content) {
-				setupScroller(content);
-			}
-		);
-	}
-
-	function setupScroller (content) {
-		Scrollable(content, forceIScroll);
-		content.className += ' app-scrollable';
-		if (!forceIScroll && utils.os.ios && utils.os.version < 6) {
-			content.className += ' app-scrollhack';
-		}
-	}
-
 	function startPageDestruction (pageName, page, args, pageManager) {
 		if (utils.os.ios && utils.os.version >= 6) {
 			return;
@@ -209,7 +179,7 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 		var pageManager = {},
 			page        = startPageGeneration(pageName, args, pageManager);
 
-		finishPageGeneration(pageName, page, args, pageManager);
+		Pages.finishGeneration(pageName, pageManager, page, args);
 
 		return page;
 	}
@@ -233,7 +203,7 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 				finish();
 			}
 			else {
-				savePageScrollPosition(currentNode);
+				Pages.saveScrollPosition(currentNode);
 
 				var newOptions = {};
 				for (var key in options) {
@@ -254,8 +224,8 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 			}
 
 			function finish () {
-				savePageScrollStyle(oldNode);
-				finishPageGeneration(pageName, page, args, pageManager);
+				Pages.saveScrollStyle(oldNode);
+				Pages.finishGeneration(pageName, pageManager, page, args);
 
 				unlock();
 				callback();
@@ -298,7 +268,7 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 
 			startPageDestruction(oldPage[0], oldPage[1], oldPage[3], oldPage[4]);
 
-			restorePageScrollPosition(page);
+			Pages.restoreScrollPosition(page);
 
 			var newOptions = {};
 			for (var key in oldOptions) {
@@ -314,7 +284,7 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 			}
 
 			performTransition(page, newOptions, function () {
-				restorePageScrollStyle(page);
+				Pages.restoreScrollStyle(page);
 
 				firePageEvent(oldPage[1], PAGE_HIDE_EVENT);
 				firePageEvent(page, PAGE_SHOW_EVENT);
@@ -375,9 +345,7 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 
 			Pages.fixContent(newPage);
 
-			// startPageDestruction(oldData[0], oldData[1], oldData[3], oldData[4]);
-
-			restorePageScrollPosition(newPage);
+			Pages.restoreScrollPosition(newPage);
 
 			var newOptions = {};
 			for (var key in options) {
@@ -411,7 +379,7 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 				startPageDestruction(oldData[0], oldData[1], oldData[3], oldData[4]);
 
 				firePageEvent(oldPage, PAGE_BACK_EVENT);
-				restorePageScrollStyle(newPage);
+				Pages.restoreScrollStyle(newPage);
 				firePageEvent(oldPage, PAGE_HIDE_EVENT);
 				firePageEvent(newPage, PAGE_SHOW_EVENT);
 
@@ -479,10 +447,10 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 			var pageManager = {},
 				page        = startPageGeneration(pageData[0], pageData[1], pageManager);
 
-			finishPageGeneration(pageData[0], page, pageData[1], pageManager);
+			Pages.finishGeneration(pageData[0], pageManager, page, pageData[1]);
 
-			savePageScrollPosition(page);
-			savePageScrollStyle(page);
+			Pages.saveScrollPosition(page);
+			Pages.saveScrollStyle(page);
 
 			pageDatas.push([pageData[0], page, pageData[2], pageData[1], pageManager]);
 		});
@@ -736,100 +704,6 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 	function isVisible (elem) {
 		var styles = utils.getStyles(elem);
 		return (styles.display !== 'none' && styles.opacity !== '0');
-	}
-
-	function getScrollableElems (page) {
-		page = page || currentNode;
-
-		if ( !page ) {
-			return [];
-		}
-
-		var elems = [];
-
-		utils.forEach(
-			page.querySelectorAll('.app-scrollable'),
-			function (elem) {
-				if (elem._scrollable) {
-					elems.push(elem);
-				}
-			}
-		);
-
-		return elems;
-	}
-
-	function savePageScrollPosition (page) {
-		utils.forEach(
-			getScrollableElems(page),
-			function (elem) {
-				if (elem._iScroll) {
-					return;
-				}
-
-				var scrollTop = elem._scrollTop();
-				elem.setAttribute('data-last-scroll', scrollTop+'');
-			}
-		);
-	}
-
-	function savePageScrollStyle (page) {
-		utils.forEach(
-			getScrollableElems(page),
-			function (elem) {
-				if (elem._iScroll) {
-					return;
-				}
-
-				var scrollStyle = elem.style['-webkit-overflow-scrolling'] || '';
-				elem.style['-webkit-overflow-scrolling'] = '';
-				elem.setAttribute('data-scroll-style', scrollStyle);
-			}
-		);
-	}
-
-	function restorePageScrollPosition (page, noTimeout) {
-		utils.forEach(
-			getScrollableElems(page),
-			function (elem) {
-				if (elem._iScroll) {
-					return;
-				}
-
-				var scrollTop = parseInt( elem.getAttribute('data-last-scroll') );
-
-				if (scrollTop) {
-					if ( !noTimeout ) {
-						setTimeout(function () {
-							elem._scrollTop(scrollTop);
-						}, 0);
-					}
-					else {
-						elem._scrollTop(scrollTop);
-					}
-				}
-			}
-		);
-	}
-
-	function restorePageScrollStyle (page) {
-		utils.forEach(
-			getScrollableElems(page),
-			function (elem) {
-				if (elem._iScroll) {
-					return;
-				}
-
-				var scrollStyle = elem.getAttribute('data-scroll-style') || '';
-
-				if (scrollStyle) {
-					elem.style['-webkit-overflow-scrolling'] = scrollStyle;
-				}
-
-			}
-		);
-
-		restorePageScrollPosition(page, true);
 	}
 
 

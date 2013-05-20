@@ -1,23 +1,33 @@
-App._Pages = function (window, document, utils) {
+App._Pages = function (window, document, Scrollable, utils) {
 	var PAGE_NAME  = 'data-page',
 		PAGE_CLASS = 'app-page',
 		APP_LOADED = 'app-loaded';
 
 	var preloaded    = false,
+		forceIScroll = !!window['APP_FORCE_ISCROLL'],
 		pages        = {},
 		populators   = [],
 		unpopulators = [];
 
 	return {
-		add            : addPage        ,
-		has            : hasPage        ,
-		clone          : clonePage      ,
+		add   : addPage   ,
+		has   : hasPage   ,
+		clone : clonePage ,
+
 		addPopulator   : addPopulator   ,
 		addUnpopulator : addUnpopulator ,
 		populate       : populatePage   ,
 		unpopulate     : unpopulatePage ,
-		fixTitle       : fixPageTitle   ,
-		fixContent     : fixContentHeight
+
+		finishGeneration : finishPageGeneration ,
+
+		fixTitle   : fixPageTitle     ,
+		fixContent : fixContentHeight ,
+
+		saveScrollPosition    : savePageScrollPosition    ,
+		saveScrollStyle       : savePageScrollStyle       ,
+		restoreScrollPosition : restorePageScrollPosition ,
+		restoreScrollStyle    : restorePageScrollStyle
 	};
 
 
@@ -105,6 +115,14 @@ App._Pages = function (window, document, utils) {
 
 
 
+	/* Page generation */
+
+	function finishPageGeneration (pageName, pageManager, page, args) {
+		setupScrollers(page);
+	}
+
+
+
 	/* Page layout */
 
 	function fixContentHeight (page) {
@@ -163,18 +181,134 @@ App._Pages = function (window, document, utils) {
 
 		title.style.width = (window.innerWidth-margin*2) + 'px';
 	}
-}(window, document, App._utils);
+
+
+
+	/* Page scrolling */
+
+	function setupScrollers (page) {
+		utils.forEach(
+			page.querySelectorAll('.app-content'),
+			function (content) {
+				if ( !content.getAttribute('data-no-scroll') ) {
+					setupScroller(content);
+				}
+			}
+		);
+
+		utils.forEach(
+			page.querySelectorAll('[data-scrollable]'),
+			function (content) {
+				setupScroller(content);
+			}
+		);
+	}
+
+	function setupScroller (content) {
+		Scrollable(content, forceIScroll);
+		content.className += ' app-scrollable';
+		if (!forceIScroll && utils.os.ios && utils.os.version < 6) {
+			content.className += ' app-scrollhack';
+		}
+	}
+
+	function getScrollableElems (page) {
+		page = page || currentNode;
+
+		if ( !page ) {
+			return [];
+		}
+
+		var elems = [];
+
+		utils.forEach(
+			page.querySelectorAll('.app-scrollable'),
+			function (elem) {
+				if (elem._scrollable) {
+					elems.push(elem);
+				}
+			}
+		);
+
+		return elems;
+	}
+
+	function savePageScrollPosition (page) {
+		utils.forEach(
+			getScrollableElems(page),
+			function (elem) {
+				if (elem._iScroll) {
+					return;
+				}
+
+				var scrollTop = elem._scrollTop();
+				elem.setAttribute('data-last-scroll', scrollTop+'');
+			}
+		);
+	}
+
+	function savePageScrollStyle (page) {
+		utils.forEach(
+			getScrollableElems(page),
+			function (elem) {
+				if (elem._iScroll) {
+					return;
+				}
+
+				var scrollStyle = elem.style['-webkit-overflow-scrolling'] || '';
+				elem.style['-webkit-overflow-scrolling'] = '';
+				elem.setAttribute('data-scroll-style', scrollStyle);
+			}
+		);
+	}
+
+	function restorePageScrollPosition (page, noTimeout) {
+		utils.forEach(
+			getScrollableElems(page),
+			function (elem) {
+				if (elem._iScroll) {
+					return;
+				}
+
+				var scrollTop = parseInt( elem.getAttribute('data-last-scroll') );
+
+				if (scrollTop) {
+					if ( !noTimeout ) {
+						setTimeout(function () {
+							elem._scrollTop(scrollTop);
+						}, 0);
+					}
+					else {
+						elem._scrollTop(scrollTop);
+					}
+				}
+			}
+		);
+	}
+
+	function restorePageScrollStyle (page) {
+		utils.forEach(
+			getScrollableElems(page),
+			function (elem) {
+				if (elem._iScroll) {
+					return;
+				}
+
+				var scrollStyle = elem.getAttribute('data-scroll-style') || '';
+
+				if (scrollStyle) {
+					elem.style['-webkit-overflow-scrolling'] = scrollStyle;
+				}
+
+			}
+		);
+
+		restorePageScrollPosition(page, true);
+	}
+}(window, document, Scrollable, App._utils);
 
 
 // startPageGeneration
-// finishPageGeneration
 // startPageDestruction
 // finishPageDestruction
 // generatePage
-
-// setupScrollers
-// getScrollableElems
-// savePageScrollPosition
-// savePageScrollStyle
-// restorePageScrollPosition
-// restorePageScrollStyle
