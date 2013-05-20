@@ -1,4 +1,4 @@
-var App = function (window, document, Swapper, Dialog, App, utils, Pages) {
+App._core = function (window, document, Swapper, Dialog, App, utils, Pages) {
 	var STACK_KEY                         = '__APP_JS_STACK__' + window.location.pathname,
 		DEFAULT_TRANSITION_IOS            = 'slide-left',
 		DEFAULT_TRANSITION_ANDROID        = 'implode-out',
@@ -372,6 +372,8 @@ var App = function (window, document, Swapper, Dialog, App, utils, Pages) {
 	App.dialog  = Dialog;
 	App.restore = setupRestoreFunction();
 	App._layout = setupListeners();
+
+	return {};
 
 
 
