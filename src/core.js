@@ -57,7 +57,6 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 		};
 
 	var App          = {},
-		populators   = {},
 		stack        = [],
 		navQueue     = [],
 		navLock      = false,
@@ -127,8 +126,7 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 			throw TypeError(pageName + ' is not a known page');
 		}
 
-		var page           = Pages.clone(pageName),
-			pagePopulators = populators[pageName] || [];
+		var page = Pages.clone(pageName);
 
 		insureCustomEventing(page, [PAGE_SHOW_EVENT, PAGE_HIDE_EVENT, PAGE_BACK_EVENT, PAGE_FORWARD_EVENT, PAGE_LAYOUT_EVENT, PAGE_ONLINE_EVENT, PAGE_OFFLINE_EVENT]);
 
@@ -157,10 +155,7 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 			}
 		);
 
-		pagePopulators.forEach(function (data) {
-			var populator = data[0];
-			populator.call(pageManager, page, args);
-		});
+		Pages.populate(pageName, pageManager, page, args);
 
 		if (isAndroid401) {
 			setupScrollers(page);
@@ -263,12 +258,7 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 			throw TypeError(pageName + ' is not a known page');
 		}
 
-		var pagePopulators = populators[pageName] || [];
-
-		pagePopulators.forEach(function (data) {
-			var unpopulator = data[1];
-			unpopulator.call(pageManager, page, args);
-		});
+		Pages.unpopulate(pageName, pageManager, page, args);
 	}
 
 
@@ -922,11 +912,12 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 
 
 	function addPopulator (pageName, populator, unpopulator) {
-		if ( !populators[pageName] ) {
-			populators[pageName] = [];
+		if (populator) {
+			Pages.addPopulator(pageName, populator  );
 		}
-
-		populators[pageName].push([populator, unpopulator]);
+		if (unpopulator) {
+			Pages.addUnpopulator(pageName, unpopulator);
+		}
 	}
 
 

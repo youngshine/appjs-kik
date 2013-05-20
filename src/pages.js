@@ -1,24 +1,14 @@
 App._Pages = function () {
 	var PAGE_NAME = 'data-page';
 
-	var pages = {};
+	var pages        = {},
+		populators   = [],
+		unpopulators = [];
+
 
 	function addPage (page, pageName) {
 		if ( !pageName ) {
 			pageName = page.getAttribute(PAGE_NAME);
-		}
-
-		if ( !pageName ) {
-			var className = page.className || '',
-				matcher   = /\b(\S+)\-page\b/g,
-				match;
-			//TODO: figure out why this doesnt work on old android
-			while (match = matcher.exec(className)) {
-				if (match[1] !== 'app') {
-					pageName = match[1];
-					break;
-				}
-			}
 		}
 
 		if ( !pageName ) {
@@ -40,15 +30,51 @@ App._Pages = function () {
 		return pages[pageName].cloneNode(true);
 	}
 
+
+	function addPopulator (pageName, populator) {
+		if ( !populators[pageName] ) {
+			populators[pageName] = [ populator ];
+		}
+		else {
+			populators[pageName].push(populator);
+		}
+	}
+
+	function addUnpopulator (pageName, unpopulator) {
+		if ( !unpopulators[pageName] ) {
+			unpopulators[pageName] = [ unpopulator ];
+		}
+		else {
+			unpopulators[pageName].push(unpopulator);
+		}
+	}
+
+	function populatePage (pageName, pageManager, page, args) {
+		var pagePopulators = populators[pageName] || [];
+		pagePopulators.forEach(function (populator) {
+			populator.call(pageManager, page, args);
+		});
+	}
+
+	function unpopulatePage (pageName, pageManager, page, args) {
+		var pageUnpopulators = unpopulators[pageName] || [];
+		pageUnpopulators.forEach(function (unpopulator) {
+			unpopulator.call(pageManager, page, args);
+		});
+	}
+
+
 	return {
-		add   : addPage   ,
-		has   : hasPage   ,
-		clone : clonePage
+		add            : addPage        ,
+		has            : hasPage        ,
+		clone          : clonePage      ,
+		addPopulator   : addPopulator   ,
+		addUnpopulator : addUnpopulator ,
+		populate       : populatePage   ,
+		unpopulate     : unpopulatePage
 	};
 }();
 
-
-// addPopulator
 
 // startPageGeneration
 // finishPageGeneration
