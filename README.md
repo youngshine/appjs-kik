@@ -28,17 +28,21 @@ API Reference
 
 Add an HTML element as a template for creation of pages of the specified name. *Note: this function is not called in normal cases and templates should normally be specified in your HTML body.*
 
-### `App.populator`
+### `App.populator(populator, unpopulator)`
 
 //TODO
 
-### `App.generate`
+### `App.generate(name, args)`
 
 //TODO
 
-### `App.destroy`
+### `App.destroy(node)`
 
+Destroy a page created with `App.generate`.
 //TODO
+
+
+---
 
 
 ### Navigation
@@ -52,36 +56,42 @@ Add an HTML element as a template for creation of pages of the specified name. *
 //TODO
 
 
+---
+
+
 ### Transitions
 
-### `App.setDefaultTransition`
+### `App.setDefaultTransition(transition)`
 
 //TODO
 
-### `App.getDefaultTransition`
+### `App.getDefaultTransition()`
 
 //TODO
 
-### `App.getReverseTransition`
+### `App.getReverseTransition()`
 
 //TODO
+
+
+---
 
 
 ### Stack management
 
-### `App.current`
+### `App.current()`
 
 //TODO
 
-### `App.restore`
+### `App.restore()`
 
 //TODO
 
-### `App.saveStack`
+### `App.saveStack()`
 
 //TODO
 
-### `App.destroyStack`
+### `App.destroyStack()`
 
 //TODO
 
@@ -100,6 +110,9 @@ Add an HTML element as a template for creation of pages of the specified name. *
 ### `App.getPage`
 
 //TODO
+
+
+---
 
 
 ### Utilities
