@@ -57,18 +57,20 @@ window.prettyPrint && prettyPrint();
 			else {
 				window.location.href = '#';
 			}
+			_gaq.push(['_trackEvent', 'Showcase', 'Open', app]);
 		};
 	}
 
 	function checkDesktopSimulationSupport () {
-		var m = /Safari\/([\d.]+)/.exec(navigator.userAgent);
+		var m          = /Safari\/([\d.]+)/.exec(navigator.userAgent),
+			hasSupport = (m && parseFloat( m[1] ) >= 533.1);
 
-		if (m && parseFloat( m[1] ) >= 533.1) {
-			return;
+		_gaq.push(['_trackEvent', 'Showcase', 'Support', +hasSupport]);
+
+		if ( !hasSupport ) {
+			phones.style.opacity = '0.5';
+			iframeBlocker.style.display = 'block';
 		}
-
-		phones.style.opacity = '0.5';
-		iframeBlocker.style.display = 'block';
 	}
 
 	function stopImageDragging () {
