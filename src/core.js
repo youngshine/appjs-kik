@@ -1,18 +1,5 @@
-var App = function (utils, metrics, Pages, window, document, ImageLoader, Swapper, Clickable, Dialog, Scrollable) {
-	var PAGE_CLASS                        = 'app-page',
-		PAGE_NAME                         = 'data-page',
-		APP_IOS                           = 'app-ios',
-		APP_ANDROID                       = 'app-android',
-		APP_LOADED                        = 'app-loaded',
-		APP_NO_SCROLLBAR                  = 'app-no-scrollbar',
-		PAGE_SHOW_EVENT                   = 'appShow',
-		PAGE_HIDE_EVENT                   = 'appHide',
-		PAGE_BACK_EVENT                   = 'appBack',
-		PAGE_FORWARD_EVENT                = 'appForward',
-		PAGE_LAYOUT_EVENT                 = 'appLayout',
-		PAGE_ONLINE_EVENT                 = 'appOnline',
-		PAGE_OFFLINE_EVENT                = 'appOffline',
-		STACK_KEY                         = '__APP_JS_STACK__' + window.location.pathname,
+App._core = function (window, document, Swapper, Dialog, App, utils, Pages) {
+	var STACK_KEY                         = '__APP_JS_STACK__' + window.location.pathname,
 		DEFAULT_TRANSITION_IOS            = 'slide-left',
 		DEFAULT_TRANSITION_ANDROID        = 'implode-out',
 		DEFAULT_TRANSITION_ANDROID_OLD    = 'fade-on',
@@ -56,234 +43,343 @@ var App = function (utils, metrics, Pages, window, document, ImageLoader, Swappe
 			'glideoff-up'   : 'slideon-up'
 		};
 
-	var App          = {},
-		populators   = {},
-		stack        = [],
+	var stack        = [],
 		navQueue     = [],
 		navLock      = false,
-		initialised  = false,
-		isAndroid401 = false,
-		customEvents = null,
-		forceIScroll = ('APP_FORCE_ISCROLL' in window) ? !!window['APP_FORCE_ISCROLL'] : false,
 		defaultTransition, reverseTransition,
 		current, currentNode;
+
+	if (utils.os.ios) {
+		setDefaultTransition(DEFAULT_TRANSITION_IOS);
+	}
+	else if (utils.os.android) {
+		if (utils.os.version >= 4) {
+			setDefaultTransition(DEFAULT_TRANSITION_ANDROID);
+		}
+		else if ((utils.os.version < 2.3) || /LT15a/i.test(navigator.userAgent)) {
+			setDefaultTransition(DEFAULT_TRANSITION_ANDROID_GHETTO);
+		}
+		else {
+			setDefaultTransition(DEFAULT_TRANSITION_ANDROID_OLD);
+		}
+	}
+
+	App.current = function () {
+		return current;
+	};
+
+	App.load = function (pageName, args, options, callback) {
+		if (typeof pageName !== 'string') {
+			throw TypeError('page name must be a string, got ' + pageName);
+		}
+
+		switch (typeof args) {
+			case 'function':
+				callback = args;
+				args     = {};
+				options  = {};
+				break;
+
+			case 'undefined':
+				args = {};
+				break;
+
+			case 'string':
+				callback = options;
+				options  = args;
+				args     = {};
+				break;
+
+			case 'object':
+				break;
+
+			default:
+				throw TypeError('page arguments must be an object if defined, got ' + args);
+		}
+
+		switch (typeof options) {
+			case 'function':
+				callback = options;
+				options  = {};
+				break;
+
+			case 'undefined':
+				options = {};
+				break;
+
+			case 'string':
+				options = { transition : options };
+				break;
+
+			case 'object':
+				break;
+
+			default:
+				throw TypeError('options must be an object if defined, got ' + options);
+		}
+
+		switch (typeof callback) {
+			case 'undefined':
+				callback = function () {};
+				break;
+
+			case 'function':
+				break;
+
+			default:
+				throw TypeError('callback must be a function if defined, got ' + callback);
+		}
+
+		return loadPage(pageName, args, options, callback);
+	};
+
+	App.back = function (options, callback) {
+		switch (typeof options) {
+			case 'function':
+				callback = options;
+				options  = {};
+				break;
+
+			case 'undefined':
+				options  = {};
+				break;
+
+			case 'string':
+				options = { transition : options };
+				break;
+
+			case 'object':
+				break;
+
+			default:
+				throw TypeError('options must be an object if defined, got ' + options);
+		}
+
+		switch (typeof callback) {
+			case 'undefined':
+				callback = function () {};
+				break;
+
+			case 'function':
+				break;
+
+			default:
+				throw TypeError('callback must be a function if defined, got ' + callback);
+		}
+
+		return navigateBack(options, callback);
+	};
+
+	App.setDefaultTransition = function (transition) {
+		if (typeof transition === 'object') {
+			switch (utils.os.name) {
+				case 'android':
+					transition = transition.android;
+					if ((utils.os.version < 4) && transition.androidFallback) {
+						transition = transition.androidFallback;
+					}
+					break;
+
+				case 'ios':
+					transition = transition.ios;
+					if ((utils.os.version < 5) && transition.iosFallback) {
+						transition = transition.iosFallback;
+					}
+					break;
+
+				default:
+					transition = transition.fallback;
+					break;
+			}
+
+			if ( !transition ) {
+				return;
+			}
+		}
+
+		if (typeof transition !== 'string') {
+			throw TypeError('transition must be a string if defined, got ' + transition);
+		}
+
+		if ( !(transition in REVERSE_TRANSITION) ) {
+			throw TypeError('invalid transition type, got ' + transition);
+		}
+
+		setDefaultTransition(transition);
+	};
+
+	App.getDefaultTransition = function () {
+		return defaultTransition;
+	};
+
+	App.getReverseTransition = function () {
+		return reverseTransition;
+	};
+
+	App.getStack = function () {
+		return fetchStack();
+	};
+
+	App.getPage = function (index) {
+		var stackSize = stack.length - 1;
+
+		switch (typeof index) {
+			case 'undefined':
+				index = stackSize;
+				break;
+			case 'number':
+				if (Math.abs(index) > stackSize) {
+					throw TypeError('absolute index cannot be greater than stack size, got ' + index);
+				}
+				if (index < 0) {
+					index = stackSize + index;
+				}
+				break;
+			default:
+				throw TypeError('page index must be a number if defined, got ' + index);
+		}
+		return fetchPage(index);
+	};
+
+	App.removeFromStack = function (startIndex, endIndex) {
+		// minus 1 because last item on stack is current page (which is untouchable)
+		var stackSize = stack.length - 1;
+
+		switch (typeof startIndex) {
+			case 'undefined':
+				startIndex = 0;
+				break;
+
+			case 'number':
+				if (Math.abs(startIndex) > stackSize) {
+					throw TypeError('absolute start index cannot be greater than stack size, got ' + startIndex);
+				}
+				if (startIndex < 0) {
+					startIndex = stackSize + startIndex;
+				}
+				break;
+
+			default:
+				throw TypeError('start index must be a number if defined, got ' + startIndex);
+		}
+
+		switch (typeof endIndex) {
+			case 'undefined':
+				endIndex = stackSize;
+				break;
+
+			case 'number':
+				if (Math.abs(endIndex) > stackSize) {
+					throw TypeError('absolute end index cannot be greater than stack size, got ' + endIndex);
+				}
+				if (endIndex < 0) {
+					endIndex = stackSize + endIndex;
+				}
+				break;
+
+			default:
+				throw TypeError('end index must be a number if defined, got ' + endIndex);
+		}
+
+		if (startIndex > endIndex) {
+			throw TypeError('start index cannot be greater than end index');
+		}
+
+		removeFromStack(startIndex, endIndex);
+	};
+
+	App.addToStack = function (index, newPages) {
+		// minus 1 because last item on stack is current page (which is untouchable)
+		var stackSize = stack.length - 1;
+
+		switch (typeof index) {
+			case 'undefined':
+				index = 0;
+				break;
+
+			case 'number':
+				if (Math.abs(index) > stackSize) {
+					throw TypeError('absolute index cannot be greater than stack size, got ' + index);
+				}
+				if (index < 0) {
+					index = stackSize + index;
+				}
+				break;
+
+			default:
+				throw TypeError('index must be a number if defined, got ' + index);
+		}
+
+		if ( !utils.isArray(newPages) ) {
+			throw TypeError('added pages must be an array, got ' + newPages);
+		}
+
+		newPages = newPages.slice();
+
+		newPages.forEach(function (page, i) {
+			if (typeof page === 'string') {
+				page = [page, {}];
+			}
+			else if ( utils.isArray(page) ) {
+				page = page.slice();
+			}
+			else {
+				throw TypeError('page description must be an array (page name, arguments), got ' + page);
+			}
+
+			if (typeof page[0] !== 'string') {
+				throw TypeError('page name must be a string, got ' + page[0]);
+			}
+
+			switch (typeof page[1]) {
+				case 'undefined':
+					page[1] = {};
+					break;
+
+				case 'object':
+					break;
+
+				default:
+					throw TypeError('page arguments must be an object if defined, got ' + page[1]);
+			}
+
+			switch (typeof page[2]) {
+				case 'undefined':
+					page[2] = {};
+					break;
+
+				case 'object':
+					break;
+
+				default:
+					throw TypeError('page options must be an object if defined, got ' + page[2]);
+			}
+
+			newPages[i] = page;
+		});
+
+		addToStack(index, newPages);
+	};
+
+	App.saveStack = function () {
+		saveStack();
+	};
+
+	App.destroyStack = function () {
+		destroyStack();
+	};
+
+	App.dialog  = Dialog;
+	App.restore = setupRestoreFunction();
+	App._layout = setupListeners();
+
+	return {};
 
 
 
 	function setDefaultTransition (transition) {
 		defaultTransition = transition;
 		reverseTransition = REVERSE_TRANSITION[defaultTransition];
-	}
-
-	function config () {
-		if (utils.os.ios) {
-			document.body.className += ' ' + APP_IOS;
-			setDefaultTransition(DEFAULT_TRANSITION_IOS);
-		}
-		else if (utils.os.android) {
-			document.body.className += ' ' + APP_ANDROID;
-
-			if (utils.os.versionString === '4.0.1') {
-				isAndroid401 = true;
-				setDefaultTransition(DEFAULT_TRANSITION_ANDROID_GHETTO);
-			}
-			else if (utils.os.version >= 4) {
-				setDefaultTransition(DEFAULT_TRANSITION_ANDROID);
-			}
-			else if ((utils.os.version < 2.3) || /LT15a/i.test(navigator.userAgent)) {
-				setDefaultTransition(DEFAULT_TRANSITION_ANDROID_GHETTO);
-			}
-			else {
-				setDefaultTransition(DEFAULT_TRANSITION_ANDROID_OLD);
-			}
-		}
-
-		if (utils.os.faked || (!utils.os.ios && !utils.os.android)) {
-			document.body.className += ' ' + APP_NO_SCROLLBAR;
-		}
-	}
-
-	function init () {
-		if (initialised) {
-			return;
-		}
-		initialised = true;
-
-		var pageNodes = document.getElementsByClassName(PAGE_CLASS);
-
-		for (var i=pageNodes.length; i--;) {
-			Pages.add( pageNodes[i] );
-		}
-
-		document.body.className += ' ' + APP_LOADED;
-	}
-
-
-
-	function startPageGeneration (pageName, args, pageManager) {
-		init();
-
-		if ( !Pages.has(pageName) ) {
-			throw TypeError(pageName + ' is not a known page');
-		}
-
-		var page           = Pages.clone(pageName),
-			pagePopulators = populators[pageName] || [];
-
-		insureCustomEventing(page, [PAGE_SHOW_EVENT, PAGE_HIDE_EVENT, PAGE_BACK_EVENT, PAGE_FORWARD_EVENT, PAGE_LAYOUT_EVENT, PAGE_ONLINE_EVENT, PAGE_OFFLINE_EVENT]);
-
-		metrics.watchPage(page, pageName, args);
-
-		setContentHeight(page);
-
-		utils.forEach(
-			page.querySelectorAll('.app-button'),
-			function (button) {
-				Clickable(button);
-
-				var target = button.getAttribute('data-target'),
-					back   = button.getAttribute('data-back');
-
-				if (back) {
-					Clickable.sticky(button, function (callback) {
-						return navigateBack({}, callback);
-					});
-				}
-				else if (target) {
-					Clickable.sticky(button, function (callback) {
-						return loadPage(target, {}, {}, callback);
-					});
-				}
-			}
-		);
-
-		pagePopulators.forEach(function (data) {
-			var populator = data[0];
-			populator.call(pageManager, page, args);
-		});
-
-		utils.forEach(
-			page.querySelectorAll('img'),
-			function (image) {
-				if ( !image.getAttribute('data-auto-load') ) {
-					return;
-				}
-
-				var minWait = (utils.os.android ? 400 : 0),
-					url     = image.src;
-				image.src   = '';
-
-				ImageLoader(image, url, minWait);
-			}
-		);
-
-		if (isAndroid401) {
-			setupScrollers(page);
-		}
-
-		firePageEvent(page, PAGE_LAYOUT_EVENT);
-
-		var topbar = page.querySelector('.app-topbar');
-
-		if (topbar) {
-			topbar.addEventListener('DOMNodeInsertedIntoDocument', function () {
-				fixPageTitle(this);
-				firePageEvent(page, PAGE_LAYOUT_EVENT);
-			}, false);
-		}
-
-		return page;
-	}
-
-	function fixPageTitle (topbar) {
-		if ( !topbar ) {
-			return;
-		}
-
-		var title = topbar.querySelector('.app-title');
-
-		if ( !title ) {
-			return;
-		}
-
-		if ( !title.getAttribute('data-autosize') ) {
-			return;
-		}
-
-		var margin      = 0,
-			leftButton  = topbar.querySelector('.left.app-button'),
-			rightButton = topbar.querySelector('.right.app-button');
-
-		if (leftButton) {
-			var leftStyles = utils.getStyles(leftButton),
-				leftPos    = utils.getTotalWidth(leftStyles) + parseInt(leftStyles.left || 0) + 4;
-			margin = Math.max(margin, leftPos);
-		}
-
-		if (rightButton) {
-			var rightStyles = utils.getStyles(rightButton),
-				rightPos    = utils.getTotalWidth(rightStyles) + parseInt(rightStyles.right || 0) + 4;
-			margin = Math.max(margin, rightPos);
-		}
-
-		title.style.width = (window.innerWidth-margin*2) + 'px';
-	}
-
-	function finishPageGeneration (pageName, page, args, pageManager) {
-		if ( !isAndroid401 ) {
-			setupScrollers(page);
-		}
-	}
-
-	function setupScrollers (page) {
-		utils.forEach(
-			page.querySelectorAll('.app-content'),
-			function (content) {
-				if ( !content.getAttribute('data-no-scroll') ) {
-					setupScroller(content);
-				}
-			}
-		);
-
-		utils.forEach(
-			page.querySelectorAll('[data-scrollable]'),
-			function (content) {
-				setupScroller(content);
-			}
-		);
-	}
-
-	function setupScroller (content) {
-		Scrollable(content, forceIScroll);
-		content.className += ' app-scrollable';
-		if (!forceIScroll && utils.os.ios && utils.os.version < 6) {
-			content.className += ' app-scrollhack';
-		}
-	}
-
-	function startPageDestruction (pageName, page, args, pageManager) {
-		if (utils.os.ios && utils.os.version >= 6) {
-			return;
-		}
-		utils.forEach(
-			page.querySelectorAll('*'),
-			function (elem) {
-				elem.style['-webkit-overflow-scrolling'] = '';
-			}
-		);
-	}
-
-	function finishPageDestruction (pageName, page, args, pageManager) {
-		if ( !Pages.has(pageName) ) {
-			throw TypeError(pageName + ' is not a known page');
-		}
-
-		var pagePopulators = populators[pageName] || [];
-
-		pagePopulators.forEach(function (data) {
-			var unpopulator = data[1];
-			unpopulator.call(pageManager, page, args);
-		});
 	}
 
 
@@ -307,26 +403,11 @@ var App = function (utils, metrics, Pages, window, document, ImageLoader, Swappe
 
 
 
-	function generatePage (pageName, args) {
-		var pageManager = {},
-			page        = startPageGeneration(pageName, args, pageManager);
-
-		finishPageGeneration(pageName, page, args, pageManager);
-
-		return page;
-	}
-
-	function destroyPage (page) {
-		var pageName = page.getAttribute(PAGE_NAME);
-		startPageDestruction(pageName, page, {}, {});
-		finishPageDestruction(pageName, page, {}, {});
-	}
-
 	function loadPage (pageName, args, options, callback) {
 		navigate(function (unlock) {
 			var oldNode     = currentNode,
 				pageManager = {},
-				page        = startPageGeneration(pageName, args, pageManager);
+				page        = Pages.startGeneration(pageName, pageManager, args);
 
 			if ( !current ) {
 				App.restore = null;
@@ -335,7 +416,7 @@ var App = function (utils, metrics, Pages, window, document, ImageLoader, Swappe
 				finish();
 			}
 			else {
-				savePageScrollPosition(currentNode);
+				Pages.saveScrollPosition(currentNode);
 
 				var newOptions = {};
 				for (var key in options) {
@@ -351,21 +432,21 @@ var App = function (utils, metrics, Pages, window, document, ImageLoader, Swappe
 				currentNode = page;
 				stack.push([ pageName, page, options, args, pageManager ]);
 				if (oldNode) {
-					firePageEvent(oldNode, PAGE_FORWARD_EVENT);
+					Pages.fire(oldNode, Pages.EVENTS.FORWARD);
 				}
 			}
 
 			function finish () {
-				savePageScrollStyle(oldNode);
-				finishPageGeneration(pageName, page, args, pageManager);
+				Pages.saveScrollStyle(oldNode);
+				Pages.finishGeneration(pageName, pageManager, page, args);
 
 				unlock();
 				callback();
 
 				if (oldNode) {
-					firePageEvent(oldNode, PAGE_HIDE_EVENT);
+					Pages.fire(oldNode, Pages.EVENTS.HIDE);
 				}
-				firePageEvent(page, PAGE_SHOW_EVENT);
+				Pages.fire(page, Pages.EVENTS.SHOW);
 			}
 		});
 
@@ -394,13 +475,13 @@ var App = function (utils, metrics, Pages, window, document, ImageLoader, Swappe
 				page       = data[1],
 				oldOptions = oldPage[2];
 
-			firePageEvent(oldPage[1], PAGE_BACK_EVENT);
+			Pages.fire(oldPage[1], Pages.EVENTS.BACK);
 
-			setContentHeight(page);
+			Pages.fixContent(page);
 
-			startPageDestruction(oldPage[0], oldPage[1], oldPage[3], oldPage[4]);
+			Pages.startDestruction(oldPage[0], oldPage[4], oldPage[1], oldPage[3]);
 
-			restorePageScrollPosition(page);
+			Pages.restoreScrollPosition(page);
 
 			var newOptions = {};
 			for (var key in oldOptions) {
@@ -416,13 +497,13 @@ var App = function (utils, metrics, Pages, window, document, ImageLoader, Swappe
 			}
 
 			performTransition(page, newOptions, function () {
-				restorePageScrollStyle(page);
+				Pages.restoreScrollStyle(page);
 
-				firePageEvent(oldPage[1], PAGE_HIDE_EVENT);
-				firePageEvent(page, PAGE_SHOW_EVENT);
+				Pages.fire(oldPage[1], Pages.EVENTS.HIDE);
+				Pages.fire(page, Pages.EVENTS.SHOW);
 
 				setTimeout(function () {
-					finishPageDestruction(oldPage[0], oldPage[1], oldPage[3], oldPage[4]);
+					Pages.finishDestruction(oldPage[0], oldPage[4], oldPage[1], oldPage[3]);
 
 					unlock();
 					callback();
@@ -431,101 +512,6 @@ var App = function (utils, metrics, Pages, window, document, ImageLoader, Swappe
 
 			current     = pageName;
 			currentNode = page;
-		});
-
-		if (navigatedImmediately && (stackLength < 2)) {
-			return false;
-		}
-	}
-
-
-
-	// function customLoadTransition (pageName, args, options, handlePartialTransition) {
-		//TODO
-		// function (setPosition, callback) {
-		// 	setPosition(0.5);
-		// 	setPosition(0.6);
-		// 	setPosition(0.7);
-		// 	setPosition(0.8);
-		// 	setPosition(0.9);
-
-		// 	finishTransition(function () {
-		// 		// finished
-		// 	});
-		// }
-	// }
-
-	function customBackTransition (handlePartialTransition) {
-		if ( Dialog.status() ) {
-			Dialog.close();
-			return;
-		}
-
-		var stackLength = stack.length;
-
-		var navigatedImmediately = navigate(function (unlock) {
-			if (stack.length < 2) {
-				unlock();
-				return;
-			}
-
-			var oldData = stack[stack.length - 1],
-				newData = stack[stack.length - 2],
-				oldPage = oldData[1],
-				newPage = newData[1],
-				options = oldData[2];
-
-			setContentHeight(newPage);
-
-			// startPageDestruction(oldData[0], oldData[1], oldData[3], oldData[4]);
-
-			restorePageScrollPosition(newPage);
-
-			var newOptions = {};
-			for (var key in options) {
-				if (key === 'transition') {
-					newOptions[key] = REVERSE_TRANSITION[ options[key] ] || options[key];
-				}
-				else {
-					newOptions[key] = options[key];
-				}
-			}
-
-			if ( !newOptions.transition ) {
-				newOptions.transition = reverseTransition;
-			}
-
-			uiBlockedTask(function (unblockUI) {
-				handlePartialTransition(oldPage, newPage, function (status) {
-					finishTransition(status, unblockUI);
-				});
-			});
-
-			function finishTransition (status, callback) {
-				if ( !status ) {
-					unlock();
-					callback();
-					return;
-				}
-
-				stack.pop();
-
-				startPageDestruction(oldData[0], oldData[1], oldData[3], oldData[4]);
-
-				firePageEvent(oldPage, PAGE_BACK_EVENT);
-				restorePageScrollStyle(newPage);
-				firePageEvent(oldPage, PAGE_HIDE_EVENT);
-				firePageEvent(newPage, PAGE_SHOW_EVENT);
-
-				setTimeout(function () {
-					finishPageDestruction(oldData[0], oldData[1], oldData[3], oldData[4]);
-					unlock();
-					callback();
-				}, 0);
-
-				current     = newData[0];
-				currentNode = newPage;
-			}
 		});
 
 		if (navigatedImmediately && (stackLength < 2)) {
@@ -561,8 +547,8 @@ var App = function (utils, metrics, Pages, window, document, ImageLoader, Swappe
 		var deadPages = stack.splice(startIndex, endIndex - startIndex);
 
 		deadPages.forEach(function (pageData) {
-			startPageDestruction(pageData[0], pageData[1], pageData[3], pageData[4]);
-			finishPageDestruction(pageData[0], pageData[1], pageData[3], pageData[4]);
+			Pages.startDestruction(pageData[0], pageData[4], pageData[1], pageData[3]);
+			Pages.finishDestruction(pageData[0], pageData[4], pageData[1], pageData[3]);
 		});
 	}
 
@@ -579,12 +565,12 @@ var App = function (utils, metrics, Pages, window, document, ImageLoader, Swappe
 
 		newPages.forEach(function (pageData) {
 			var pageManager = {},
-				page        = startPageGeneration(pageData[0], pageData[1], pageManager);
+				page        = Pages.startGeneration(pageData[0], pageManager, pageData[1]);
 
-			finishPageGeneration(pageData[0], page, pageData[1], pageManager);
+			Pages.finishGeneration(pageData[0], pageManager, page, pageData[1]);
 
-			savePageScrollPosition(page);
-			savePageScrollStyle(page);
+			Pages.saveScrollPosition(page);
+			Pages.saveScrollStyle(page);
 
 			pageDatas.push([pageData[0], page, pageData[2], pageData[1], pageManager]);
 		});
@@ -608,91 +594,6 @@ var App = function (utils, metrics, Pages, window, document, ImageLoader, Swappe
 			navigate( navQueue.shift() );
 		}
 
-	}
-
-
-
-	function supportsCustomEventing () {
-		if (customEvents === null) {
-			try {
-				var elem = document.createElement('div'),
-					evt  = document.createEvent('CustomEvent');
-				evt.initEvent('fooBarFace', false, true);
-				elem.dispatchEvent(evt);
-				customEvents = true;
-			}
-			catch (err) {
-				customEvents = false;
-			}
-		}
-
-		return customEvents;
-	}
-
-	function insureCustomEventing (page, names) {
-		if (page._brokenEvents || supportsCustomEventing()) {
-			return;
-		}
-
-		page._brokenEvents = true;
-		page._addEventListener    = page.addEventListener;
-		page._removeEventListener = page.removeEventListener;
-
-		var listeners = {};
-
-		names.forEach(function (name) {
-			listeners[name] = [];
-		});
-
-		page.addEventListener = function (name, listener) {
-			if (names.indexOf(name) === -1) {
-				page._addEventListener.apply(this, arguments);
-				return;
-			}
-
-			var eventListeners = listeners[name];
-
-			if (eventListeners.indexOf(listener) === -1) {
-				eventListeners.push(listener);
-			}
-		};
-
-		page.removeEventListener = function (name, listener) {
-			if (names.indexOf(name) === -1) {
-				page._removeEventListener.apply(this, arguments);
-				return;
-			}
-
-			var eventListeners = listeners[name],
-				index          = eventListeners.indexOf(listener);
-
-			if (index !== -1) {
-				eventListeners.splice(index, 1);
-			}
-		};
-
-		page._trigger = function (name) {
-			if (names.indexOf(name) === -1) {
-				return;
-			}
-
-			listeners[name].forEach(function (listener) {
-				setTimeout(function () {
-					listener.call(page, {});
-				}, 0);
-			});
-		};
-	}
-
-	function firePageEvent (page, eventName) {
-		if (page._brokenEvents) {
-			page._trigger(eventName);
-			return;
-		}
-
-		var event = document.createEvent('CustomEvent');
-		event.initEvent(eventName, false, true);
-		page.dispatchEvent(event);
 	}
 
 
@@ -756,7 +657,7 @@ var App = function (utils, metrics, Pages, window, document, ImageLoader, Swappe
 			}
 
 			function cleanup () {
-				setContentHeight(currentNode);
+				Pages.fixContent(currentNode);
 				unblockUI();
 				callback();
 			}
@@ -840,147 +741,18 @@ var App = function (utils, metrics, Pages, window, document, ImageLoader, Swappe
 		return (styles.display !== 'none' && styles.opacity !== '0');
 	}
 
-	function getScrollableElems (page) {
-		page = page || currentNode;
 
-		if ( !page ) {
-			return [];
-		}
-
-		var elems = [];
-
-		utils.forEach(
-			page.querySelectorAll('.app-scrollable'),
-			function (elem) {
-				if (elem._scrollable) {
-					elems.push(elem);
-				}
-			}
-		);
-
-		return elems;
-	}
-
-	function savePageScrollPosition (page) {
-		utils.forEach(
-			getScrollableElems(page),
-			function (elem) {
-				if (elem._iScroll) {
-					return;
-				}
-
-				var scrollTop = elem._scrollTop();
-				elem.setAttribute('data-last-scroll', scrollTop+'');
-			}
-		);
-	}
-
-	function savePageScrollStyle (page) {
-		utils.forEach(
-			getScrollableElems(page),
-			function (elem) {
-				if (elem._iScroll) {
-					return;
-				}
-
-				var scrollStyle = elem.style['-webkit-overflow-scrolling'] || '';
-				elem.style['-webkit-overflow-scrolling'] = '';
-				elem.setAttribute('data-scroll-style', scrollStyle);
-			}
-		);
-	}
-
-	function restorePageScrollPosition (page, noTimeout) {
-		utils.forEach(
-			getScrollableElems(page),
-			function (elem) {
-				if (elem._iScroll) {
-					return;
-				}
-
-				var scrollTop = parseInt( elem.getAttribute('data-last-scroll') );
-
-				if (scrollTop) {
-					if ( !noTimeout ) {
-						setTimeout(function () {
-							elem._scrollTop(scrollTop);
-						}, 0);
-					}
-					else {
-						elem._scrollTop(scrollTop);
-					}
-				}
-			}
-		);
-	}
-
-	function restorePageScrollStyle (page) {
-		utils.forEach(
-			getScrollableElems(page),
-			function (elem) {
-				if (elem._iScroll) {
-					return;
-				}
-
-				var scrollStyle = elem.getAttribute('data-scroll-style') || '';
-
-				if (scrollStyle) {
-					elem.style['-webkit-overflow-scrolling'] = scrollStyle;
-				}
-
-			}
-		);
-
-		restorePageScrollPosition(page, true);
-	}
-
-
-
-	function addPopulator (pageName, populator, unpopulator) {
-		if ( !populators[pageName] ) {
-			populators[pageName] = [];
-		}
-
-		populators[pageName].push([populator, unpopulator]);
-	}
-
-
-
-	function setContentHeight (page) {
-		var topbar  = page.querySelector('.app-topbar'),
-			content = page.querySelector('.app-content');
-
-		if ( !content ) {
-			return;
-		}
-
-		var height = window.innerHeight;
-
-		if ( !topbar ) {
-			content.style.height = height + 'px';
-			return;
-		}
-
-		var topbarStyles = document.defaultView.getComputedStyle(topbar, null),
-			topbarHeight = utils.os.android ? 48 : 44;
-
-		if (topbarStyles.height) {
-			topbarHeight = parseInt(topbarStyles.height) || 0;
-		}
-
-		content.style.height = (height - topbarHeight) + 'px';
-	}
 
 	function setupListeners () {
 		function fixContentHeight () {
 			if (currentNode) {
-				setContentHeight(currentNode);
+				Pages.fixContent(currentNode);
 			}
 		}
 		function fixSizing () {
 			fixContentHeight();
 			if (currentNode) {
-				firePageEvent(currentNode, PAGE_LAYOUT_EVENT);
+				Pages.fire(currentNode, Pages.EVENTS.LAYOUT);
 			}
 		}
 		function triggerSizeFix () {
@@ -1002,12 +774,12 @@ var App = function (utils, metrics, Pages, window, document, ImageLoader, Swappe
 
 		window.addEventListener('online', function () {
 			stack.forEach(function (pageInfo) {
-				firePageEvent(pageInfo[1], PAGE_ONLINE_EVENT);
+				Pages.fire(pageInfo[1], Pages.EVENTS.ONLINE);
 			});
 		}, false);
 		window.addEventListener('offline', function () {
 			stack.forEach(function (pageInfo) {
-				firePageEvent(pageInfo[1], PAGE_OFFLINE_EVENT);
+				Pages.fire(pageInfo[1], Pages.EVENTS.OFFLINE);
 			});
 		}, false);
 
@@ -1053,8 +825,6 @@ var App = function (utils, metrics, Pages, window, document, ImageLoader, Swappe
 					throw TypeError('restore callback must be a function if defined, got ' + callback);
 			}
 
-			init();
-
 			if ( !Pages.has(lastPage[0]) ) {
 				throw TypeError(lastPage[0] + ' is not a known page');
 			}
@@ -1084,492 +854,4 @@ var App = function (utils, metrics, Pages, window, document, ImageLoader, Swappe
 			}
 		};
 	}
-
-
-
-	App.current = function () {
-		return current;
-	};
-
-
-
-	App.add = function (pageName, page) {
-		if (typeof pageName !== 'string') {
-			page     = pageName;
-			pageName = undefined;
-		}
-
-		if ( !utils.isNode(page) ) {
-			throw TypeError('page template node must be a DOM node, got ' + page);
-		}
-
-		Pages.add(page, pageName);
-	};
-
-
-
-	App.populator = function (pageName, populator, unpopulator) {
-		if (typeof pageName !== 'string') {
-			throw TypeError('page name must be a string, got ' + pageName);
-		}
-
-		if (typeof populator !== 'function') {
-			throw TypeError('page populator must be a function, got ' + populator);
-		}
-
-		switch (typeof unpopulator) {
-			case 'undefined':
-				unpopulator = function () {};
-				break;
-
-			case 'function':
-				break;
-
-			default:
-				throw TypeError('page unpopulator must be a function, got ' + unpopulator);
-		}
-
-		addPopulator(pageName, populator, unpopulator);
-	};
-
-
-
-	App.load = function (pageName, args, options, callback) {
-		if (typeof pageName !== 'string') {
-			throw TypeError('page name must be a string, got ' + pageName);
-		}
-
-		switch (typeof args) {
-			case 'function':
-				callback = args;
-				args     = {};
-				options  = {};
-				break;
-
-			case 'undefined':
-				args = {};
-				break;
-
-			case 'string':
-				callback = options;
-				options  = args;
-				args     = {};
-				break;
-
-			case 'object':
-				break;
-
-			default:
-				throw TypeError('page arguments must be an object if defined, got ' + args);
-		}
-
-		switch (typeof options) {
-			case 'function':
-				callback = options;
-				options  = {};
-				break;
-
-			case 'undefined':
-				options = {};
-				break;
-
-			case 'string':
-				options = { transition : options };
-				break;
-
-			case 'object':
-				break;
-
-			default:
-				throw TypeError('options must be an object if defined, got ' + options);
-		}
-
-		switch (typeof callback) {
-			case 'undefined':
-				callback = function () {};
-				break;
-
-			case 'function':
-				break;
-
-			default:
-				throw TypeError('callback must be a function if defined, got ' + callback);
-		}
-
-		loadPage(pageName, args, options, callback);
-	};
-
-
-
-	App.back = function (options, callback) {
-		switch (typeof options) {
-			case 'function':
-				callback = options;
-				options  = {};
-				break;
-
-			case 'undefined':
-				options  = {};
-				break;
-
-			case 'string':
-				options = { transition : options };
-				break;
-
-			case 'object':
-				break;
-
-			default:
-				throw TypeError('options must be an object if defined, got ' + options);
-		}
-
-		switch (typeof callback) {
-			case 'undefined':
-				callback = function () {};
-				break;
-
-			case 'function':
-				break;
-
-			default:
-				throw TypeError('callback must be a function if defined, got ' + callback);
-		}
-
-		return navigateBack(options, callback);
-	};
-
-
-
-	// App.customLoad = function (pageName, args, options, handleCustomTransition) {
-	// 	if (typeof pageName !== 'string') {
-	// 		throw TypeError('page name must be a string, got ' + pageName);
-	// 	}
-
-	// 	switch (typeof args) {
-	// 		case 'function':
-	// 			handleCustomTransition = args;
-	// 			args     = {};
-	// 			options  = {};
-	// 			break;
-
-	// 		case 'undefined':
-	// 			args = {};
-	// 			break;
-
-	// 		case 'string':
-	// 			options = args;
-	// 			args    = {};
-	// 			break;
-
-	// 		case 'object':
-	// 			break;
-
-	// 		default:
-	// 			throw TypeError('page arguments must be an object if defined, got ' + args);
-	// 	}
-
-	// 	switch (typeof options) {
-	// 		case 'function':
-	// 			handleCustomTransition = options;
-	// 			options  = {};
-	// 			break;
-
-	// 		case 'undefined':
-	// 			options = {};
-	// 			break;
-
-	// 		case 'string':
-	// 			options = { transition : options };
-	// 			break;
-
-	// 		case 'object':
-	// 			break;
-
-	// 		default:
-	// 			throw TypeError('options must be an object if defined, got ' + options);
-	// 	}
-
-	// 	if (typeof handleCustomTransition !== 'function') {
-	// 		throw TypeError('transition handler must be a function, got ' + handleCustomTransition);
-	// 	}
-
-	// 	customLoadTransition(pageName, args, options, handleCustomTransition);
-	// };
-
-
-
-	App.customBack = function (handleCustomTransition) {
-		if (typeof handleCustomTransition !== 'function') {
-			throw TypeError('transition handler must be a function, got ' + handleCustomTransition);
-		}
-
-		customBackTransition(handleCustomTransition);
-	};
-
-
-
-	App.generate = function (pageName, args) {
-		if (typeof pageName !== 'string') {
-			throw TypeError('page name must be a string, got ' + pageName);
-		}
-
-		switch (typeof args) {
-			case 'undefined':
-				args = {};
-				break;
-
-			case 'object':
-				break;
-
-			default:
-				throw TypeError('page arguments must be an object if defined, got ' + args);
-		}
-
-		return generatePage(pageName, args);
-	};
-
-	App.destroy = function (page) {
-		if ( !utils.isNode(page) ) {
-			throw TypeError('page node must be a DOM node, got ' + page);
-		}
-
-		return destroyPage(page);
-	};
-
-
-
-	App.setDefaultTransition = function (transition) {
-		if (typeof transition === 'object') {
-			switch (utils.os.name) {
-				case 'android':
-					transition = transition.android;
-					if ((isAndroid401 || utils.os.version < 4) && transition.androidFallback) {
-						transition = transition.androidFallback;
-					}
-					break;
-
-				case 'ios':
-					transition = transition.ios;
-					if ((utils.os.version < 5) && transition.iosFallback) {
-						transition = transition.iosFallback;
-					}
-					break;
-
-				default:
-					transition = transition.fallback;
-					break;
-			}
-
-			if ( !transition ) {
-				return;
-			}
-		}
-
-		if (typeof transition !== 'string') {
-			throw TypeError('transition must be a string if defined, got ' + transition);
-		}
-
-		if ( !(transition in REVERSE_TRANSITION) ) {
-			throw TypeError('invalid transition type, got ' + transition);
-		}
-
-		setDefaultTransition(transition);
-	};
-
-	App.getDefaultTransition = function () {
-		return defaultTransition;
-	};
-
-	App.getReverseTransition = function () {
-		return reverseTransition;
-	};
-
-
-
-	App.getStack = function () {
-		return fetchStack();
-	};
-
-	App.getPage = function (index) {
-		var stackSize = stack.length - 1;
-
-		switch (typeof index) {
-			case 'undefined':
-				index = stackSize;
-				break;
-			case 'number':
-				if (Math.abs(index) > stackSize) {
-					throw TypeError('absolute index cannot be greater than stack size, got ' + index);
-				}
-				if (index < 0) {
-					index = stackSize + index;
-				}
-				break;
-			default:
-				throw TypeError('page index must be a number if defined, got ' + index);
-		}
-		return fetchPage(index);
-	};
-
-
-
-	App.removeFromStack = function (startIndex, endIndex) {
-		// minus 1 because last item on stack is current page (which is untouchable)
-		var stackSize = stack.length - 1;
-
-		switch (typeof startIndex) {
-			case 'undefined':
-				startIndex = 0;
-				break;
-
-			case 'number':
-				if (Math.abs(startIndex) > stackSize) {
-					throw TypeError('absolute start index cannot be greater than stack size, got ' + startIndex);
-				}
-				if (startIndex < 0) {
-					startIndex = stackSize + startIndex;
-				}
-				break;
-
-			default:
-				throw TypeError('start index must be a number if defined, got ' + startIndex);
-		}
-
-		switch (typeof endIndex) {
-			case 'undefined':
-				endIndex = stackSize;
-				break;
-
-			case 'number':
-				if (Math.abs(endIndex) > stackSize) {
-					throw TypeError('absolute end index cannot be greater than stack size, got ' + endIndex);
-				}
-				if (endIndex < 0) {
-					endIndex = stackSize + endIndex;
-				}
-				break;
-
-			default:
-				throw TypeError('end index must be a number if defined, got ' + endIndex);
-		}
-
-		if (startIndex > endIndex) {
-			throw TypeError('start index cannot be greater than end index');
-		}
-
-		removeFromStack(startIndex, endIndex);
-	};
-
-
-
-	App.addToStack = function (index, newPages) {
-		// minus 1 because last item on stack is current page (which is untouchable)
-		var stackSize = stack.length - 1;
-
-		switch (typeof index) {
-			case 'undefined':
-				index = 0;
-				break;
-
-			case 'number':
-				if (Math.abs(index) > stackSize) {
-					throw TypeError('absolute index cannot be greater than stack size, got ' + index);
-				}
-				if (index < 0) {
-					index = stackSize + index;
-				}
-				break;
-
-			default:
-				throw TypeError('index must be a number if defined, got ' + index);
-		}
-
-		if ( !utils.isArray(newPages) ) {
-			throw TypeError('added pages must be an array, got ' + newPages);
-		}
-
-		newPages = newPages.slice();
-
-		newPages.forEach(function (page, i) {
-			if (typeof page === 'string') {
-				page = [page, {}];
-			}
-			else if ( utils.isArray(page) ) {
-				page = page.slice();
-			}
-			else {
-				throw TypeError('page description must be an array (page name, arguments), got ' + page);
-			}
-
-			if (typeof page[0] !== 'string') {
-				throw TypeError('page name must be a string, got ' + page[0]);
-			}
-
-			switch (typeof page[1]) {
-				case 'undefined':
-					page[1] = {};
-					break;
-
-				case 'object':
-					break;
-
-				default:
-					throw TypeError('page arguments must be an object if defined, got ' + page[1]);
-			}
-
-			switch (typeof page[2]) {
-				case 'undefined':
-					page[2] = {};
-					break;
-
-				case 'object':
-					break;
-
-				default:
-					throw TypeError('page options must be an object if defined, got ' + page[2]);
-			}
-
-			newPages[i] = page;
-		});
-
-		addToStack(index, newPages);
-	};
-
-
-
-	App.saveStack = function () {
-		saveStack();
-	};
-
-	App.destroyStack = function () {
-		destroyStack();
-	};
-
-
-
-	App.enableGoogleAnalytics = function () {
-		metrics.enableGoogleAnalytics();
-	};
-
-
-
-	App.stickyButton = function (button, holdFunction) {
-		Clickable.sticky(button, holdFunction);
-	};
-
-
-
-	App.dialog = Dialog;
-
-
-
-	config();
-
-
-	App.platform        = utils.os.name;
-	App.platformVersion = utils.os.version;
-	App.restore         = setupRestoreFunction();
-	App._layout         = setupListeners();
-
-	return App;
-}(App._utils, App._metrics, App._Pages, window, document, ImageLoader, Swapper, Clickable, Dialog, Scrollable);
+}(window, document, Swapper, Dialog, App, App._utils, App._Pages);

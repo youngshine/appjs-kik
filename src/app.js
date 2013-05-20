@@ -1,7 +1,1 @@
-var App = function () {
-	var app = {};
-
-	//TODO
-
-	return app;
-}();
+var App = {};

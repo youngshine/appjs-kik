@@ -23,7 +23,7 @@
 					</ul>
 					<p>The goal of App.js is to provide a robust starting point for mobile webapps, handling general scenarios, and maintaining compatiblity with other common JavaScript libraries.</p>
 					<div class="buttons">
-						<a class="download" href="https://raw.github.com/kikinteractive/app/master/appjs-v1.9.7.zip">Download v1.9.7</a>
+						<a class="download" href="https://raw.github.com/kikinteractive/app/master/appjs-v1.10.0.zip">Download v1.10.0</a>
 						<a class="github" href="https://github.com/kikinteractive/app">GitHub project</a>
 						<div class="clear"></div>
 					</div>
@@ -108,7 +108,7 @@
 			<div id="start" class="section">
 				<div class="title">Getting started</div>
 
-				<p>The goal of this tutorial is to provide a reference for common tasks and give step-by-step walkthrough for building your first app. Please download the App.js template above to start hacking!</p>
+				<p>The goal of this tutorial is to provide a reference for common tasks and give a step-by-step walkthrough for building your first app. Please download the App.js template above to start hacking!</p>
 
 				<div id="start-html" class="subtitle">HTML structure</div>
 				<p>This is the preferred structure of your HTML when starting an App.js webapp.</p>
@@ -142,7 +142,7 @@
 					<li><b>default.css</b> is the default stylesheet provided with App.js. It contains iOS/Android styles for all included widgets.</li>
 					<li><b><a href="http://zeptojs.com/">zepto.js</a></b> is jQuery-like library focusing on being lightweight and mobile-friendly. It is <b>not</b> a dependency for App.js but still nice to have for writing concise, cross-platform code. Replace this with <a href="http://jquery.com">jQuery</a> if you so desire.</li>
 					<li>The meta viewport tag simply insures that the window is sized correctly on whatever device it runs on. This is important to get consistent sizing and scale across different platforms.</li>
-					<li>The comment about "pages" is where you HTML page elements will go, as described in the <a href="#pages">next section</a>.</li>
+					<li>The comment about "pages" is where your HTML page elements will go, as described in the <a href="#pages">next section</a>.</li>
 					<li>The comment about "javascript" is where your <a href="#populators">populators</a> and <a href="#navigation">navigation</a> code will go.</li>
 					<li>The comment about "styles" is where your <a href="#styles">custom styles</a> will go.</li>
 				</ul>
@@ -157,18 +157,18 @@
 				<div class="title">Page basics</div>
 
 				<p>Note: all the HTML widgets provided below can be styled as described in the <a href="#styles">styling section</a>.</p>
-				<p>App.js pages a HTML elements that have certain generic components like a topbar and content area. Note that while these components are completely optional the "app-page" format is the only requirement of your HTML.</p>
+				<p>App.js pages are HTML elements that have certain generic components like a topbar and content area. Note that while these components are completely optional the "app-page" format is the only requirement of your HTML.</p>
 <pre class="prettyprint linenums lang-html">
 &lt;div class="app-page" data-page="home"&gt;
   &lt;div class="app-topbar"&gt;&lt;/div&gt;
   &lt;div class="app-content"&gt;&lt;/div&gt;
 &lt;/div&gt;
 </pre>
-				<p>The "app-page" must have "data-page" attribute that denote the name of the page. This name is used whenever any JavaScript code tried to load the page.</p>
+				<p>The "app-page" must have a "data-page" attribute that denotes the name of the page. This name is used whenever any JavaScript code tries to load the page.</p>
 <pre class="prettyprint linenums lang-js">
 App.load('home');
 </pre>
-				<p>This single line of JavaScript instructs App.js to load the page named "home". You should now have an app that load blank page with a topbar</p>
+				<p>This single line of JavaScript instructs App.js to load the page named "home". You should now have an app that loads a blank page with a topbar</p>
 
 				<div id="pages-topbar" class="subtitle">Topbar</div>
 				<p>Like many native mobile apps, the App.js topbar generally consists of several buttons and a title.</p>
@@ -180,7 +180,7 @@ App.load('home');
 				<p>Your app should now have the title visible in the topbar.</p>
 
 				<div id="pages-content" class="subtitle">Content</div>
-				<p>The "app-content" contains all of the contents for the page, including the buttons, lists, and inputs. While these widgets are useful it is usually the case that the custom HTML structures of the app will go here.</p>
+				<p>The "app-content" contains all of the contents of the page including buttons, lists, and inputs. While these widgets are useful, it is usually the case that the custom HTML structures of the app will go here.</p>
 				<p>By default it automatically has scrolling managed for it. To turn off automatic scrolling add the attribute "data-no-scroll='true'" to the content element.</p>
 
 				<div id="pages-buttons" class="subtitle">Buttons</div>
@@ -246,7 +246,7 @@ App.load('home');
   &lt;div class="app-button"&gt;Send&lt;/div&gt;
 &lt;/div&gt;
 </pre>
-				<p>You'll notice that the very same inputs that where described above are now in a rounded section all to themselves. Additionally, there is a margin around the section as well as appropriate borders. These features can be applied to any of the described widgets that go in the content area of your page.</p>
+				<p>You'll notice that the very same inputs that were described above are now in a rounded section all to themselves. Additionally, there is a margin around the section as well as appropriate borders. These features can be applied to any of the described widgets that go in the content area of your page.</p>
 <pre class="prettyprint linenums lang-html">
 &lt;ul class="app-list app-section"&gt;
   &lt;li&gt;Item 1&lt;/li&gt;
@@ -317,7 +317,7 @@ App.load('contact', contact);
 				<ul>
 					<li><b>"appLayout"</b>: This is caused by an orientation change, window resize, page placement in the DOM, or anything that could invalidate the layout of your page. Bind to this event and place any layout related code for your page in here.</li>
 					<li><b>"appShow"</b>: This is fired whenever the user navigates to this page. This may fire multiple times if the user navigates to another page and eventually returns.</li>
-					<li><b>"appHide"</b>: This is fired whenever the user navigates away from this page. Note that this doesn't necessarily mean that the page will be destroyed, for example in the case when the user navigates forward to another page and can possible come back.</li>
+					<li><b>"appHide"</b>: This is fired whenever the user navigates away from this page. Note that this doesn't necessarily mean that the page will be destroyed, for example in the case when the user navigates forward to another page and can possibly come back.</li>
 				</ul>
 				<p>To handle these events bind to them in your populators.</p>
 <pre class="prettyprint linenums lang-js">

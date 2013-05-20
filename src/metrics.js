@@ -1,9 +1,12 @@
-App._metrics = function (window) {
+App._metrics = function (window, App) {
 	var analyticsEnabled = false;
 
+	App.enableGoogleAnalytics = function () {
+		enableGoogleAnalytics();
+	};
+
 	return {
-		enableGoogleAnalytics : enableGoogleAnalytics ,
-		watchPage             : watchPage
+		watchPage : watchPage
 	};
 
 
@@ -44,4 +47,4 @@ App._metrics = function (window) {
 			addPageView(pageName, data);
 		}, false);
 	}
-}(window);
+}(window, App);
