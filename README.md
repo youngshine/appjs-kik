@@ -22,7 +22,7 @@ API Reference
 -------------
 
 
-## Page creation
+### Page creation
 
 ### `App.add`
 
@@ -41,7 +41,7 @@ API Reference
 //TODO
 
 
-## Navigation
+### Navigation
 
 ### `App.load`
 
@@ -52,7 +52,7 @@ API Reference
 //TODO
 
 
-## Transitions
+### Transitions
 
 ### `App.setDefaultTransition`
 
@@ -67,7 +67,7 @@ API Reference
 //TODO
 
 
-## Stack management
+### Stack management
 
 ### `App.current`
 
@@ -102,7 +102,7 @@ API Reference
 //TODO
 
 
-## Utilities
+### Utilities
 
 ### `App.dialog`
 
