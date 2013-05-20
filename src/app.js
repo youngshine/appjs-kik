@@ -1,7 +1,5 @@
-var App = function () {
-	var app = {};
-
-	//TODO
-
-	return app;
-}();
+var App = function (Dialog) {
+	return {
+		dialog : Dialog
+	};
+}(Dialog);

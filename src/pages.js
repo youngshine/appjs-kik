@@ -1,4 +1,4 @@
-App._Pages = function (window, document, Clickable, Scrollable, utils, metrics) {
+App._Pages = function (window, document, Clickable, Scrollable, App, utils, metrics) {
 	var PAGE_NAME  = 'data-page',
 		PAGE_CLASS = 'app-page',
 		APP_LOADED = 'app-loaded',
@@ -20,29 +20,87 @@ App._Pages = function (window, document, Clickable, Scrollable, utils, metrics) 
 		populators      = [],
 		unpopulators    = [];
 
+
+	App.add = function (pageName, page) {
+		if (typeof pageName !== 'string') {
+			page     = pageName;
+			pageName = undefined;
+		}
+
+		if ( !utils.isNode(page) ) {
+			throw TypeError('page template node must be a DOM node, got ' + page);
+		}
+
+		addPage(page, pageName);
+	};
+
+	App.populator = function (pageName, populator, unpopulator) {
+		if (typeof pageName !== 'string') {
+			throw TypeError('page name must be a string, got ' + pageName);
+		}
+
+		if (typeof populator !== 'function') {
+			throw TypeError('page populator must be a function, got ' + populator);
+		}
+
+		switch (typeof unpopulator) {
+			case 'undefined':
+				unpopulator = function () {};
+				break;
+
+			case 'function':
+				break;
+
+			default:
+				throw TypeError('page unpopulator must be a function, got ' + unpopulator);
+		}
+
+		if (populator) {
+			addPopulator(pageName, populator);
+		}
+		if (unpopulator) {
+			addUnpopulator(pageName, unpopulator);
+		}
+	};
+
+	App.generate = function (pageName, args) {
+		if (typeof pageName !== 'string') {
+			throw TypeError('page name must be a string, got ' + pageName);
+		}
+
+		switch (typeof args) {
+			case 'undefined':
+				args = {};
+				break;
+
+			case 'object':
+				break;
+
+			default:
+				throw TypeError('page arguments must be an object if defined, got ' + args);
+		}
+
+		return generatePage(pageName, args);
+	};
+
+	App.destroy = function (page) {
+		if ( !utils.isNode(page) ) {
+			throw TypeError('page node must be a DOM node, got ' + page);
+		}
+
+		return destroyPage(page);
+	};
+
+
 	return {
-		EVENTS : EVENTS        ,
-		fire   : firePageEvent ,
-
-		add   : addPage   ,
-		has   : hasPage   ,
-		clone : clonePage ,
-
-		addPopulator   : addPopulator   ,
-		addUnpopulator : addUnpopulator ,
-		populate       : populatePage   ,
-		unpopulate     : unpopulatePage ,
-
-		generate          : generatePage          ,
-		destroy           : destroyPage           ,
-		startGeneration   : startPageGeneration   ,
-		finishGeneration  : finishPageGeneration  ,
-		startDestruction  : startPageDestruction  ,
-		finishDestruction : finishPageDestruction ,
-
-		fixTitle   : fixPageTitle     ,
-		fixContent : fixContentHeight ,
-
+		EVENTS                : EVENTS                    ,
+		fire                  : firePageEvent             ,
+		has                   : hasPage                   ,
+		startGeneration       : startPageGeneration       ,
+		finishGeneration      : finishPageGeneration      ,
+		startDestruction      : startPageDestruction      ,
+		finishDestruction     : finishPageDestruction     ,
+		fixContent            : fixContentHeight          ,
 		saveScrollPosition    : savePageScrollPosition    ,
 		saveScrollStyle       : savePageScrollStyle       ,
 		restoreScrollPosition : restorePageScrollPosition ,
@@ -497,4 +555,4 @@ App._Pages = function (window, document, Clickable, Scrollable, utils, metrics) 
 		event.initEvent(eventName, false, true);
 		page.dispatchEvent(event);
 	}
-}(window, document, Clickable, Scrollable, App._utils, App._metrics);
+}(window, document, Clickable, Scrollable, App, App._utils, App._metrics);

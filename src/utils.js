@@ -1,4 +1,4 @@
-App._utils = function () {
+App._utils = function (window, document, App) {
 	var query = function (queryString) {
 		var re           = /([^&=]+)=([^&]+)/g,
 			decodedSpace = /\+/g;
@@ -272,6 +272,11 @@ App._utils = function () {
 		}
 	}
 
+
+
+	App.platform        = os.name;
+	App.platformVersion = os.version;
+
 	return {
 		query         : query         ,
 		os            : os            ,
@@ -284,4 +289,4 @@ App._utils = function () {
 		getStyles     : getStyles     ,
 		getTotalWidth : getTotalWidth
 	};
-}();
+}(window, document, App);

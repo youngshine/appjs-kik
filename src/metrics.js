@@ -1,9 +1,12 @@
 App._metrics = function (window, App) {
 	var analyticsEnabled = false;
 
+	App.enableGoogleAnalytics = function () {
+		enableGoogleAnalytics();
+	};
+
 	return {
-		enableGoogleAnalytics : enableGoogleAnalytics ,
-		watchPage             : watchPage
+		watchPage : watchPage
 	};
 
 

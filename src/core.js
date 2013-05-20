@@ -1,4 +1,4 @@
-var App = function (utils, metrics, Pages, window, document, Swapper, Clickable, Dialog, Scrollable) {
+var App = function (window, document, Swapper, Dialog, App, utils, Pages) {
 	var APP_IOS                           = 'app-ios',
 		APP_ANDROID                       = 'app-android',
 		APP_NO_SCROLLBAR                  = 'app-no-scrollbar',
@@ -46,8 +46,7 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 			'glideoff-up'   : 'slideon-up'
 		};
 
-	var App          = {},
-		stack        = [],
+	var stack        = [],
 		navQueue     = [],
 		navLock      = false,
 		defaultTransition, reverseTransition,
@@ -565,52 +564,6 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 
 
 
-	App.add = function (pageName, page) {
-		if (typeof pageName !== 'string') {
-			page     = pageName;
-			pageName = undefined;
-		}
-
-		if ( !utils.isNode(page) ) {
-			throw TypeError('page template node must be a DOM node, got ' + page);
-		}
-
-		Pages.add(page, pageName);
-	};
-
-
-
-	App.populator = function (pageName, populator, unpopulator) {
-		if (typeof pageName !== 'string') {
-			throw TypeError('page name must be a string, got ' + pageName);
-		}
-
-		if (typeof populator !== 'function') {
-			throw TypeError('page populator must be a function, got ' + populator);
-		}
-
-		switch (typeof unpopulator) {
-			case 'undefined':
-				unpopulator = function () {};
-				break;
-
-			case 'function':
-				break;
-
-			default:
-				throw TypeError('page unpopulator must be a function, got ' + unpopulator);
-		}
-
-		if (populator) {
-			Pages.addPopulator(pageName, populator);
-		}
-		if (unpopulator) {
-			Pages.addUnpopulator(pageName, unpopulator);
-		}
-	};
-
-
-
 	App.load = function (pageName, args, options, callback) {
 		if (typeof pageName !== 'string') {
 			throw TypeError('page name must be a string, got ' + pageName);
@@ -713,36 +666,6 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 		}
 
 		return navigateBack(options, callback);
-	};
-
-
-
-	App.generate = function (pageName, args) {
-		if (typeof pageName !== 'string') {
-			throw TypeError('page name must be a string, got ' + pageName);
-		}
-
-		switch (typeof args) {
-			case 'undefined':
-				args = {};
-				break;
-
-			case 'object':
-				break;
-
-			default:
-				throw TypeError('page arguments must be an object if defined, got ' + args);
-		}
-
-		return Pages.generate(pageName, args);
-	};
-
-	App.destroy = function (page) {
-		if ( !utils.isNode(page) ) {
-			throw TypeError('page node must be a DOM node, got ' + page);
-		}
-
-		return Pages.destroy(page);
 	};
 
 
@@ -956,29 +879,11 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 
 
 
-	App.enableGoogleAnalytics = function () {
-		metrics.enableGoogleAnalytics();
-	};
-
-
-
-	App.stickyButton = function (button, holdFunction) {
-		Clickable.sticky(button, holdFunction);
-	};
-
-
-
-	App.dialog = Dialog;
-
-
-
 	config();
 
 
-	App.platform        = utils.os.name;
-	App.platformVersion = utils.os.version;
-	App.restore         = setupRestoreFunction();
-	App._layout         = setupListeners();
+	App.restore = setupRestoreFunction();
+	App._layout = setupListeners();
 
 	return App;
-}(App._utils, App._metrics, App._Pages, window, document, Swapper, Clickable, Dialog, Scrollable);
+}(window, document, Swapper, Dialog, App, App._utils, App._Pages);
