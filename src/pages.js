@@ -213,22 +213,18 @@ App._Pages = function (window, document, Scrollable, utils) {
 	}
 
 	function getScrollableElems (page) {
-		page = page || currentNode;
-
-		if ( !page ) {
-			return [];
-		}
-
 		var elems = [];
 
-		utils.forEach(
-			page.querySelectorAll('.app-scrollable'),
-			function (elem) {
-				if (elem._scrollable) {
-					elems.push(elem);
+		if (page) {
+			utils.forEach(
+				page.querySelectorAll('.app-scrollable'),
+				function (elem) {
+					if (elem._scrollable) {
+						elems.push(elem);
+					}
 				}
-			}
-		);
+			);
+		}
 
 		return elems;
 	}
