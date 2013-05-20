@@ -140,7 +140,7 @@ window.prettyPrint && prettyPrint();
 			windowWidth  = document.documentElement.clientWidth,
 			heightDiff   = Math.max(0, menuHeight - windowHeight),
 			scrollTop    = document.documentElement.scrollTop || document.body.scrollTop,
-			topMargin    = 1035 + heightDiff,
+			topMargin    = 1032 + heightDiff,
 			minWidth     = 960,
 			isBottom     = (0 >= document.body.clientHeight-scrollTop-windowHeight-64);
 
