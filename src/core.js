@@ -58,7 +58,6 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 		stack        = [],
 		navQueue     = [],
 		navLock      = false,
-		isAndroid401 = false,
 		customEvents = null,
 		forceIScroll = ('APP_FORCE_ISCROLL' in window) ? !!window['APP_FORCE_ISCROLL'] : false,
 		defaultTransition, reverseTransition,
@@ -79,11 +78,7 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 		else if (utils.os.android) {
 			document.body.className += ' ' + APP_ANDROID;
 
-			if (utils.os.versionString === '4.0.1') {
-				isAndroid401 = true;
-				setDefaultTransition(DEFAULT_TRANSITION_ANDROID_GHETTO);
-			}
-			else if (utils.os.version >= 4) {
+			if (utils.os.version >= 4) {
 				setDefaultTransition(DEFAULT_TRANSITION_ANDROID);
 			}
 			else if ((utils.os.version < 2.3) || /LT15a/i.test(navigator.userAgent)) {
@@ -133,10 +128,6 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 
 		Pages.populate(pageName, pageManager, page, args);
 
-		if (isAndroid401) {
-			setupScrollers(page);
-		}
-
 		firePageEvent(page, PAGE_LAYOUT_EVENT);
 
 		page.addEventListener('DOMNodeInsertedIntoDocument', function () {
@@ -148,9 +139,7 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 	}
 
 	function finishPageGeneration (pageName, page, args, pageManager) {
-		if ( !isAndroid401 ) {
-			setupScrollers(page);
-		}
+		setupScrollers(page);
 	}
 
 	function setupScrollers (page) {
@@ -1226,7 +1215,7 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 			switch (utils.os.name) {
 				case 'android':
 					transition = transition.android;
-					if ((isAndroid401 || utils.os.version < 4) && transition.androidFallback) {
+					if ((utils.os.version < 4) && transition.androidFallback) {
 						transition = transition.androidFallback;
 					}
 					break;
