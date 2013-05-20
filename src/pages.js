@@ -1,10 +1,28 @@
-App._Pages = function () {
-	var PAGE_NAME = 'data-page';
+App._Pages = function (window, document) {
+	var PAGE_NAME  = 'data-page',
+		PAGE_CLASS = 'app-page',
+		APP_LOADED = 'app-loaded';
 
-	var pages        = {},
+	var preloaded    = false,
+		pages        = {},
 		populators   = [],
 		unpopulators = [];
 
+
+	function preloadPages () {
+		if (preloaded) {
+			return;
+		}
+		preloaded = true;
+
+		var pageNodes = document.getElementsByClassName(PAGE_CLASS);
+
+		for (var i=pageNodes.length; i--;) {
+			addPage( pageNodes[i] );
+		}
+
+		document.body.className += ' ' + APP_LOADED;
+	}
 
 	function addPage (page, pageName) {
 		if ( !pageName ) {
@@ -23,10 +41,12 @@ App._Pages = function () {
 	}
 
 	function hasPage (pageName) {
+		preloadPages();
 		return (pageName in pages);
 	}
 
 	function clonePage (pageName) {
+		preloadPages();
 		return pages[pageName].cloneNode(true);
 	}
 
@@ -73,7 +93,7 @@ App._Pages = function () {
 		populate       : populatePage   ,
 		unpopulate     : unpopulatePage
 	};
-}();
+}(window, document);
 
 
 // startPageGeneration

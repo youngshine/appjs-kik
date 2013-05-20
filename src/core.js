@@ -1,9 +1,7 @@
 var App = function (utils, metrics, Pages, window, document, Swapper, Clickable, Dialog, Scrollable) {
-	var PAGE_CLASS                        = 'app-page',
-		PAGE_NAME                         = 'data-page',
+	var PAGE_NAME                         = 'data-page',
 		APP_IOS                           = 'app-ios',
 		APP_ANDROID                       = 'app-android',
-		APP_LOADED                        = 'app-loaded',
 		APP_NO_SCROLLBAR                  = 'app-no-scrollbar',
 		PAGE_SHOW_EVENT                   = 'appShow',
 		PAGE_HIDE_EVENT                   = 'appHide',
@@ -60,7 +58,6 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 		stack        = [],
 		navQueue     = [],
 		navLock      = false,
-		initialised  = false,
 		isAndroid401 = false,
 		customEvents = null,
 		forceIScroll = ('APP_FORCE_ISCROLL' in window) ? !!window['APP_FORCE_ISCROLL'] : false,
@@ -102,26 +99,9 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 		}
 	}
 
-	function init () {
-		if (initialised) {
-			return;
-		}
-		initialised = true;
-
-		var pageNodes = document.getElementsByClassName(PAGE_CLASS);
-
-		for (var i=pageNodes.length; i--;) {
-			Pages.add( pageNodes[i] );
-		}
-
-		document.body.className += ' ' + APP_LOADED;
-	}
-
 
 
 	function startPageGeneration (pageName, args, pageManager) {
-		init();
-
 		if ( !Pages.has(pageName) ) {
 			throw TypeError(pageName + ' is not a known page');
 		}
@@ -254,10 +234,6 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 	}
 
 	function finishPageDestruction (pageName, page, args, pageManager) {
-		if ( !Pages.has(pageName) ) {
-			throw TypeError(pageName + ' is not a known page');
-		}
-
 		Pages.unpopulate(pageName, pageManager, page, args);
 	}
 
@@ -1028,8 +1004,6 @@ var App = function (utils, metrics, Pages, window, document, Swapper, Clickable,
 				default:
 					throw TypeError('restore callback must be a function if defined, got ' + callback);
 			}
-
-			init();
 
 			if ( !Pages.has(lastPage[0]) ) {
 				throw TypeError(lastPage[0] + ' is not a known page');
