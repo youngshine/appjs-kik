@@ -42,7 +42,7 @@ Destroy a page created with `App.generate`.
 //TODO
 
 
----
+-----
 
 
 ### Navigation
@@ -56,7 +56,7 @@ Destroy a page created with `App.generate`.
 //TODO
 
 
----
+-----
 
 
 ### Transitions
@@ -74,7 +74,7 @@ Destroy a page created with `App.generate`.
 //TODO
 
 
----
+-----
 
 
 ### Stack management
@@ -112,7 +112,7 @@ Destroy a page created with `App.generate`.
 //TODO
 
 
----
+-----
 
 
 ### Utilities
