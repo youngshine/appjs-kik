@@ -110,42 +110,27 @@ a {
 	display: block;
 	height: 48px;
 	width: 172px;
-	background: #3072B3 no-repeat;
-	background-image: -webkit-gradient(linear, left top, left bottom, from(#599BDC), to(#3072B3));
-	background-image: -webkit-linear-gradient(top, #599BDC, #3072B3);
-	background-image: -moz-linear-gradient(top, #599BDC, #3072B3);
-	background-image: -ms-linear-gradient(top, #599BDC, #3072B3);
-	background-image: -o-linear-gradient(top, #599BDC, #3072B3);
-	background-image: linear-gradient(top, #599BDC, #3072B3);
-	border: 1px solid #2967A4;
-	-webkit-box-shadow: 0 1px 2px rgba(0,0,0,.2),
-		inset 0 1px 0 rgba(255,255,255,.1);
-	-moz-box-shadow: 0 1px 2px rgba(0,0,0,.2),
-		inset 0 1px 0 rgba(255,255,255,.1);
-	box-shadow: 0 1px 2px rgba(0,0,0,.2),
-		inset 0 1px 0 rgba(255,255,255,.1);
-	border-radius: 6px;
+	background: #3072B3;
+	border-bottom: 2px solid #195794;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	border-radius: 3px;
 	color: #FFF;
 	font-size: 16px;
 	line-height: 48px;
 	text-align: center;
 	text-decoration: none;
-	text-shadow: 0 -1px 0 rgba(0,0,0,.5);
 }
 #info .description .buttons .download:hover,
 #info .description .buttons .github:hover {
-	background-position: 0 -15px;
+	background: #4082C3;
 }
 #info .description .buttons .download:hover:active,
 #info .description .buttons .github:hover:active {
-	background-image: none;
-	-webkit-box-shadow: 0 1px 2px rgba(0,0,0,.2),
-		inset 0 5px 10px rgba(0,0,0,.125);
-	-moz-box-shadow: 0 1px 2px rgba(0,0,0,.2),
-		inset 0 5px 10px rgba(0,0,0,.125);
-	box-shadow: 0 1px 2px rgba(0,0,0,.2),
-		inset 0 5px 10px rgba(0,0,0,.125);
-	color: #DDD;
+	background: #195794;
+	border-top: 1px solid #195794;
+	border-bottom: 1px solid #195794;
+	color: #EEE;
 }
 #info .description .buttons .download {}
 #info .description .buttons .github {
