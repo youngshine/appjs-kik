@@ -108,6 +108,22 @@ window.prettyPrint && prettyPrint();
 
 
 
+/* GitHub button */
+
+(function (window, document) {
+	var github = document.getElementById('github');
+	if (github) {
+		github.onclick = function () {
+			if (window.parent !== window) {
+				window.parent.location = this.href;
+				return false;
+			}
+		};
+	}
+})(window, document);
+
+
+
 /* Anchor menu */
 
 (function (window, document) {
