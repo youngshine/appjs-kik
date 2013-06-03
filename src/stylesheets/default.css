@@ -9,9 +9,6 @@
 	-webkit-box-shadow: 0px 0px 5px rgba(0,0,0,0.5),
 		inset 0 1px 0 #2B2B2B,
 		inset 0 -2px 0 #1B1B1B;
-	-moz-box-shadow: 0px 0px 5px rgba(0,0,0,0.5),
-		inset 0 1px 0 #2B2B2B,
-		inset 0 -2px 0 #1B1B1B;
 	box-shadow: 0px 0px 5px rgba(0,0,0,0.5),
 		inset 0 1px 0 #2B2B2B,
 		inset 0 -2px 0 #1B1B1B;
@@ -19,14 +16,8 @@
 .app-ios .app-topbar {
 	background-image: -webkit-gradient(linear, left top, left bottom, from(#525252), to(#1F1E1F));
 	background-image: -webkit-linear-gradient(#525252, #1F1E1F);
-	background-image: -moz-linear-gradient(#525252, #1F1E1F);
-	background-image: -ms-linear-gradient(#525252, #1F1E1F);
-	background-image: -o-linear-gradient(#525252, #1F1E1F);
 	background-image: linear-gradient(#525252, #1F1E1F);
 	-webkit-box-shadow: 0px 0px 5px rgba(0,0,0,0.5),
-		inset 0 1px 0 #797979,
-		inset 0 -1px 0 #333;
-	-moz-box-shadow: 0px 0px 5px rgba(0,0,0,0.5),
 		inset 0 1px 0 #797979,
 		inset 0 -1px 0 #333;
 	box-shadow: 0px 0px 5px rgba(0,0,0,0.5),
@@ -76,12 +67,9 @@
 	border: 1px solid #201F20;
 	-webkit-box-shadow: 0 1px 1px rgba(255,255,255,0.1),
 		inset 0 0 2px rgba(0,0,0,0.3);
-	-moz-box-shadow: 0 1px 1px rgba(255,255,255,0.1),
-		inset 0 0 2px rgba(0,0,0,0.3);
 	box-shadow: 0 1px 1px rgba(255,255,255,0.1),
 		inset 0 0 2px rgba(0,0,0,0.3);
 	-webkit-border-radius: 6px;
-	-moz-border-radius: 6px;
 	border-radius: 6px;
 	font-size: 12px;
 	line-height: 28px;
@@ -96,14 +84,35 @@
 	font-size: 12px;
 	line-height: 16px;
 }
+.app-ios .app-topbar .app-button.blue {
+	padding: 0 9px;
+	height: 26px;
+	background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#4e80ab), color-stop(4%,#4583b7), color-stop(12%,#407fb5), color-stop(27%,#3c79af), color-stop(85%,#225e9a), color-stop(96%,#205a96), color-stop(100%,#1b5288));
+	background-image: -webkit-linear-gradient(top, #4e80ab 0%,#4583b7 4%,#407fb5 12%,#3c79af 27%,#225e9a 85%,#205a96 96%,#1b5288 100%);
+	background-image: linear-gradient(#4e80ab 0%,#4583b7 4%,#407fb5 12%,#3c79af 27%,#225e9a 85%,#205a96 96%,#1b5288 100%);
+	border: 1px solid rgba(0,0,0,0.7);
+	-webkit-border-radius: 5px;
+	border-radius: 5px;
+	-webkit-border-image: none;
+	-webkit-box-shadow: 0 1px 0 rgba(42, 51, 58, 0.5);
+	box-shadow: 0 1px 0 rgba(42, 51, 58, 0.5);
+	line-height: 26px;
+}
 .app-ios .app-topbar .app-button.active {
 	background-color: rgba(0,0,0,0.2);
 	color: #C8C8C8;
 }
 .app-ios .app-topbar .app-button[data-back].active {
 	background: transparent;
+	-webkit-box-shadow: none;
 	box-shadow: none;
 	-webkit-border-image: url(data:image/png;base64,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) 4 12 4 24;
+}
+.app-ios .app-topbar .app-button.blue.active {
+	background-image: -webkit-gradient(linear, left top, left bottom, from(rgba(0,0,0,0.3)), to(rgba(0,0,0,0.1))), -webkit-gradient(linear, left top, left bottom, color-stop(0%,#4e80ab), color-stop(4%,#4583b7), color-stop(12%,#407fb5), color-stop(27%,#3c79af), color-stop(85%,#225e9a), color-stop(96%,#205a96), color-stop(100%,#1b5288));
+	background-image: -webkit-linear-gradient(top,rgba(0,0,0,0.3),rgba(0,0,0,0.1)), -webkit-linear-gradient(top, #4e80ab 0%,#4583b7 4%,#407fb5 12%,#3c79af 27%,#225e9a 85%,#205a96 96%,#1b5288 100%);
+	background-image: linear-gradient(rgba(0,0,0,0.3),rgba(0,0,0,0.1)), linear-gradient(#4e80ab 0%,#4583b7 4%,#407fb5 12%,#3c79af 27%,#225e9a 85%,#205a96 96%,#1b5288 100%);
+	-webkit-border-image: none;
 }
 
 
@@ -128,10 +137,8 @@
 	border: none;
 	border-bottom: 1px solid #DDD;
 	-webkit-box-shadow: 0 0 3px rgba(0,0,0,0.1);
-	-moz-box-shadow: 0 0 3px rgba(0,0,0,0.1);
 	box-shadow: 0 0 3px rgba(0,0,0,0.1);
 	-webkit-border-radius: 3px;
-	-moz-border-radius: 3px;
 	border-radius: 3px;
 	overflow: hidden;
 }
@@ -140,17 +147,14 @@ p.app-section {
 }
 .app-section > :first-child {
 	-webkit-border-radius: 3px 3px 0 0;
-	-moz-border-radius: 3px 3px 0 0;
 	border-radius: 3px 3px 0 0;
 }
 .app-section > :last-child {
 	-webkit-border-radius: 0 0 3px 3px;
-	-moz-border-radius: 0 0 3px 3px;
 	border-radius: 0 0 3px 3px;
 }
 .app-section > :only-child {
 	-webkit-border-radius: 3px;
-	-moz-border-radius: 3px;
 	border-radius: 3px;
 }
 
@@ -183,10 +187,7 @@ p.app-section {
 	height: 23px;
 	background-image: -webkit-gradient(linear, left top, left bottom, from(#E3E5EB), to(#EFF1F4));
 	background-image: -webkit-linear-gradient(top, #E3E5EB, #EFF1F4);
-	background-image: -moz-linear-gradient(top, #E3E5EB, #EFF1F4);
-	background-image: -ms-linear-gradient(top, #E3E5EB, #EFF1F4);
-	background-image: -o-linear-gradient(top, #E3E5EB, #EFF1F4);
-	background-image: linear-gradient(top, #E3E5EB, #EFF1F4);
+	background-image: linear-gradient(#E3E5EB, #EFF1F4);
 	border-top: 1px solid #D1D4D8;
 	border-bottom: 1px solid #CFD2DA;
 	color: #8C8C8C;
@@ -207,10 +208,7 @@ p.app-section {
 .app-ios .app-content .app-button.active {
 	background-image: -webkit-gradient(linear, left top, left bottom, from(#058CF5), to(#015EE6));
 	background-image: -webkit-linear-gradient(top, #058CF5, #015EE6);
-	background-image: -moz-linear-gradient(top, #058CF5, #015EE6);
-	background-image: -ms-linear-gradient(top, #058CF5, #015EE6);
-	background-image: -o-linear-gradient(top, #058CF5, #015EE6);
-	background-image: linear-gradient(top, #058CF5, #015EE6);
+	background-image: linear-gradient(#058CF5, #015EE6);
 	color: #FFF;
 }
 .app-button {
@@ -252,33 +250,23 @@ p.app-section {
 .app-ios .app-content .app-button.red {
 	background-image: -webkit-gradient(linear, left top, left bottom, from(#FF2035), to(#E13443));
 	background-image: -webkit-linear-gradient(top, #FF2035, #E13443);
-	background-image: -moz-linear-gradient(top, #FF2035, #E13443);
-	background-image: -ms-linear-gradient(top, #FF2035, #E13443);
-	background-image: -o-linear-gradient(top, #FF2035, #E13443);
-	background-image: linear-gradient(top, #FF2035, #E13443);
+	background-image: linear-gradient(#FF2035, #E13443);
 }
 .app-ios .app-content .app-button.green {
 	background-image: -webkit-gradient(linear, left top, left bottom, from(#7D7), to(#4B4));
 	background-image: -webkit-linear-gradient(top, #7D7, #4B4);
-	background-image: -moz-linear-gradient(top, #7D7, #4B4);
-	background-image: -ms-linear-gradient(top, #7D7, #4B4);
-	background-image: -o-linear-gradient(top, #7D7, #4B4);
-	background-image: linear-gradient(top, #7D7, #4B4);
+	background-image: linear-gradient(#7D7, #4B4);
 }
 .app-ios .app-content .app-button.blue {
 	background-image: -webkit-gradient(linear, left top, left bottom, from(#2A8CF8), to(#0F6FD5));
 	background-image: -webkit-linear-gradient(top, #2A8CF8, #0F6FD5);
-	background-image: -moz-linear-gradient(top, #2A8CF8, #0F6FD5);
-	background-image: -ms-linear-gradient(top, #2A8CF8, #0F6FD5);
-	background-image: -o-linear-gradient(top, #2A8CF8, #0F6FD5);
-	background-image: linear-gradient(top, #2A8CF8, #0F6FD5);
+	background-image: linear-gradient(#2A8CF8, #0F6FD5);
 }
 .app-ios .app-button.red.active,
 .app-ios .app-button.green.active,
 .app-ios .app-button.blue.active {
 	background-image: none;
 	-webkit-box-shadow: inset 0 2px 4px rgba(0,0,0,.1);
-	-moz-box-shadow: inset 0 2px 4px rgba(0,0,0,.1);
 	box-shadow: inset 0 2px 4px rgba(0,0,0,.1);
 	color: #DDD;
 }
