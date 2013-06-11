@@ -23,8 +23,8 @@
 					</ul>
 					<p>The goal of App.js is to provide a robust starting point for mobile webapps, handling general scenarios, and maintaining compatiblity with other common JavaScript libraries.</p>
 					<div class="buttons">
-						<a class="download" href="https://raw.github.com/kikinteractive/app/master/appjs-v1.10.0.zip">Download v1.10.0</a>
-						<a class="github" id="github" href="https://github.com/kikinteractive/app">GitHub project</a>
+						<a class="download external" href="https://raw.github.com/kikinteractive/app/master/appjs-v1.10.0.zip">Download v1.10.0</a>
+						<a class="github external" href="https://github.com/kikinteractive/app">GitHub project</a>
 						<div class="clear"></div>
 					</div>
 				</div>
@@ -140,7 +140,7 @@
 				<ul>
 					<li><b>app.js</b> is the core module containing all library functionality.</li>
 					<li><b>default.css</b> is the default stylesheet provided with App.js. It contains iOS/Android styles for all included widgets.</li>
-					<li><b><a href="http://zeptojs.com/">zepto.js</a></b> is jQuery-like library focusing on being lightweight and mobile-friendly. It is <b>not</b> a dependency for App.js but still nice to have for writing concise, cross-platform code. Replace this with <a href="http://jquery.com">jQuery</a> if you so desire.</li>
+					<li><b><a class="external" href="http://zeptojs.com/">zepto.js</a></b> is jQuery-like library focusing on being lightweight and mobile-friendly. It is <b>not</b> a dependency for App.js but still nice to have for writing concise, cross-platform code. Replace this with <a class="external" href="http://jquery.com">jQuery</a> if you so desire.</li>
 					<li>The meta viewport tag simply insures that the window is sized correctly on whatever device it runs on. This is important to get consistent sizing and scale across different platforms.</li>
 					<li>The comment about "pages" is where your HTML page elements will go, as described in the <a href="#pages">next section</a>.</li>
 					<li>The comment about "javascript" is where your <a href="#populators">populators</a> and <a href="#navigation">navigation</a> code will go.</li>
@@ -149,7 +149,7 @@
 
 				<div id="start-run" class="subtitle">Run the app</div>
 				<p>Since App.js apps are fundamentally static all you have to do is put your code in an HTML file and open it in a browser to test.</p>
-				<p>It is advised that you run your app <a href="https://developers.google.com/chrome-developer-tools/docs/mobile-emulation#emulate-device-viewports">in Chrome while simulating a mobile platform</a> that you're targeting. Don't forget to <a href="https://developers.google.com/chrome-developer-tools/docs/mobile-emulation#emulate-touch-events">turn on touch event emulation</a>.</p>
+				<p>It is advised that you run your app <a class="external" href="https://developers.google.com/chrome-developer-tools/docs/mobile-emulation#emulate-device-viewports">in Chrome while simulating a mobile platform</a> that you're targeting. Don't forget to <a class="external" href="https://developers.google.com/chrome-developer-tools/docs/mobile-emulation#emulate-touch-events">turn on touch event emulation</a>.</p>
 				<p>Right now your app is a blank page so move on to the <a href="#pages">next section</a> to start building!</p>
 			</div>
 
@@ -400,7 +400,7 @@ App.back(function () {
 <pre class="prettyprint linenums lang-js">
 App.load('home', 'fade'); // fade between pages
 </pre>
-				<p>Transitions are provided by Swapper.js. <a href="https://github.com/kikinteractive/swapper">Go to the docs</a> for the list of available transitions.</p>
+				<p>Transitions are provided by Swapper.js. <a class="external" href="https://github.com/kikinteractive/swapper">Go to the docs</a> for the list of available transitions.</p>
 				<p>Additionally you can set the global default transition for all navigations.</p>
 <pre class="prettyprint linenums lang-js">
 App.setDefaultTransition('transition-name'); // global

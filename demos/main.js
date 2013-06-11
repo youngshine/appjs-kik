@@ -108,17 +108,19 @@ window.prettyPrint && prettyPrint();
 
 
 
-/* GitHub button */
+/* External button */
 
 (function (window, document) {
-	var github = document.getElementById('github');
-	if (github) {
-		github.onclick = function () {
-			if (window.parent !== window) {
-				window.parent.location = this.href;
-				return false;
-			}
-		};
+	var externals = document.getElementsByClassName('external');
+	for (var i=0, l=externals.length; i<l; i++) {
+		externals[i].onclick = launchExternal;
+	}
+
+	function launchExternal () {
+		if (window.parent !== window) {
+			window.parent.location = this.href;
+			return false;
+		}
 	}
 })(window, document);
 
