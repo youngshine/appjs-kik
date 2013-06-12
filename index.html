@@ -283,7 +283,7 @@ App.populator('home', function (page) {
 				<p>If you have described multiple pages in your HTML, you will want to create a populator for each of them so that they can be constructed properly whenever loaded.</p>
 
 				<div id="populators-arguments" class="subtitle">Arguments &amp; Templating</div>
-				<p>Populators can have dynamic arguments so that you can construct a page slightly different depending on the input. For example, if I am creating a contact list app I will want a to load a contact page for any given contact in my list. What we will do is describe a generic contact page with blank fields and fill them in depending on which contact the page is being loaded for.</p>
+				<p>Populators can have dynamic arguments so that you can construct a page slightly different depending on the input. For example, if I am creating a contact list app I will want to load a contact page for any given contact in my list. What we will do is describe a generic contact page with blank fields and fill them in depending on which contact the page is being loaded for.</p>
 				<p>To load a page with special arguments simply add an JSON object to the "App.load" call and you'll be able to use that object in the populator accordingly.</p>
 <pre class="prettyprint linenums lang-html">
 &lt;!-- in your html --&gt;
@@ -416,7 +416,7 @@ App.setDefaultTransition({
 </pre>
 
 				<div id="navigation-restore" class="subtitle">Restore</div>
-				<p>Because App.js is aware of your navigation stack and how to construct pages, it also provides the ability to automatically restore the users session to where they were in the back the last them it was closed. Enabling this feature requires this following idiom:</p>
+				<p>Because App.js is aware of your navigation stack and how to construct pages, it also provides the ability to automatically restore the users session to where they were the last time it was closed. Enabling this feature requires this following idiom:</p>
 <pre class="prettyprint linenums lang-js">
 try {
   // try to restore previous session
