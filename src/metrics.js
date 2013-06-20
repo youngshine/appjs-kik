@@ -20,20 +20,25 @@ App._metrics = function (window, App) {
 			return;
 		}
 
-		if ( !window._gaq ) {
-			window._gaq = [];
-		}
-
 		var pathname = '/' + pageName;
-
 		if (typeof pageID !== 'undefined') {
 			pathname += '/' + pageID;
 		}
 
-		window._gaq.push([
-			'_trackPageview' ,
-			pathname
-		]);
+		if (typeof window.ga === 'function') {
+			window.ga('send', 'pageview', pathname);
+			return;
+		}
+
+		if ( !window._gaq ) {
+			window._gaq = [];
+		}
+		if (typeof window._gaq.push === 'function') {
+			window._gaq.push([
+				'_trackPageview' ,
+				pathname
+			]);
+		}
 	}
 
 	function watchPage (page, pageName, pageArgs) {

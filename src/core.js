@@ -174,16 +174,20 @@ App._core = function (window, document, Swapper, Dialog, App, utils, Pages) {
 		if (typeof transition === 'object') {
 			switch (utils.os.name) {
 				case 'android':
-					transition = transition.android;
 					if ((utils.os.version < 4) && transition.androidFallback) {
 						transition = transition.androidFallback;
+					}
+					else {
+						transition = transition.android;
 					}
 					break;
 
 				case 'ios':
-					transition = transition.ios;
 					if ((utils.os.version < 5) && transition.iosFallback) {
 						transition = transition.iosFallback;
+					}
+					else {
+						transition = transition.ios;
 					}
 					break;
 
