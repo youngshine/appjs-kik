@@ -720,31 +720,25 @@ App._core = function (window, document, Swapper, Dialog, App, utils, Pages) {
 		}
 
 		var slideLeft   = (options.transition === 'slide-left'),
-			slideLength = window.innerWidth * 0.5,
-			backButton
-			transitions = [
-				{
-					opacityEnd : 0 ,
-					elem       : currentBar
-				},
-				{
-					transitionStart : 'translate3d(0,0,0)' ,
-					transitionEnd   : 'translate3d('+(slideLeft?-100:100)+'%,0,0)' ,
-					elem            : currentContent
-				},
-				{
-					transitionStart : 'translate3d('+(slideLeft?100:-100)+'%,0,0)' ,
-					transitionEnd   : 'translate3d(0,0,0)' ,
-					elem            : newContent
-				}
-			];
+			transitions = [{
+				opacityEnd : 0 ,
+				elem       : currentBar
+			}, {
+				transitionStart : 'translate3d(0,0,0)' ,
+				transitionEnd   : 'translate3d('+(slideLeft?-100:100)+'%,0,0)' ,
+				elem            : currentContent
+			}, {
+				transitionStart : 'translate3d('+(slideLeft?100:-100)+'%,0,0)' ,
+				transitionEnd   : 'translate3d(0,0,0)' ,
+				elem            : newContent
+			}];
 
 		if (currentTitle) {
 			transitions.push({
 				opacityStart    : 1 ,
 				opacityEnd      : 0 ,
 				transitionStart : 'translate3d(0,0,0)' ,
-				transitionEnd   : 'translate3d('+(slideLeft?-slideLength:slideLength)+'px,0,0)' ,
+				transitionEnd   : 'translate3d('+getTitleTransform(newBack, slideLeft)+'px,0,0)' ,
 				elem            : currentTitle
 			});
 		}
@@ -752,7 +746,7 @@ App._core = function (window, document, Swapper, Dialog, App, utils, Pages) {
 			transitions.push({
 				opacityStart    : 0 ,
 				opacityEnd      : 1 ,
-				transitionStart : 'translate3d('+(slideLeft?slideLength:-slideLength)+'px,0,0)' ,
+				transitionStart : 'translate3d('+getTitleTransform(currentBack, !slideLeft)+'px,0,0)' ,
 				transitionEnd   : 'translate3d(0,0,0)' ,
 				elem            : newTitle
 			});
@@ -796,6 +790,20 @@ App._core = function (window, document, Swapper, Dialog, App, utils, Pages) {
 		}
 		else {
 			return (window.innerWidth-fullWidth) / 2;
+		}
+	}
+
+	function getTitleTransform (backButton, toLeft) {
+		var fullWidth = 0;
+		if (backButton && (utils.os.version >= 5)) {
+			fullWidth = backButton.textContent.length * 15;
+		}
+
+		if ( !toLeft ) {
+			return (window.innerWidth / 2);
+		}
+		else {
+			return (fullWidth-window.innerWidth) / 2;
 		}
 	}
 
