@@ -2,6 +2,8 @@
 
 PROJECT="app"
 LICENSE="LICENSE.txt"
+ZIP_FILE="appjs-v${MAJOR_VERSION}.zip"
+ZIP_DIR="appjs"
 MAJOR_VERSION="1"
 MINOR_VERSION="10"
 BUG_VERSION="0"
@@ -17,8 +19,6 @@ buildProject () {
 }
 
 buildZip () {
-	ZIP_FILE="appjs-v${MAJOR_VERSION}.zip"
-	ZIP_DIR="appjs"
 	unzip "${ZIP_FILE}"
 	cp "${BUILD_DIR}/app.js"      "${ZIP_DIR}/app.js"
 	cp "${BUILD_DIR}/default.css" "${ZIP_DIR}/default.css"
@@ -51,7 +51,7 @@ FULL_CACHE="--add-header=Cache-Control:max-age=31557600"
 
 clean () {
 	echo "Cleaning builds"
-	rm -rf "${BUILD_DIR}" "${BUILD_ZIP}"
+	rm -rf "${BUILD_DIR}" "${BUILD_ZIP}" "${ZIP_DIR}"
 }
 
 createBuildDir () {
