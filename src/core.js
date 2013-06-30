@@ -756,13 +756,13 @@ App._core = function (window, document, Swapper, Dialog, App, utils, Pages) {
 			if (currentBack) {
 				transitions.push({
 					transitionStart : 'translate3d(0,0,0)' ,
-					transitionEnd   : 'translate3d('+getBackTransform(currentBack, !slideLeft)+'px,0,0)' ,
+					transitionEnd   : 'translate3d('+getBackTransform(currentBack, newBack, !slideLeft)+'px,0,0)' ,
 					elem            : currentBack
 				});
 			}
 			if (newBack) {
 				transitions.push({
-					transitionStart : 'translate3d('+getBackTransform(newBack, slideLeft)+'px,0,0)' ,
+					transitionStart : 'translate3d('+getBackTransform(newBack, currentBack, slideLeft)+'px,0,0)' ,
 					transitionEnd   : 'translate3d(0,0,0)' ,
 					elem            : newBack
 				});
@@ -782,11 +782,12 @@ App._core = function (window, document, Swapper, Dialog, App, utils, Pages) {
 		});
 	}
 
-	function getBackTransform (backButton, toCenter) {
-		var fullWidth = backButton.textContent.length * 15;
+	function getBackTransform (backButton, oldButton, toCenter) {
+		var fullWidth = backButton.textContent.length * 15,
+			oldWidth  = oldButton ? (oldButton.textContent.length*15) : 0;
 
 		if ( !toCenter ) {
-			return -fullWidth;
+			return (oldWidth-window.innerWidth) / 2;
 		}
 		else {
 			return (window.innerWidth-fullWidth) / 2;
