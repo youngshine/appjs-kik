@@ -758,7 +758,7 @@ App._core = function (window, document, Swapper, Dialog, App, utils, Pages) {
 			});
 		}
 
-		if (utils.os.version >= 6) {
+		if (utils.os.version >= 5) {
 			if (currentBack) {
 				transitions.push({
 					transitionStart : 'translate3d(0,0,0)' ,
