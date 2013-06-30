@@ -393,6 +393,10 @@ App.back(function () {
 &lt;div class="app-button" data-back="true"&gt;Go back&lt;/div&gt;
 </pre>
 				<p>When the above button is clicked "App.back();" will automatically get called.</p>
+				<p>One of the common things to do with a back button is to name it based on the previous page. App.js provides a convenience for automatically having the back button be named after the page it will lead to.</p>
+<pre class="prettyprint linenums lang-html">
+&lt;div class="app-button" data-back="true" data-autotitle="true"&gt;&lt;/div&gt;
+</pre>
 
 				<div id="navigation-transitions" class="subtitle">Transitions</div>
 				<p>By default App.js will attempt to transition between pages using whatever fits best with the platform that your app is running on. For example on iOS the titles of your pages will slide while fading out, simulating the native iOS transition style.</p>
