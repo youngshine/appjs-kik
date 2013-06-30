@@ -411,7 +411,11 @@ App._core = function (window, document, Swapper, Dialog, App, utils, Pages) {
 		navigate(function (unlock) {
 			var oldNode     = currentNode,
 				pageManager = {},
-				page        = Pages.startGeneration(pageName, pageManager, args);
+				page        = Pages.startGeneration(pageName, pageManager, args),
+				restoreData = stack[stack.length-1],
+				restoreNode = restoreData && restoreData[1];
+
+			populatePageBackButton(page, oldNode || restoreNode);
 
 			if ( !current ) {
 				App.restore = null;
@@ -565,11 +569,13 @@ App._core = function (window, document, Swapper, Dialog, App, utils, Pages) {
 
 	// you must manually save the stack if you choose to use this method
 	function addToStackNow (index, newPages) {
-		var pageDatas = [];
+		var pageDatas = [],
+			lastPage;
 
 		newPages.forEach(function (pageData) {
 			var pageManager = {},
 				page        = Pages.startGeneration(pageData[0], pageManager, pageData[1]);
+			populatePageBackButton(page, lastPage);
 
 			Pages.finishGeneration(pageData[0], pageManager, page, pageData[1]);
 
@@ -577,6 +583,8 @@ App._core = function (window, document, Swapper, Dialog, App, utils, Pages) {
 			Pages.saveScrollStyle(page);
 
 			pageDatas.push([pageData[0], page, pageData[2], pageData[1], pageManager]);
+
+			lastPage = page;
 		});
 
 		pageDatas.unshift(0);
@@ -589,6 +597,26 @@ App._core = function (window, document, Swapper, Dialog, App, utils, Pages) {
 			addToStackNow(index, newPages);
 			unlock();
 		});
+	}
+
+	function populatePageBackButton (page, oldPage) {
+		if ( !oldPage ) {
+			return;
+		}
+		var backButton = page.querySelector('.app-topbar .left.app-button'),
+			oldTitle   = oldPage.querySelector('.app-topbar .app-title');
+		if (!backButton || !oldTitle) {
+			return;
+		}
+		var oldText = oldTitle.textContent,
+			newText = backButton.textContent;
+		if (!oldText || newText) {
+			return;
+		}
+		if (oldText.length > 13) {
+			oldText = oldText.substr(0, 12) + '..';
+		}
+		backButton.textContent = oldText;
 	}
 
 
@@ -671,8 +699,10 @@ App._core = function (window, document, Swapper, Dialog, App, utils, Pages) {
 	function performNativeIOSTransition (page, options, callback) {
 		var oldPage        = currentNode,
 			currentBar     = oldPage.querySelector('.app-topbar'),
+			currentBack    = oldPage.querySelector('.app-topbar .left.app-button'),
 			currentContent = oldPage.querySelector('.app-content'),
 			newBar         = page.querySelector('.app-topbar'),
+			newBack        = page.querySelector('.app-topbar .left.app-button'),
 			newContent     = page.querySelector('.app-content'),
 			currentTitle, newTitle;
 
@@ -691,6 +721,7 @@ App._core = function (window, document, Swapper, Dialog, App, utils, Pages) {
 
 		var slideLeft   = (options.transition === 'slide-left'),
 			slideLength = window.innerWidth * 0.5,
+			backButton
 			transitions = [
 				{
 					opacityEnd : 0 ,
@@ -727,6 +758,23 @@ App._core = function (window, document, Swapper, Dialog, App, utils, Pages) {
 			});
 		}
 
+		if (utils.os.version >= 6) {
+			if (currentBack) {
+				transitions.push({
+					transitionStart : 'translate3d(0,0,0)' ,
+					transitionEnd   : 'translate3d('+getBackTransform(currentBack, !slideLeft)+'px,0,0)' ,
+					elem            : currentBack
+				});
+			}
+			if (newBack) {
+				transitions.push({
+					transitionStart : 'translate3d('+getBackTransform(newBack, slideLeft)+'px,0,0)' ,
+					transitionEnd   : 'translate3d(0,0,0)' ,
+					elem            : newBack
+				});
+			}
+		}
+
 		var oldPosition = page.style.position;
 		page.style.position = 'fixed';
 		oldPage.parentNode.insertBefore(page, oldPage);
@@ -738,6 +786,17 @@ App._core = function (window, document, Swapper, Dialog, App, utils, Pages) {
 
 			callback();
 		});
+	}
+
+	function getBackTransform (backButton, toCenter) {
+		var fullWidth = backButton.textContent.length * 15;
+
+		if ( !toCenter ) {
+			return -fullWidth;
+		}
+		else {
+			return (window.innerWidth-fullWidth) / 2;
+		}
 	}
 
 	function isVisible (elem) {
