@@ -790,7 +790,7 @@ App._core = function (window, document, Swapper, Dialog, App, utils, Pages) {
 	}
 
 	function getBackTransform (backButton, oldButton, toCenter) {
-		var fullWidth = backButton.textContent.length * 15,
+		var fullWidth = backButton.textContent.length * 10,
 			oldWidth  = oldButton ? (oldButton.textContent.length*15) : 0;
 
 		if ( !toCenter ) {
@@ -804,7 +804,7 @@ App._core = function (window, document, Swapper, Dialog, App, utils, Pages) {
 	function getTitleTransform (backButton, toLeft) {
 		var fullWidth = 0;
 		if (backButton && (utils.os.version >= 5)) {
-			fullWidth = backButton.textContent.length * 15;
+			fullWidth = backButton.textContent.length * 10;
 		}
 
 		if ( !toLeft ) {
