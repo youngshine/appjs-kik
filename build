@@ -2,6 +2,8 @@
 
 PROJECT="app"
 LICENSE="LICENSE.txt"
+ZIP_FILE="appjs-v${MAJOR_VERSION}.zip"
+ZIP_DIR="appjs"
 MAJOR_VERSION="1"
 MINOR_VERSION="10"
 BUG_VERSION="0"
@@ -14,6 +16,15 @@ buildProject () {
 	buildDebugJS "app-DEBUG.js" "${APP_JS}"
 	buildCSS     "app.css"      "src/stylesheets/app.css"
 	buildCSS     "default.css"  "src/stylesheets/app.css src/stylesheets/default.css"
+}
+
+buildZip () {
+	unzip "${ZIP_FILE}"
+	cp "${BUILD_DIR}/app.js"      "${ZIP_DIR}/app.js"
+	cp "${BUILD_DIR}/default.css" "${ZIP_DIR}/default.css"
+	rm "${ZIP_FILE}"
+	zip -r "${ZIP_FILE}" "${ZIP_DIR}"
+	rm -r "${ZIP_DIR}"
 }
 
 
@@ -40,7 +51,7 @@ FULL_CACHE="--add-header=Cache-Control:max-age=31557600"
 
 clean () {
 	echo "Cleaning builds"
-	rm -rf "${BUILD_DIR}" "${BUILD_ZIP}"
+	rm -rf "${BUILD_DIR}" "${BUILD_ZIP}" "${ZIP_DIR}"
 }
 
 createBuildDir () {
@@ -126,6 +137,13 @@ elif [ "$1" = "promote" ] ; then
 	createBuildDir &&
 	build &&
 	promote &&
+	clean &&
+	exit 0
+	exit 1
+elif [ "$1" = "zip" ] ; then
+	createBuildDir &&
+	build &&
+	buildZip &&
 	clean &&
 	exit 0
 	exit 1

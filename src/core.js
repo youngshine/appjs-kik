@@ -733,6 +733,13 @@ App._core = function (window, document, Swapper, Dialog, App, utils, Pages) {
 				elem            : newContent
 			}];
 
+		if (currentBack && currentBack.getAttribute('data-noslide')) {
+			currentBack = undefined;
+		}
+		if (newBack && newBack.getAttribute('data-noslide')) {
+			newBack = undefined;
+		}
+
 		if (currentTitle) {
 			transitions.push({
 				opacityStart    : 1 ,
