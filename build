@@ -16,6 +16,17 @@ buildProject () {
 	buildCSS     "default.css"  "src/stylesheets/app.css src/stylesheets/default.css"
 }
 
+buildZip () {
+	ZIP_FILE="appjs-v${MAJOR_VERSION}.zip"
+	ZIP_DIR="appjs"
+	unzip "${ZIP_FILE}"
+	cp "${BUILD_DIR}/app.js"      "${ZIP_DIR}/app.js"
+	cp "${BUILD_DIR}/default.css" "${ZIP_DIR}/default.css"
+	rm "${ZIP_FILE}"
+	zip -r "${ZIP_FILE}" "${ZIP_DIR}"
+	rm -r "${ZIP_DIR}"
+}
+
 
 
 
@@ -126,6 +137,13 @@ elif [ "$1" = "promote" ] ; then
 	createBuildDir &&
 	build &&
 	promote &&
+	clean &&
+	exit 0
+	exit 1
+elif [ "$1" = "zip" ] ; then
+	createBuildDir &&
+	build &&
+	buildZip &&
 	clean &&
 	exit 0
 	exit 1
