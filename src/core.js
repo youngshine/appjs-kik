@@ -1,5 +1,6 @@
 App._core = function (window, document, Swapper, App, utils, Dialog, Pages) {
 	var STACK_KEY                         = '__APP_JS_STACK__' + window.location.pathname,
+		STACK_TIME                        = '__APP_JS_TIME__' + window.location.pathname,
 		DEFAULT_TRANSITION_IOS            = 'slide-left',
 		DEFAULT_TRANSITION_ANDROID        = 'implode-out',
 		DEFAULT_TRANSITION_ANDROID_OLD    = 'fade-on',
@@ -566,12 +567,12 @@ App._core = function (window, document, Swapper, App, utils, Dialog, Pages) {
 	}
 
 	// you must manually save the stack if you choose to use this method
-	function addToStackNow (index, newPages) {
+	function addToStackNow (index, newPages, restored) {
 		var pageDatas = [],
 			lastPage;
 
 		newPages.forEach(function (pageData) {
-			var pageManager = {},
+			var pageManager = { restored : restored },
 				page        = Pages.startGeneration(pageData[0], pageManager, pageData[1]);
 			populatePageBackButton(page, lastPage);
 
@@ -867,39 +868,61 @@ App._core = function (window, document, Swapper, App, utils, Dialog, Pages) {
 
 	function saveStack () {
 		try {
-			var storedStack = stack.map(function (pageData) {
-				return [ pageData[0], pageData[3], pageData[2] ];
-			});
-
+			var storedStack = [];
+			for (var i=0, l=stack.length; i<l; i++) {
+				if (stack[i][4].restorable === false) {
+					break;
+				}
+				storedStack.push([stack[i][0], stack[i][3], stack[i][2]]);
+			}
 			localStorage[STACK_KEY] = JSON.stringify(storedStack);
+			localStorage[STACK_TIME] = +new Date() + '';
 		}
 		catch (err) {}
 	}
 
 	function destroyStack () {
 		delete localStorage[STACK_KEY];
+		delete localStorage[STACK_TIME];
 	}
 
-	function setupRestoreFunction () {
+	function setupRestoreFunction (options) {
 		var storedStack, lastPage;
 
 		try {
 			storedStack = JSON.parse( localStorage[STACK_KEY] );
+			storedTime  = parseInt( localStorage[STACK_TIME] );
 			lastPage    = storedStack.pop();
 		}
 		catch (err) {
 			return;
 		}
 
-		return function (callback) {
+		return function (options, callback) {
+			switch (typeof options) {
+				case 'function':
+					callback = options;
+				case 'undefined':
+					options = {};
+				case 'object':
+					if (options !== null) {
+						break;
+					}
+				default:
+					throw TypeError('restore options must be an object if defined, got ' + options);
+			}
+
 			switch (typeof callback) {
 				case 'undefined':
 					callback = function () {};
 				case 'function':
 					break;
-
 				default:
 					throw TypeError('restore callback must be a function if defined, got ' + callback);
+			}
+
+			if (+new Date()-storedTime >= options.maxAge) {
+				throw TypeError('restore content is too old');
 			}
 
 			if ( !Pages.has(lastPage[0]) ) {
@@ -913,7 +936,7 @@ App._core = function (window, document, Swapper, App, utils, Dialog, Pages) {
 			});
 
 			try {
-				addToStackNow(0, storedStack);
+				addToStackNow(0, storedStack, true);
 			}
 			catch (err) {
 				removeFromStackNow(0, stack.length);

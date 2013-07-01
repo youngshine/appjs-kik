@@ -175,6 +175,7 @@
 	});
 
 	App.populator('buttons', function (page) {
+		this.restorable = false;
 		page.querySelector('.app-menu').addEventListener('click', function () {
 			App.dialog({
 				tweetButton  : 'Share on Facebook' ,
