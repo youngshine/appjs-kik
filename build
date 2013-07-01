@@ -4,25 +4,28 @@ PROJECT="app"
 LICENSE="LICENSE.txt"
 ZIP_FILE="appjs-v${MAJOR_VERSION}.zip"
 ZIP_DIR="appjs"
-MAJOR_VERSION="1"
-MINOR_VERSION="10"
+MAJOR_VERSION="2"
+MINOR_VERSION="0"
 BUG_VERSION="0"
 AWS_BUCKET="cdn.kik.com"
 AWS_CFG="${HOME}/.s3cfg-kik"
 
 buildProject () {
-	APP_JS="src/lib/swapper.js src/lib/clickable.js src/lib/dialog.js src/lib/scrollable.js src/app.js src/utils.js src/metrics.js src/pages.js src/core.js"
-	buildJS      "app.js"       "${APP_JS}"
-	buildDebugJS "app-DEBUG.js" "${APP_JS}"
-	buildCSS     "app.css"      "src/stylesheets/app.css"
-	buildCSS     "default.css"  "src/stylesheets/app.css src/stylesheets/default.css"
+	APP_JS="src/lib/swapper.js src/lib/clickable.js src/lib/scrollable.js src/app.js src/utils.js src/metrics.js src/dialog.js src/pages.js src/core.js"
+	buildDebugJS  "app.js"          "${APP_JS}"
+	buildJS       "app.min.js"      "${APP_JS}"
+	buildDebugCSS "base.css"        "src/stylesheets/base.css"
+	buildCSS      "base.min.css"    "src/stylesheets/base.css"
+	buildCSS      "app.css"         "src/stylesheets/base.css src/stylesheets/app.css"
+	buildDebugCSS "app.min.css"     "src/stylesheets/base.css src/stylesheets/app.css"
+	buildCSS      "default.css"     "src/stylesheets/base.css src/stylesheets/default.css"
+	buildDebugCSS "default.min.css" "src/stylesheets/base.css src/stylesheets/default.css"
 }
 
 buildZip () {
-	unzip "${ZIP_FILE}"
-	cp "${BUILD_DIR}/app.js"      "${ZIP_DIR}/app.js"
-	cp "${BUILD_DIR}/default.css" "${ZIP_DIR}/default.css"
-	rm "${ZIP_FILE}"
+	mkdir "${ZIP_DIR}"
+	cp -r bundle/* "${ZIP_DIR}"
+	cp -r "${BUILD_DIR}"/* "${ZIP_DIR}"
 	zip -r "${ZIP_FILE}" "${ZIP_DIR}"
 	rm -r "${ZIP_DIR}"
 }
@@ -85,6 +88,13 @@ buildCSS () {
 	echo "Building ${1}"
 	fileName="${BUILD_DIR}/${1}"
 	cat ${2} | ${CSS_COMPILER} > "${fileName}"
+	preprendLicense "${fileName}"
+}
+
+buildDebugCSS () {
+	echo "Building ${1}"
+	fileName="${BUILD_DIR}/${1}"
+	cat ${2} > "${fileName}"
 	preprendLicense "${fileName}"
 }
 

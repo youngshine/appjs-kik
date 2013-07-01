@@ -1,4 +1,4 @@
-App._core = function (window, document, Swapper, Dialog, App, utils, Pages) {
+App._core = function (window, document, Swapper, App, utils, Dialog, Pages) {
 	var STACK_KEY                         = '__APP_JS_STACK__' + window.location.pathname,
 		DEFAULT_TRANSITION_IOS            = 'slide-left',
 		DEFAULT_TRANSITION_ANDROID        = 'implode-out',
@@ -373,7 +373,6 @@ App._core = function (window, document, Swapper, Dialog, App, utils, Pages) {
 		destroyStack();
 	};
 
-	App.dialog  = Dialog;
 	App.restore = setupRestoreFunction();
 	App._layout = setupListeners();
 
@@ -464,8 +463,7 @@ App._core = function (window, document, Swapper, Dialog, App, utils, Pages) {
 	}
 
 	function navigateBack (options, callback) {
-		if ( Dialog.status() ) {
-			Dialog.close();
+		if (Dialog.status() && Dialog.close()) {
 			return;
 		}
 
@@ -933,4 +931,4 @@ App._core = function (window, document, Swapper, Dialog, App, utils, Pages) {
 			}
 		};
 	}
-}(window, document, Swapper, Dialog, App, App._utils, App._Pages);
+}(window, document, Swapper, App, App._utils, App._Dialog, App._Pages);

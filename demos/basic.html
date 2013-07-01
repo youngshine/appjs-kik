@@ -21,7 +21,7 @@
 
 <div class="app-page" data-page="home">
 	<div class="app-topbar">
-		<div class="app-title">Basic App</div>
+		<div class="app-title"><span class="app-icon"></span>Basic App</div>
 	</div>
 
 	<div class="app-content">
@@ -36,7 +36,7 @@
 <div class="app-page" data-page="lists">
 	<div class="app-topbar">
 		<div class="left app-button" data-back="true" data-autotitle="true"></div>
-		<div class="app-title">Lists</div>
+		<div class="app-title"><span class="app-icon"></span>Lists</div>
 	</div>
 
 	<div class="app-content">
@@ -63,50 +63,45 @@
 
 <div class="app-page" data-page="buttons">
 	<div class="app-topbar">
-		<div class="left app-button" data-back="true">Back</div>
-		<div class="app-title">Buttons</div>
+		<div class="left app-button" data-back="true" data-autotitle="true"></div>
+		<div class="app-title"><span class="app-icon"></span>Buttons</div>
+		<div class="right app-button app-menu">Dialog</div>
 	</div>
 
 	<div class="app-content">
 		<div class="app-section">
-			<div class="app-button">Button 1</div>
-			<div class="app-button">Button 2</div>
-			<div class="app-button">Button 3</div>
+			<ul class="app-list">
+				<li class="app-button">Item 1</li>
+				<li class="app-button">Item 2</li>
+				<li class="app-button">Item 3</li>
+			</ul>
 		</div>
 
 		<div class="app-section">
-			<div class="green app-button">Green Button</div>
-		</div>
-
-		<div class="app-section">
-			<div class="red app-button">Red Button</div>
-		</div>
-
-		<div class="app-section">
-			<div class="blue app-button">Blue Button</div>
+			<div class="app-button red">Button 1</div>
+			<div class="app-button green">Button 2</div>
+			<div class="app-button blue">Button 3</div>
 		</div>
 	</div>
 </div>
 
 <div class="app-page" data-page="inputs">
 	<div class="app-topbar">
-		<div class="left app-button" data-back="true">Back</div>
-		<div class="app-title">Inputs</div>
+		<div class="left app-button" data-back="true" data-autotitle="true"></div>
+		<div class="app-title"><span class="app-icon"></span>Inputs</div>
 	</div>
 
 	<div class="app-content">
+		<input class="app-input" type="search" placeholder="Search..">
+
 		<div class="app-section">
 			<input class="app-input" placeholder="Input">
 		</div>
 
 		<div class="app-section">
-			<textarea class="app-input" placeholder="Textarea"></textarea>
-		</div>
-
-		<div class="app-section">
 			<input class="app-input" placeholder="Input">
 			<textarea class="app-input" placeholder="Textarea"></textarea>
-			<div class="app-button">Send</div>
+			<div class="app-button green">Send</div>
 		</div>
 	</div>
 </div>
@@ -152,11 +147,11 @@
 
 <script src="../src/lib/swapper.js"    ></script>
 <script src="../src/lib/clickable.js"  ></script>
-<script src="../src/lib/dialog.js"     ></script>
 <script src="../src/lib/scrollable.js" ></script>
 <script src="../src/app.js"            ></script>
 <script src="../src/utils.js"          ></script>
 <script src="../src/metrics.js"        ></script>
+<script src="../src/dialog.js"         ></script>
 <script src="../src/pages.js"          ></script>
 <script src="../src/core.js"           ></script>
 
@@ -176,6 +171,18 @@
 
 		page.addEventListener('appForward', function () {
 			console.log('lists page is going forward');
+		}, false);
+	});
+
+	App.populator('buttons', function (page) {
+		page.querySelector('.app-menu').addEventListener('click', function () {
+			App.dialog({
+				tweetButton  : 'Share on Facebook' ,
+				fbButton     : 'Share on Twitter'  ,
+				gpButton     : 'Share on Google+'  ,
+				okButton     : 'Share on Kik' ,
+				cancelButton : 'Cancel'
+			});
 		}, false);
 	});
 

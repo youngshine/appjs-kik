@@ -253,3 +253,118 @@ textarea.app-input {
 .app-input textarea {
 	height: 60px;
 }
+
+
+
+/* Dialogs */
+
+.app-dialog-container {
+	position: fixed;
+	z-index: 5000;
+	top: 0;
+	left: 0;
+	margin: 0;
+	padding: 0;
+	height: 100%;
+	width: 100%;
+	background: rgba(0,0,0,0.8);
+	opacity: 0;
+	overflow: hidden;
+	-webkit-transition: opacity 0.26s ease-in-out;
+	transition: opacity 0.26s ease-in-out;
+}
+.app-dialog-container.ios5 {
+	position: absolute;
+}
+.app-dialog-container.enabled {
+	opacity: 1;
+}
+.app-dialog-container.fancy {
+	background: rgba(0,0,0,0);
+	opacity: 1;
+	-webkit-transition: background 0.26s ease-in-out;
+	transition: background 0.26s ease-in-out;
+}
+.app-dialog-container.fancy.enabled {
+	background: rgba(0,0,0,0.8);
+}
+.app-dialog {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	margin: 0;
+	padding: 0;
+	width: 100%;
+	background: #F5F6F7;
+	border-top: 1px solid #FFF;
+	-webkit-box-shadow: 0 0 8px rgba(0,0,0,0.85);
+	box-shadow: 0 0 8px rgba(0,0,0,0.85);
+	color: #777;
+}
+.app-android .app-dialog {
+	bottom: 50%;
+	margin: 0 10%;
+	padding-bottom: 8px;
+	width: 80%;
+	background: #EEEEEA;
+	-webkit-transform: translate3d(0,50%,0);
+	transform: translate3d(0,50%,0);
+}
+.app-dialog.dark {
+	background: #333332;
+	border-top-color: #444;
+	color: #999;
+}
+.app-android .app-dialog.dark {}
+.app-dialog-container.fancy .app-dialog {
+	background: rgba(255,255,255,0.85);
+	-webkit-transform: translate3d(0,110%,0);
+	transform: translate3d(0,110%,0);
+	-webkit-transition: -webkit-transform 0.26s ease-in-out;
+	transition: transform 0.26s ease-in-out;
+}
+.app-dialog-container.fancy .app-dialog.dark {
+	background: rgba(51,51,50,0.9);
+}
+.app-dialog-container.fancy.enabled .app-dialog {
+	-webkit-transform: translate3d(0,0,0);
+	transform: translate3d(0,0,0);
+}
+.app-dialog .title {
+	position: relative;
+	margin-bottom: 8px;
+	padding: 16px 20px 0;
+	font-size: 18px;
+	font-weight: 600;
+	text-align: center;
+}
+.app-dialog .text {
+	margin-top: 8px;
+	padding: 0 20px 8px;
+	font-size: 16px;
+	font-weight: 400;
+	text-align: center;
+}
+.app-dialog .button {
+	height: 60px;
+	color: #17B;
+	font-size: 22px;
+	font-weight: 300;
+	line-height: 60px;
+	text-align: center;
+}
+.app-dialog.dark .button {
+	color: #F3F4F5;
+}
+.app-dialog .button.ok {
+	color: #3C7;
+}
+.app-dialog .button.cancel {
+	color: #E54;
+}
+.app-android .app-dialog .button.cancel {
+	display: none;
+}
+.app-dialog .button.active {
+	opacity: 0.5;
+}
