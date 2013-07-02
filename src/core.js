@@ -696,41 +696,59 @@ App._core = function (window, document, Swapper, App, utils, Dialog, Pages) {
 	}
 
 	function performNativeIOSTransition (page, options, callback) {
-		var oldPage        = currentNode,
-			currentBar     = oldPage.querySelector('.app-topbar'),
-			currentBack    = oldPage.querySelector('.app-topbar .left.app-button'),
-			currentContent = oldPage.querySelector('.app-content'),
-			newBar         = page.querySelector('.app-topbar'),
-			newBack        = page.querySelector('.app-topbar .left.app-button'),
-			newContent     = page.querySelector('.app-content'),
-			currentTitle, newTitle;
+		var oldPage     = currentNode,
+			slideLeft   = (options.transition === 'slide-left'),
+			topPage     = slideLeft ? page : oldPage ,
+			transitions = getTransitionList(page, oldPage, slideLeft);
 
-		if (currentBar) {
-			currentTitle = currentBar.querySelector('.app-title');
-		}
-		if (newBar) {
-			newTitle = newBar.querySelector('.app-title');
-		}
-
-		if (!currentBar || !newBar || !currentContent || !newContent || !isVisible(currentBar) || !isVisible(newBar)) {
+		if ( !transitions ) {
 			// proper iOS transition not possible, fallback to normal
 			Swapper(oldPage, page, options, callback);
 			return;
 		}
 
-		var slideLeft   = (options.transition === 'slide-left'),
-			transitions = [{
-				opacityEnd : 0 ,
-				elem       : currentBar
-			}, {
-				transitionStart : 'translate3d(0,0,0)' ,
-				transitionEnd   : 'translate3d('+(slideLeft?-100:100)+'%,0,0)' ,
-				elem            : currentContent
-			}, {
-				transitionStart : 'translate3d('+(slideLeft?100:-100)+'%,0,0)' ,
-				transitionEnd   : 'translate3d(0,0,0)' ,
-				elem            : newContent
-			}];
+		var oldPosition   = topPage.style.position,
+			oldZIndex     = topPage.style.zIndex,
+			oldBackground = topPage.style.background;
+		topPage.style.position   = 'fixed';
+		topPage.style.zIndex     = '10000';
+		topPage.style.background = 'none';
+
+		if (slideLeft) {
+			oldPage.parentNode.insertBefore(page, oldPage);
+		}
+		else if (oldPage.nextSibling) {
+			oldPage.parentNode.insertBefore(page, oldPage.nextSibling);
+		}
+		else {
+			oldPage.parentNode.appendChild(page);
+		}
+
+		utils.animate(transitions, 300, 'ease-in-out', function () {
+			oldPage.parentNode.removeChild(oldPage);
+
+			topPage.style.position   = oldPosition;
+			topPage.style.zIndex     = oldZIndex;
+			topPage.style.background = oldBackground;
+
+			callback();
+		});
+	}
+
+	function getTransitionList (page, oldPage, slideLeft) {
+		var currentBar     = oldPage.querySelector('.app-topbar'),
+			currentTitle   = oldPage.querySelector('.app-topbar .app-title'),
+			currentBack    = oldPage.querySelector('.app-topbar .left.app-button'),
+			currentContent = oldPage.querySelector('.app-content'),
+			newBar         = page.querySelector('.app-topbar'),
+			newTitle       = page.querySelector('.app-topbar .app-title'),
+			newBack        = page.querySelector('.app-topbar .left.app-button'),
+			newContent     = page.querySelector('.app-content'),
+			transitions    = [];
+
+		if (!currentBar || !newBar || !currentContent || !newContent || !isVisible(currentBar) || !isVisible(newBar)) {
+			return;
+		}
 
 		if (currentBack && currentBack.getAttribute('data-noslide')) {
 			currentBack = undefined;
@@ -739,10 +757,25 @@ App._core = function (window, document, Swapper, App, utils, Dialog, Pages) {
 			newBack = undefined;
 		}
 
+		// fade topbar
+		if (slideLeft) {
+			transitions.push({
+				opacityStart : 0 ,
+				opacityEnd   : 1 ,
+				elem         : newBar
+			});
+		}
+		else {
+			transitions.push({
+				opacityStart : 1 ,
+				opacityEnd   : 0 ,
+				elem         : currentBar
+			});
+		}
+
+		// slide titles
 		if (currentTitle) {
 			transitions.push({
-				opacityStart    : 1 ,
-				opacityEnd      : 0 ,
 				transitionStart : 'translate3d(0,0,0)' ,
 				transitionEnd   : 'translate3d('+getTitleTransform(newBack, slideLeft)+'px,0,0)' ,
 				elem            : currentTitle
@@ -750,14 +783,13 @@ App._core = function (window, document, Swapper, App, utils, Dialog, Pages) {
 		}
 		if (newTitle) {
 			transitions.push({
-				opacityStart    : 0 ,
-				opacityEnd      : 1 ,
 				transitionStart : 'translate3d('+getTitleTransform(currentBack, !slideLeft)+'px,0,0)' ,
 				transitionEnd   : 'translate3d(0,0,0)' ,
 				elem            : newTitle
 			});
 		}
 
+		// slide back button
 		if (utils.os.version >= 5) {
 			if (currentBack) {
 				transitions.push({
@@ -775,17 +807,18 @@ App._core = function (window, document, Swapper, App, utils, Dialog, Pages) {
 			}
 		}
 
-		var oldPosition = page.style.position;
-		page.style.position = 'fixed';
-		oldPage.parentNode.insertBefore(page, oldPage);
-		oldPage.style.background = 'none';
-
-		utils.animate(transitions, 300, 'ease-in-out', function () {
-			oldPage.parentNode.removeChild(oldPage);
-			page.style.position = oldPosition;
-
-			callback();
+		// slide contents
+		transitions.push({
+			transitionStart : 'translate3d(0,0,0)' ,
+			transitionEnd   : 'translate3d('+(slideLeft?-100:100)+'%,0,0)' ,
+			elem            : currentContent
+		}, {
+			transitionStart : 'translate3d('+(slideLeft?100:-100)+'%,0,0)' ,
+			transitionEnd   : 'translate3d(0,0,0)' ,
+			elem            : newContent
 		});
+
+		return transitions;
 	}
 
 	function getBackTransform (backButton, oldButton, toCenter) {
