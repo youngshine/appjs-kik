@@ -673,6 +673,9 @@ App._core = function (window, document, Swapper, App, utils, Dialog, Pages) {
 		if ( !options.transition ) {
 			options.transition = (reverse ? reverseTransition : defaultTransition);
 		}
+		if ( !options.duration ) {
+			options.duration = utils.os.ios ? 325 : 270;
+		}
 
 		uiBlockedTask(function (unblockUI) {
 			if ( shouldUseNativeIOSTransition(options) ) {
@@ -724,7 +727,7 @@ App._core = function (window, document, Swapper, App, utils, Dialog, Pages) {
 			oldPage.parentNode.appendChild(page);
 		}
 
-		utils.animate(transitions, 300, 'ease-in-out', function () {
+		utils.animate(transitions, options.duration, 'ease-in-out', function () {
 			oldPage.parentNode.removeChild(oldPage);
 
 			topPage.style.position   = oldPosition;

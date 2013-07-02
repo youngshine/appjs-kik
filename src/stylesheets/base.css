@@ -270,8 +270,12 @@ textarea.app-input {
 	background: rgba(0,0,0,0.8);
 	opacity: 0;
 	overflow: hidden;
-	-webkit-transition: opacity 0.3s ease-in-out;
-	transition: opacity 0.3s ease-in-out;
+	-webkit-transition: opacity 0.282s ease-in-out;
+	transition: opacity 0.282s ease-in-out;
+}
+.app-dialog-container.fancy {
+	-webkit-transition: opacity 0.282s ease-in-out;
+	transition: opacity 0.282s ease-in-out;
 }
 .app-dialog-container.ios5 {
 	position: absolute;
@@ -282,8 +286,8 @@ textarea.app-input {
 .app-dialog-container.fancy {
 	background: rgba(0,0,0,0);
 	opacity: 1;
-	-webkit-transition: background 0.3s ease-in-out;
-	transition: background 0.3s ease-in-out;
+	-webkit-transition: background 0.282s ease-in-out;
+	transition: background 0.282s ease-in-out;
 }
 .app-dialog-container.fancy.enabled {
 	background: rgba(0,0,0,0.8);
@@ -320,8 +324,8 @@ textarea.app-input {
 	background: rgba(255,255,255,0.85);
 	-webkit-transform: translate3d(0,110%,0);
 	transform: translate3d(0,110%,0);
-	-webkit-transition: -webkit-transform 0.26s ease-in-out;
-	transition: transform 0.26s ease-in-out;
+	-webkit-transition: -webkit-transform 0.282s ease-in-out;
+	transition: transform 0.282s ease-in-out;
 }
 .app-dialog-container.fancy .app-dialog.dark {
 	background: rgba(51,51,50,0.9);
