@@ -25,6 +25,10 @@
 	</div>
 
 	<div class="app-content">
+		<p class="app-section">
+			Welcome to the App.js default theme. Click around to see what each widget looks like.
+		</p>
+
 		<div class="app-section">
 			<div class="app-button" data-target="lists">Lists</div>
 			<div class="app-button" data-target="buttons">Buttons</div>
@@ -175,7 +179,6 @@
 	});
 
 	App.populator('buttons', function (page) {
-		this.restorable = false;
 		page.querySelector('.app-menu').addEventListener('click', function () {
 			App.dialog({
 				tweetButton  : 'Share on Facebook' ,

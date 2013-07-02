@@ -226,7 +226,10 @@
 	-webkit-border-radius: 6px;
 	border-radius: 6px;
 }
-p.app-section {}
+p.app-section {
+	padding: 12px 16px;
+	color: #665;
+}
 .app-content .app-section > * {
 	margin: 8px 0 0;
 	-webkit-border-radius: 4px;

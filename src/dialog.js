@@ -116,7 +116,7 @@ App._Dialog = function (window, document, Clickable, App, utils) {
 			dialogLock = true;
 
 			if ((typeof status !== 'string') && !options.cancelButton) {
-				return;
+				return true;
 			}
 
 			currentCallback = null;
@@ -220,7 +220,7 @@ App._Dialog = function (window, document, Clickable, App, utils) {
 	}
 
 	Dialog.close = function () {
-		closeDialog();
+		return closeDialog();
 	};
 
 	Dialog.status = function () {
