@@ -14,6 +14,37 @@
 			cursor: pointer;
 			cursor: url(finger-active.png) 25 25, pointer;
 		}
+		ul.colour-picker {}
+		ul.colour-picker li {
+			display: block;
+			float: left;
+			height: 54px;
+			width: 25%;
+			background: #2B9;
+			-webkit-box-sizing: border-box;
+			box-sizing: border-box;
+		}
+		ul.colour-picker li[data-colour="green"] {
+			background: #3C7;
+		}
+		ul.colour-picker li[data-colour="yellow"] {
+			background: #EC1;
+		}
+		ul.colour-picker li[data-colour="orange"] {
+			background: #E82;
+		}
+		ul.colour-picker li[data-colour="red"] {
+			background: #E54;
+		}
+		ul.colour-picker li[data-colour="blue"] {
+			background: #39D;
+		}
+		ul.colour-picker li[data-colour="dark-blue"] {
+			background: #345;
+		}
+		ul.colour-picker li[data-colour="white"] {
+			background: #FFF;
+		}
 	</style>
 </head>
 
@@ -28,6 +59,21 @@
 		<p class="app-section">
 			Welcome to the App.js default theme. Click around to see what each widget looks like.
 		</p>
+
+		<div class="app-section">
+			<b>Topbar colours:</b><br>
+			<ul class="colour-picker">
+				<li data-colour=""></li>
+				<li data-colour="green"></li>
+				<li data-colour="yellow"></li>
+				<li data-colour="orange"></li>
+				<li data-colour="red"></li>
+				<li data-colour="blue"></li>
+				<li data-colour="dark-blue"></li>
+				<li data-colour="white"></li>
+				<div class="clear"></div>
+			</ul>
+		</div>
 
 		<div class="app-section">
 			<div class="app-button" data-target="lists">Lists</div>
@@ -61,6 +107,10 @@
 			<li>Item 10</li>
 			<li>Item 11</li>
 			<li>Item 12</li>
+			<label>Label 5</label>
+			<li>Item 13</li>
+			<li>Item 14</li>
+			<li>Item 15</li>
 		</ul>
 	</div>
 </div>
@@ -102,11 +152,11 @@
 			<input class="app-input" placeholder="Input">
 		</div>
 
-		<div class="app-section">
-			<input class="app-input" placeholder="Input">
-			<textarea class="app-input" placeholder="Textarea"></textarea>
+		<form class="app-section">
+			<input class="app-input" name="subject" placeholder="Subject">
+			<textarea class="app-input" name="message" placeholder="Message"></textarea>
 			<div class="app-button green">Send</div>
-		</div>
+		</form>
 	</div>
 </div>
 
@@ -160,6 +210,50 @@
 <script src="../src/core.js"           ></script>
 
 <script>
+	var colourPages = [],
+		colour      = '';
+
+	function setupPageColour (page) {
+		var topbar = page.querySelector('.app-topbar');
+		colourPages.push(topbar);
+		if (colour) {
+			topbar.classList.add(colour);
+		}
+	}
+
+	App.populator('home'   , setupPageColour);
+	App.populator('lists'  , setupPageColour);
+	App.populator('buttons', setupPageColour);
+	App.populator('inputs' , setupPageColour);
+
+
+
+	App.populator('home', function (page) {
+		Array.prototype.forEach.call(
+			page.querySelectorAll('ul.colour-picker li'),
+			function (colourButton) {
+				colourButton
+					.addEventListener('touchstart', function () {
+						var oldColour = colour;
+						colour = this.getAttribute('data-colour');
+
+						if (oldColour === colour) {
+							return;
+						}
+
+						colourPages.forEach(function (colourPage) {
+							if (oldColour) {
+								colourPage.classList.remove(oldColour);
+							}
+							if (colour) {
+								colourPage.classList.add(colour);
+							}
+						});
+					}, false);
+			}
+		);
+	});
+
 	App.populator('lists', function (page) {
 		page.addEventListener('appShow', function () {
 			console.log('lists page is visible');
@@ -190,6 +284,101 @@
 		}, false);
 	});
 
+	App.populator('inputs', function (page) {
+		App.form(
+			page.querySelector('form'),
+			function (params, unlock) {
+				console.log(params);
+				unlock();
+			}
+		);
+	});
+
+App.form = function (form, callback) {
+	//TODO: check if is node
+	switch (typeof callback) {
+		case 'undefined':
+			callback = function () {};
+		case 'function':
+			break;
+		default:
+			throw TypeError('callback must be a function, got '+callback);
+	}
+
+	var isForm = (form.nodeName === 'FORM'),
+		locked = false;
+
+	if (isForm) {
+		var submit = document.createElement('input');
+		submit.style.display = 'none';
+		submit.type = 'submit';
+		form.appendChild(submit);
+		form.addEventListener('submit', function (e) {
+			e.preventDefault();
+			submitForm();
+		}, false);
+	}
+	else {
+		form.addEventListener('keydown', function (e) {
+			if (e.which === 13) {
+				e.preventDefault();
+				submitForm();
+			}
+		}, false);
+	}
+
+	function submitForm () {
+		if (locked) {
+			return;
+		}
+		locked = true;
+		form.disabled = true;
+
+		var params = {},
+			inputs = isForm ? form.querySelectorAll('[name]') : [form],
+			done   = false;
+
+		if (isForm) {
+			Array.prototype.forEach.call(
+				form.querySelectorAll('[name]'),
+				function (elem) {
+					params[elem.name] = elem.value;
+				}
+			);
+		}
+		else {
+			params.value = form.value;
+			if (form.name) {
+				params[form.name] = form.value;
+			}
+		}
+
+		Array.prototype.forEach.call(
+			inputs,
+			function (elem) {
+				elem.disabled = true;
+			}
+		);
+
+		callback.call(this, params, function () {
+			if (done) {
+				return;
+			}
+			done = true;
+
+			Array.prototype.forEach.call(
+				inputs,
+				function (elem) {
+					elem.disabled = false;
+				}
+			);
+
+			locked = false;
+			form.disabled = false;
+		});
+	}
+};
+
 	try {
 		App.restore();
 	}
@@ -197,3 +386,5 @@
 		App.load('home');
 	}
 </script>
+
+<script src="http://cdn.kik.com/cards/0/cards.js"></script>
