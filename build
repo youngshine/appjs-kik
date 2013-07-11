@@ -16,10 +16,10 @@ buildProject () {
 	buildJS       "app.min.js"      "${APP_JS}"
 	buildDebugCSS "base.css"        "src/stylesheets/base.css"
 	buildCSS      "base.min.css"    "src/stylesheets/base.css"
-	buildCSS      "app.css"         "src/stylesheets/base.css src/stylesheets/app.css"
-	buildDebugCSS "app.min.css"     "src/stylesheets/base.css src/stylesheets/app.css"
-	buildCSS      "default.css"     "src/stylesheets/base.css src/stylesheets/default.css"
-	buildDebugCSS "default.min.css" "src/stylesheets/base.css src/stylesheets/default.css"
+	buildDebugCSS "app.css"         "src/stylesheets/base.css src/stylesheets/app.css"
+	buildCSS      "app.min.css"     "src/stylesheets/base.css src/stylesheets/app.css"
+	buildDebugCSS "default.css"     "src/stylesheets/base.css src/stylesheets/default.css"
+	buildCSS      "default.min.css" "src/stylesheets/base.css src/stylesheets/default.css"
 }
 
 buildZip () {
