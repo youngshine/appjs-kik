@@ -63,13 +63,13 @@
 		0 1px 7px rgba(0,0,0,0.18);
 }
 .app-topbar.blue {
-	background-color: #39D;
+	background-color: #3E85F1;
 	-webkit-box-shadow:
-		inset 0 -1px 0 #27A,
+		inset 0 -1px 0 #3571CD,
 		0 1px 0 rgba(0,0,0,0.1),
 		0 1px 7px rgba(0,0,0,0.18);
 	box-shadow:
-		inset 0 -1px 0 #27A,
+		inset 0 -1px 0 #3571CD,
 		0 1px 0 rgba(0,0,0,0.1),
 		0 1px 7px rgba(0,0,0,0.18);
 }
@@ -97,13 +97,11 @@
 	color: #444;
 }
 .dark-page .app-topbar {
-	background-color: #111;
+	background-color: rgba(0,0,0,0.8);
 	-webkit-box-shadow:
-		inset 0 -1px 0 #080808,
 		0 1px 0 rgba(0,0,0,0.1),
 		0 1px 7px rgba(0,0,0,0.18);
 	box-shadow:
-		inset 0 -1px 0 #080808,
 		0 1px 0 rgba(0,0,0,0.1),
 		0 1px 7px rgba(0,0,0,0.18);
 }
@@ -203,11 +201,11 @@
 
 .app-page,
 .app-content {
-	background: #F0F1F2;
+	background: #E8EAEf;
 }
 .dark-page.app-page,
 .dark-page .app-content {
-	background: #222;
+	background: #000;
 }
 
 .app-section,
@@ -370,4 +368,8 @@ input.app-input {
 	background-position: 12px center;
 	-webkit-background-size: 16px 16px;
 	background-size: 16px 16px;
+}
+.app-input[type="search"].no-icon {
+	padding-left: 12px;
+	background-image: none;
 }
