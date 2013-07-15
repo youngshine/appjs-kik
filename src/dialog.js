@@ -41,7 +41,12 @@ App._Dialog = function (window, document, Clickable, App, utils) {
 		if (options.text) {
 			var text = document.createElement('div');
 			text.className += ' text';
-			text.textContent = options.text;
+			if (options.rawText) {
+				text.innerHTML = options.text;
+			}
+			else {
+				text.textContent = options.text;
+			}
 			dialog.appendChild(text);
 		}
 
@@ -196,7 +201,7 @@ App._Dialog = function (window, document, Clickable, App, utils) {
 		}
 
 		for (var key in options) {
-			if (key !== 'dark') {
+			if ((key !== 'dark') && (key !== 'rawText')) {
 				switch (typeof options[key]) {
 					case 'undefined':
 					case 'string':
