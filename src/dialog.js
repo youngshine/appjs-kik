@@ -25,7 +25,7 @@ App._Dialog = function (window, document, Clickable, App, utils) {
 		}
 
 		var dialog = document.createElement('div');
-		dialog.className += ' app-dialog';
+		dialog.className = 'app-dialog';
 		if (options.dark) {
 			dialog.className += ' dark';
 		}
@@ -33,15 +33,18 @@ App._Dialog = function (window, document, Clickable, App, utils) {
 
 		if (options.title) {
 			var title = document.createElement('div');
-			title.className += ' title';
+			title.className = 'title';
 			title.textContent = options.title;
 			dialog.appendChild(title);
 		}
 
 		if (options.text) {
 			var text = document.createElement('div');
-			text.className += ' text';
-			if (options.rawText) {
+			text.className = 'text';
+			if ( utils.isNode(options.text) ) {
+				text.appendChild(options.text);
+			}
+			else if (options.rawText) {
 				text.innerHTML = options.text;
 			}
 			else {
@@ -197,7 +200,9 @@ App._Dialog = function (window, document, Clickable, App, utils) {
 			case 'string':
 				break;
 			default:
-				throw TypeError('dialog text must be a string if defined, got ' + options.text);
+				if ( !utils.isNode(options.text) ) {
+					throw TypeError('dialog text must be a string if defined, got ' + options.text);
+				}
 		}
 
 		for (var key in options) {
