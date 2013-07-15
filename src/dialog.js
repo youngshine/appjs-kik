@@ -206,7 +206,7 @@ App._Dialog = function (window, document, Clickable, App, utils) {
 		}
 
 		for (var key in options) {
-			if ((key !== 'dark') && (key !== 'rawText')) {
+			if ((key !== 'dark') && (key !== 'rawText') && (key !== 'text')) {
 				switch (typeof options[key]) {
 					case 'undefined':
 					case 'string':
