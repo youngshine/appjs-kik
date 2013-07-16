@@ -225,7 +225,6 @@ App._Pages = function (window, document, Clickable, Scrollable, App, utils, Even
 		populatePage(pageName, pageManager, page, args);
 
 		page.addEventListener('DOMNodeInsertedIntoDocument', function () {
-			fixPageTitle(page);
 			Events.fire(page, EVENTS.LAYOUT);
 		}, false);
 
@@ -273,37 +272,5 @@ App._Pages = function (window, document, Clickable, Scrollable, App, utils, Even
 		}
 
 		content.style.height = (height - topbarHeight) + 'px';
-	}
-
-	function fixPageTitle (page) {
-		var topbar = page.querySelector('.app-topbar');
-
-		if ( !topbar ) {
-			return;
-		}
-
-		var title = topbar.querySelector('.app-title');
-
-		if (!title || !title.getAttribute('data-autosize') ) {
-			return;
-		}
-
-		var margin      = 0,
-			leftButton  = topbar.querySelector('.left.app-button'),
-			rightButton = topbar.querySelector('.right.app-button');
-
-		if (leftButton) {
-			var leftStyles = utils.getStyles(leftButton),
-				leftPos    = utils.getTotalWidth(leftStyles) + parseInt(leftStyles.left || 0) + 4;
-			margin = Math.max(margin, leftPos);
-		}
-
-		if (rightButton) {
-			var rightStyles = utils.getStyles(rightButton),
-				rightPos    = utils.getTotalWidth(rightStyles) + parseInt(rightStyles.right || 0) + 4;
-			margin = Math.max(margin, rightPos);
-		}
-
-		title.style.width = (window.innerWidth-margin*2) + 'px';
 	}
 }(window, document, Clickable, Scrollable, App, App._utils, App._Events, App._metrics, App._Scroll);

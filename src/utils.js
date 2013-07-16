@@ -166,18 +166,6 @@ App._utils = function (window, document, App) {
 		};
 	}
 
-	function getTotalWidth (styles) {
-		var width = 0;
-		width += parseInt(styles.width            || 0);
-		width += parseInt(styles.paddingLeft      || 0);
-		width += parseInt(styles.paddingRight     || 0);
-		width += parseInt(styles.borderLeftWidth  || 0);
-		width += parseInt(styles.borderRightWidth || 0);
-		width += parseInt(styles.marginLeft       || 0);
-		width += parseInt(styles.marginRight      || 0);
-		return width;
-	}
-
 	// this is tuned for use with the iOS transition
 	// be careful if using this elsewhere
 	function transitionElems (transitions, timeout, easing, callback) {
@@ -296,7 +284,6 @@ App._utils = function (window, document, App) {
 		setTransform  : setTransform  ,
 		setTransition : setTransition ,
 		animate       : transitionElems ,
-		getStyles     : getStyles     ,
-		getTotalWidth : getTotalWidth
+		getStyles     : getStyles
 	};
 }(window, document, App);

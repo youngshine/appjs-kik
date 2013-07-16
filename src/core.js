@@ -1,6 +1,6 @@
 App._core = function (window, document, Swapper, App, utils, Events, Dialog, Scroll, Pages) {
-	var STACK_KEY                         = '__APP_JS_STACK__' + window.location.pathname,
-		STACK_TIME                        = '__APP_JS_TIME__' + window.location.pathname,
+	var STACK_KEY  = '__APP_JS_STACK__' + window.location.pathname,
+		STACK_TIME = '__APP_JS_TIME__'  + window.location.pathname,
 		EVENTS = {
 			SHOW    : 'appShow'    ,
 			HIDE    : 'appHide'    ,
@@ -14,7 +14,7 @@ App._core = function (window, document, Swapper, App, utils, Events, Dialog, Scr
 		DEFAULT_TRANSITION_ANDROID        = 'implode-out',
 		DEFAULT_TRANSITION_ANDROID_OLD    = 'fade-on',
 		DEFAULT_TRANSITION_ANDROID_GHETTO = 'instant',
-		REVERSE_TRANSITION                = {
+		REVERSE_TRANSITION = {
 			'instant'        : 'instant'        ,
 			'fade'           : 'fade'           ,
 			'fade-on'        : 'fade-off'       ,
