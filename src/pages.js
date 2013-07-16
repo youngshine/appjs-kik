@@ -1,4 +1,4 @@
-App._Pages = function (window, document, Clickable, Scrollable, App, utils, Events, metrics) {
+App._Pages = function (window, document, Clickable, Scrollable, App, utils, Events, metrics, Scroll) {
 	var PAGE_NAME  = 'data-page',
 		PAGE_CLASS = 'app-page',
 		APP_LOADED = 'app-loaded',
@@ -83,16 +83,12 @@ App._Pages = function (window, document, Clickable, Scrollable, App, utils, Even
 
 
 	return {
-		has                   : hasPage                   ,
-		startGeneration       : startPageGeneration       ,
-		finishGeneration      : finishPageGeneration      ,
-		startDestruction      : startPageDestruction      ,
-		finishDestruction     : finishPageDestruction     ,
-		fixContent            : fixContentHeight          ,
-		saveScrollPosition    : savePageScrollPosition    ,
-		saveScrollStyle       : savePageScrollStyle       ,
-		restoreScrollPosition : restorePageScrollPosition ,
-		restoreScrollStyle    : restorePageScrollStyle
+		has                   : hasPage               ,
+		startGeneration       : startPageGeneration   ,
+		finishGeneration      : finishPageGeneration  ,
+		startDestruction      : startPageDestruction  ,
+		finishDestruction     : finishPageDestruction ,
+		fixContent            : fixContentHeight
 	};
 
 
@@ -237,12 +233,12 @@ App._Pages = function (window, document, Clickable, Scrollable, App, utils, Even
 	}
 
 	function finishPageGeneration (pageName, pageManager, page, args) {
-		setupScrollers(page);
+		Scroll.setup(page);
 	}
 
 	function startPageDestruction (pageName, pageManager, page, args) {
 		if (!utils.os.ios || utils.os.version < 6) {
-			disableScrolling(page);
+			Scroll.disable(page);
 		}
 	}
 
@@ -310,133 +306,4 @@ App._Pages = function (window, document, Clickable, Scrollable, App, utils, Even
 
 		title.style.width = (window.innerWidth-margin*2) + 'px';
 	}
-
-
-
-	/* Page scrolling */
-
-	function setupScrollers (page) {
-		utils.forEach(
-			page.querySelectorAll('.app-content'),
-			function (content) {
-				if ( !content.getAttribute('data-no-scroll') ) {
-					setupScroller(content);
-				}
-			}
-		);
-
-		utils.forEach(
-			page.querySelectorAll('[data-scrollable]'),
-			function (content) {
-				setupScroller(content);
-			}
-		);
-	}
-
-	function setupScroller (content) {
-		Scrollable(content, forceIScroll);
-		content.className += ' app-scrollable';
-		if (!forceIScroll && utils.os.ios && utils.os.version < 6) {
-			content.className += ' app-scrollhack';
-		}
-	}
-
-	function disableScrolling (page) {
-		utils.forEach(
-			page.querySelectorAll('*'),
-			function (elem) {
-				elem.style['-webkit-overflow-scrolling'] = '';
-			}
-		);
-	}
-
-	function getScrollableElems (page) {
-		var elems = [];
-
-		if (page) {
-			utils.forEach(
-				page.querySelectorAll('.app-scrollable'),
-				function (elem) {
-					if (elem._scrollable) {
-						elems.push(elem);
-					}
-				}
-			);
-		}
-
-		return elems;
-	}
-
-	function savePageScrollPosition (page) {
-		utils.forEach(
-			getScrollableElems(page),
-			function (elem) {
-				if (elem._iScroll) {
-					return;
-				}
-
-				var scrollTop = elem._scrollTop();
-				elem.setAttribute('data-last-scroll', scrollTop+'');
-			}
-		);
-	}
-
-	function savePageScrollStyle (page) {
-		utils.forEach(
-			getScrollableElems(page),
-			function (elem) {
-				if (elem._iScroll) {
-					return;
-				}
-
-				var scrollStyle = elem.style['-webkit-overflow-scrolling'] || '';
-				elem.style['-webkit-overflow-scrolling'] = '';
-				elem.setAttribute('data-scroll-style', scrollStyle);
-			}
-		);
-	}
-
-	function restorePageScrollPosition (page, noTimeout) {
-		utils.forEach(
-			getScrollableElems(page),
-			function (elem) {
-				if (elem._iScroll) {
-					return;
-				}
-
-				var scrollTop = parseInt( elem.getAttribute('data-last-scroll') );
-
-				if (scrollTop) {
-					if ( !noTimeout ) {
-						setTimeout(function () {
-							elem._scrollTop(scrollTop);
-						}, 0);
-					}
-					else {
-						elem._scrollTop(scrollTop);
-					}
-				}
-			}
-		);
-	}
-
-	function restorePageScrollStyle (page) {
-		utils.forEach(
-			getScrollableElems(page),
-			function (elem) {
-				if (elem._iScroll) {
-					return;
-				}
-
-				var scrollStyle = elem.getAttribute('data-scroll-style') || '';
-
-				if (scrollStyle) {
-					elem.style['-webkit-overflow-scrolling'] = scrollStyle;
-				}
-
-			}
-		);
-
-		restorePageScrollPosition(page, true);
-	}
-}(window, document, Clickable, Scrollable, App, App._utils, App._Events, App._metrics);
+}(window, document, Clickable, Scrollable, App, App._utils, App._Events, App._metrics, App._Scroll);

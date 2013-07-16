@@ -1,4 +1,4 @@
-App._core = function (window, document, Swapper, App, utils, Events, Dialog, Pages) {
+App._core = function (window, document, Swapper, App, utils, Events, Dialog, Scroll, Pages) {
 	var STACK_KEY                         = '__APP_JS_STACK__' + window.location.pathname,
 		STACK_TIME                        = '__APP_JS_TIME__' + window.location.pathname,
 		EVENTS = {
@@ -434,7 +434,7 @@ App._core = function (window, document, Swapper, App, utils, Events, Dialog, Pag
 				finish();
 			}
 			else {
-				Pages.saveScrollPosition(currentNode);
+				Scroll.saveScrollPosition(currentNode);
 
 				var newOptions = {};
 				for (var key in options) {
@@ -455,7 +455,7 @@ App._core = function (window, document, Swapper, App, utils, Events, Dialog, Pag
 			}
 
 			function finish () {
-				Pages.saveScrollStyle(oldNode);
+				Scroll.saveScrollStyle(oldNode);
 				Pages.finishGeneration(pageName, pageManager, page, args);
 
 				unlock();
@@ -499,7 +499,7 @@ App._core = function (window, document, Swapper, App, utils, Events, Dialog, Pag
 
 			Pages.startDestruction(oldPage[0], oldPage[4], oldPage[1], oldPage[3]);
 
-			Pages.restoreScrollPosition(page);
+			Scroll.restoreScrollPosition(page);
 
 			var newOptions = {};
 			for (var key in oldOptions) {
@@ -515,7 +515,7 @@ App._core = function (window, document, Swapper, App, utils, Events, Dialog, Pag
 			}
 
 			performTransition(page, newOptions, function () {
-				Pages.restoreScrollStyle(page);
+				Scroll.restoreScrollStyle(page);
 
 				Events.fire(oldPage[1], EVENTS.HIDE);
 				Events.fire(page, EVENTS.SHOW);
@@ -590,8 +590,8 @@ App._core = function (window, document, Swapper, App, utils, Events, Dialog, Pag
 
 			Pages.finishGeneration(pageData[0], pageManager, page, pageData[1]);
 
-			Pages.saveScrollPosition(page);
-			Pages.saveScrollStyle(page);
+			Scroll.saveScrollPosition(page);
+			Scroll.saveScrollStyle(page);
 
 			pageDatas.push([pageData[0], page, pageData[2], pageData[1], pageManager]);
 
@@ -1002,4 +1002,4 @@ App._core = function (window, document, Swapper, App, utils, Events, Dialog, Pag
 			}
 		};
 	}
-}(window, document, Swapper, App, App._utils, App._Events, App._Dialog, App._Pages);
+}(window, document, Swapper, App, App._utils, App._Events, App._Dialog, App._Scroll, App._Pages);
