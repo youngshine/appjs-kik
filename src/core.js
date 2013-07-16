@@ -2,13 +2,14 @@ App._core = function (window, document, Swapper, App, utils, Events, Dialog, Scr
 	var STACK_KEY  = '__APP_JS_STACK__' + window.location.pathname,
 		STACK_TIME = '__APP_JS_TIME__'  + window.location.pathname,
 		EVENTS = {
-			SHOW    : 'appShow'    ,
-			HIDE    : 'appHide'    ,
-			BACK    : 'appBack'    ,
-			FORWARD : 'appForward' ,
-			LAYOUT  : 'appLayout'  ,
-			ONLINE  : 'appOnline'  ,
-			OFFLINE : 'appOffline'
+			SHOW        : 'appShow'    ,
+			HIDE        : 'appHide'    ,
+			BACK        : 'appBack'    ,
+			FORWARD     : 'appForward' ,
+			BEFORE_BACK : 'appBeforeBack' ,
+			LAYOUT      : 'appLayout'  ,
+			ONLINE      : 'appOnline'  ,
+			OFFLINE     : 'appOffline'
 		},
 		DEFAULT_TRANSITION_IOS            = 'slide-left',
 		DEFAULT_TRANSITION_ANDROID        = 'implode-out',
@@ -473,13 +474,13 @@ App._core = function (window, document, Swapper, App, utils, Events, Dialog, Scr
 		}
 	}
 
-	//TODO: appBeforeBack
 	function navigateBack (options, callback) {
 		if (Dialog.status() && Dialog.close()) {
 			return;
 		}
 
-		var stackLength = stack.length;
+		var stackLength = stack.length,
+			cancelled   = false;
 
 		var navigatedImmediately = navigate(function (unlock) {
 			if (stack.length < 2) {
@@ -487,8 +488,18 @@ App._core = function (window, document, Swapper, App, utils, Events, Dialog, Scr
 				return;
 			}
 
-			var oldPage    = stack.pop(),
-				data       = stack[stack.length - 1],
+			var oldPage = stack[stack.length-1];
+
+			if ( !Events.fire(oldPage[1], EVENTS.BEFORE_BACK) ) {
+				cancelled = true;
+				unlock();
+				return;
+			}
+			else {
+				stack.pop();
+			}
+
+			var data       = stack[stack.length - 1],
 				pageName   = data[0],
 				page       = data[1],
 				oldOptions = oldPage[2];
@@ -532,7 +543,7 @@ App._core = function (window, document, Swapper, App, utils, Events, Dialog, Scr
 			currentNode = page;
 		});
 
-		if (navigatedImmediately && (stackLength < 2)) {
+		if (cancelled || (navigatedImmediately && (stackLength < 2))) {
 			return false;
 		}
 	}
