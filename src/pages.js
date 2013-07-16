@@ -215,13 +215,11 @@ App._Pages = function (window, document, Clickable, Scrollable, App, utils, Even
 
 				if (back) {
 					Clickable.sticky(button, function (callback) {
-						//TODO: make this nicer
 						return App.back({}, callback);
 					});
 				}
 				else if (target) {
 					Clickable.sticky(button, function (callback) {
-						//TODO: make this nicer
 						return App.load(target, {}, {}, callback);
 					});
 				}

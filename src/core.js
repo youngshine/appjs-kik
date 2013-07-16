@@ -473,6 +473,7 @@ App._core = function (window, document, Swapper, App, utils, Events, Dialog, Pag
 		}
 	}
 
+	//TODO: appBeforeBack
 	function navigateBack (options, callback) {
 		if (Dialog.status() && Dialog.close()) {
 			return;
