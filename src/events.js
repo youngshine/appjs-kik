@@ -54,14 +54,21 @@ App._Events = function () {
 
 		function fireElemEvent (name) {
 			if (names.indexOf(name) === -1) {
-				return;
+				return false;
 			}
+
+			var prevented = false,
+				evt       = { preventDefault: function(){ prevented=true }};
 
 			listeners[name].forEach(function (listener) {
 				setTimeout(function () {
-					listener.call(elem, {});
+					if ( !listener.call(elem, evt) ) {
+						prevented = true;
+					}
 				}, 0);
 			});
+
+			return prevented;
 		}
 
 		elem.addEventListener = function (name, listener) {
@@ -94,13 +101,12 @@ App._Events = function () {
 
 	function fireEvent (elem, eventName) {
 		if (elem[APPJS_EVENTS_VAR]) {
-			elem[APPJS_EVENTS_VAR].fire(eventName);
-			return;
+			return elem[APPJS_EVENTS_VAR].fire(eventName);
 		}
 		else {
 			var evt = document.createEvent('CustomEvent');
-			evt.initEvent(eventName, false, true);//TODO
-			elem.dispatchEvent(evt);
+			evt.initEvent(eventName, false, true);
+			return elem.dispatchEvent(evt);
 		}
 	}
 }();
