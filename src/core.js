@@ -1,6 +1,15 @@
-App._core = function (window, document, Swapper, App, utils, Dialog, Pages) {
+App._core = function (window, document, Swapper, App, utils, Events, Dialog, Pages) {
 	var STACK_KEY                         = '__APP_JS_STACK__' + window.location.pathname,
 		STACK_TIME                        = '__APP_JS_TIME__' + window.location.pathname,
+		EVENTS = {
+			SHOW    : 'appShow'    ,
+			HIDE    : 'appHide'    ,
+			BACK    : 'appBack'    ,
+			FORWARD : 'appForward' ,
+			LAYOUT  : 'appLayout'  ,
+			ONLINE  : 'appOnline'  ,
+			OFFLINE : 'appOffline'
+		},
 		DEFAULT_TRANSITION_IOS            = 'slide-left',
 		DEFAULT_TRANSITION_ANDROID        = 'implode-out',
 		DEFAULT_TRANSITION_ANDROID_OLD    = 'fade-on',
@@ -415,6 +424,7 @@ App._core = function (window, document, Swapper, App, utils, Dialog, Pages) {
 				restoreData = stack[stack.length-1],
 				restoreNode = restoreData && restoreData[1];
 
+			Events.init(page, EVENTS);
 			populatePageBackButton(page, oldNode || restoreNode);
 
 			if ( !current ) {
@@ -440,7 +450,7 @@ App._core = function (window, document, Swapper, App, utils, Dialog, Pages) {
 				currentNode = page;
 				stack.push([ pageName, page, options, args, pageManager ]);
 				if (oldNode) {
-					Pages.fire(oldNode, Pages.EVENTS.FORWARD);
+					Events.fire(oldNode, EVENTS.FORWARD);
 				}
 			}
 
@@ -452,9 +462,9 @@ App._core = function (window, document, Swapper, App, utils, Dialog, Pages) {
 				callback();
 
 				if (oldNode) {
-					Pages.fire(oldNode, Pages.EVENTS.HIDE);
+					Events.fire(oldNode, EVENTS.HIDE);
 				}
-				Pages.fire(page, Pages.EVENTS.SHOW);
+				Events.fire(page, EVENTS.SHOW);
 			}
 		});
 
@@ -482,7 +492,7 @@ App._core = function (window, document, Swapper, App, utils, Dialog, Pages) {
 				page       = data[1],
 				oldOptions = oldPage[2];
 
-			Pages.fire(oldPage[1], Pages.EVENTS.BACK);
+			Events.fire(oldPage[1], EVENTS.BACK);
 
 			Pages.fixContent(page);
 
@@ -506,8 +516,8 @@ App._core = function (window, document, Swapper, App, utils, Dialog, Pages) {
 			performTransition(page, newOptions, function () {
 				Pages.restoreScrollStyle(page);
 
-				Pages.fire(oldPage[1], Pages.EVENTS.HIDE);
-				Pages.fire(page, Pages.EVENTS.SHOW);
+				Events.fire(oldPage[1], EVENTS.HIDE);
+				Events.fire(page, EVENTS.SHOW);
 
 				setTimeout(function () {
 					Pages.finishDestruction(oldPage[0], oldPage[4], oldPage[1], oldPage[3]);
@@ -574,6 +584,7 @@ App._core = function (window, document, Swapper, App, utils, Dialog, Pages) {
 		newPages.forEach(function (pageData) {
 			var pageManager = { restored : restored },
 				page        = Pages.startGeneration(pageData[0], pageManager, pageData[1]);
+			Events.init(page, EVENTS);
 			populatePageBackButton(page, lastPage);
 
 			Pages.finishGeneration(pageData[0], pageManager, page, pageData[1]);
@@ -866,7 +877,7 @@ App._core = function (window, document, Swapper, App, utils, Dialog, Pages) {
 		function fixSizing () {
 			fixContentHeight();
 			if (currentNode) {
-				Pages.fire(currentNode, Pages.EVENTS.LAYOUT);
+				Events.fire(currentNode, EVENTS.LAYOUT);
 			}
 		}
 		function triggerSizeFix () {
@@ -888,12 +899,12 @@ App._core = function (window, document, Swapper, App, utils, Dialog, Pages) {
 
 		window.addEventListener('online', function () {
 			stack.forEach(function (pageInfo) {
-				Pages.fire(pageInfo[1], Pages.EVENTS.ONLINE);
+				Events.fire(pageInfo[1], EVENTS.ONLINE);
 			});
 		}, false);
 		window.addEventListener('offline', function () {
 			stack.forEach(function (pageInfo) {
-				Pages.fire(pageInfo[1], Pages.EVENTS.OFFLINE);
+				Events.fire(pageInfo[1], EVENTS.OFFLINE);
 			});
 		}, false);
 
@@ -990,4 +1001,4 @@ App._core = function (window, document, Swapper, App, utils, Dialog, Pages) {
 			}
 		};
 	}
-}(window, document, Swapper, App, App._utils, App._Dialog, App._Pages);
+}(window, document, Swapper, App, App._utils, App._Events, App._Dialog, App._Pages);

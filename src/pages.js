@@ -1,20 +1,10 @@
-App._Pages = function (window, document, Clickable, Scrollable, App, utils, metrics) {
+App._Pages = function (window, document, Clickable, Scrollable, App, utils, Events, metrics) {
 	var PAGE_NAME  = 'data-page',
 		PAGE_CLASS = 'app-page',
 		APP_LOADED = 'app-loaded',
-		EVENTS = {
-			SHOW    : 'appShow'    ,
-			HIDE    : 'appHide'    ,
-			BACK    : 'appBack'    ,
-			FORWARD : 'appForward' ,
-			LAYOUT  : 'appLayout'  ,
-			ONLINE  : 'appOnline'  ,
-			OFFLINE : 'appOffline'
-		};
+		EVENTS = { LAYOUT : 'appLayout' };
 
 	var preloaded       = false,
-		hasCustomEvents = null,
-		customEvents    = null,
 		forceIScroll    = !!window['APP_FORCE_ISCROLL'],
 		pages           = {},
 		populators      = [],
@@ -93,8 +83,6 @@ App._Pages = function (window, document, Clickable, Scrollable, App, utils, metr
 
 
 	return {
-		EVENTS                : EVENTS                    ,
-		fire                  : firePageEvent             ,
 		has                   : hasPage                   ,
 		startGeneration       : startPageGeneration       ,
 		finishGeneration      : finishPageGeneration      ,
@@ -212,8 +200,7 @@ App._Pages = function (window, document, Clickable, Scrollable, App, utils, metr
 	function startPageGeneration (pageName, pageManager, args) {
 		var page = clonePage(pageName);
 
-		insureCustomEventing(page);
-
+		Events.init(page, EVENTS);
 		metrics.watchPage(page, pageName, args);
 
 		fixContentHeight(page);
@@ -243,11 +230,9 @@ App._Pages = function (window, document, Clickable, Scrollable, App, utils, metr
 
 		populatePage(pageName, pageManager, page, args);
 
-		firePageEvent(page, EVENTS.LAYOUT);
-
 		page.addEventListener('DOMNodeInsertedIntoDocument', function () {
 			fixPageTitle(page);
-			firePageEvent(page, EVENTS.LAYOUT);
+			Events.fire(page, EVENTS.LAYOUT);
 		}, false);
 
 		return page;
@@ -456,103 +441,4 @@ App._Pages = function (window, document, Clickable, Scrollable, App, utils, metr
 
 		restorePageScrollPosition(page, true);
 	}
-
-
-
-	/* Page eventing */
-
-	function supportsCustomEventing () {
-		if (hasCustomEvents === null) {
-			try {
-				var elem = document.createElement('div'),
-					evt  = document.createEvent('CustomEvent');
-				evt.initEvent('fooBarFace', false, true);
-				elem.dispatchEvent(evt);
-				hasCustomEvents = true;
-			}
-			catch (err) {
-				hasCustomEvents = false;
-			}
-		}
-
-		return hasCustomEvents;
-	}
-
-	function getCustomEvents () {
-		if ( !customEvents ) {
-			customEvents = [];
-			for (var eventKey in EVENTS) {
-				customEvents.push( EVENTS[eventKey] );
-			}
-		}
-
-		return customEvents;
-	}
-
-	function insureCustomEventing (page) {
-		if (page._brokenEvents || supportsCustomEventing()) {
-			return;
-		}
-
-		page._brokenEvents = true;
-		page._addEventListener    = page.addEventListener;
-		page._removeEventListener = page.removeEventListener;
-
-		var listeners = {},
-			names     = getCustomEvents();
-
-		names.forEach(function (name) {
-			listeners[name] = [];
-		});
-
-		page.addEventListener = function (name, listener) {
-			if (names.indexOf(name) === -1) {
-				page._addEventListener.apply(this, arguments);
-				return;
-			}
-
-			var eventListeners = listeners[name];
-
-			if (eventListeners.indexOf(listener) === -1) {
-				eventListeners.push(listener);
-			}
-		};
-
-		page.removeEventListener = function (name, listener) {
-			if (names.indexOf(name) === -1) {
-				page._removeEventListener.apply(this, arguments);
-				return;
-			}
-
-			var eventListeners = listeners[name],
-				index          = eventListeners.indexOf(listener);
-
-			if (index !== -1) {
-				eventListeners.splice(index, 1);
-			}
-		};
-
-		page._trigger = function (name) {
-			if (names.indexOf(name) === -1) {
-				return;
-			}
-
-			listeners[name].forEach(function (listener) {
-				setTimeout(function () {
-					listener.call(page, {});
-				}, 0);
-			});
-		};
-	}
-
-	function firePageEvent (page, eventName) {
-		if (page._brokenEvents) {
-			page._trigger(eventName);
-			return;
-		}
-
-		var event = document.createEvent('CustomEvent');
-		event.initEvent(eventName, false, true);
-		page.dispatchEvent(event);
-	}
-}(window, document, Clickable, Scrollable, App, App._utils, App._metrics);
+}(window, document, Clickable, Scrollable, App, App._utils, App._Events, App._metrics);
