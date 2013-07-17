@@ -52,7 +52,7 @@
 		0 1px 7px rgba(0,0,0,0.18);
 }
 .app-topbar.red {
-	background-color: #E54;
+	background-color: #DD4539;
 	-webkit-box-shadow:
 		inset 0 -1px 0 #C43,
 		0 1px 0 rgba(0,0,0,0.1),
@@ -320,7 +320,7 @@ p.app-section {
 	background-color: #C50;
 }
 .app-content .app-button.red {
-	background-color: #E54;
+	background-color: #DD4539;
 	color: #F3F4F5;
 }
 .app-content .app-button.red.active {
