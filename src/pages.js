@@ -84,6 +84,7 @@ App._Pages = function (window, document, Clickable, Scrollable, App, utils, Even
 
 	return {
 		has                   : hasPage               ,
+		createManager         : createPageManager     ,
 		startGeneration       : startPageGeneration   ,
 		finishGeneration      : finishPageGeneration  ,
 		startDestruction      : startPageDestruction  ,
@@ -177,6 +178,47 @@ App._Pages = function (window, document, Clickable, Scrollable, App, utils, Even
 
 
 	/* Page generation */
+
+	function createPageManager (restored) {
+		var pageManager = {
+			restored : restored ,
+			showing  : false ,
+			online   : navigator.onLine
+		};
+
+		var readyQueue = restored ? null : [];
+
+		pageManager.ready = function (func) {
+			if (typeof func !== 'function') {
+				throw TypeError('ready must be called with a function, got ' + func);
+			}
+
+			if (restored) {
+				utils.ready(function () {
+					func.call(pageManager);
+				});
+			}
+			else if (readyQueue) {
+				readyQueue.push(func);
+			}
+			else {
+				func.call(pageManager);
+			}
+		};
+
+		pageManager.__appjsFlushReadyQueue = function () {
+			if ( !readyQueue ) {
+				return;
+			}
+			var queue = readyQueue.slice();
+			readyQueue = null;
+			utils.forEach(queue, function (func) {
+				func.call(pageManager);
+			});
+		};
+
+		return pageManager;
+	}
 
 	function generatePage (pageName, args) {
 		var pageManager = {},

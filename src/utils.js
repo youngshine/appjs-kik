@@ -114,6 +114,25 @@ App._utils = function (window, document, App) {
 		return true;
 	}
 
+	function onReady (func) {
+		if (document.readyState === 'complete') {
+			setTimeout(function () {
+				func();
+			}, 0);
+			return;
+		}
+
+		window.addEventListener('load', runCallback, false);
+
+		function runCallback () {
+			window.removeEventListener('load', runCallback);
+
+			setTimeout(function () {
+				func();
+			}, 0);
+		}
+	}
+
 	function setTransform (elem, transform) {
 		elem.style['-webkit-transform'] = transform;
 		elem.style[   '-moz-transform'] = transform;
@@ -278,6 +297,7 @@ App._utils = function (window, document, App) {
 	return {
 		query         : query         ,
 		os            : os            ,
+		ready         : onReady       ,
 		forEach       : forEach       ,
 		isArray       : isArray       ,
 		isNode        : isNode        ,

@@ -419,11 +419,12 @@ App._core = function (window, document, Swapper, App, utils, Events, Dialog, Scr
 
 	function loadPage (pageName, args, options, callback) {
 		navigate(function (unlock) {
-			var oldNode     = currentNode,
-				pageManager = {},
-				page        = Pages.startGeneration(pageName, pageManager, args),
-				restoreData = stack[stack.length-1],
-				restoreNode = restoreData && restoreData[1];
+			var oldNode        = currentNode,
+				pageManager    = Pages.createManager(false),
+				page           = Pages.startGeneration(pageName, pageManager, args),
+				restoreData    = stack[stack.length-1],
+				restoreNode    = restoreData && restoreData[1],
+				restoreManager = restoreData && restoreData[4];
 
 			Events.init(page, EVENTS);
 			populatePageBackButton(page, oldNode || restoreNode);
@@ -463,8 +464,12 @@ App._core = function (window, document, Swapper, App, utils, Events, Dialog, Scr
 				callback();
 
 				if (oldNode) {
+					if (restoreManager) {
+						restoreManager.showing = false
+					}
 					Events.fire(oldNode, EVENTS.HIDE);
 				}
+				pageManager.showing = true;
 				Events.fire(page, EVENTS.SHOW);
 			}
 		});
@@ -528,7 +533,9 @@ App._core = function (window, document, Swapper, App, utils, Events, Dialog, Scr
 			performTransition(page, newOptions, function () {
 				Scroll.restoreScrollStyle(page);
 
+				oldPage[4].showing = false
 				Events.fire(oldPage[1], EVENTS.HIDE);
+				data[4].showing = true
 				Events.fire(page, EVENTS.SHOW);
 
 				setTimeout(function () {
@@ -594,7 +601,7 @@ App._core = function (window, document, Swapper, App, utils, Events, Dialog, Scr
 			lastPage;
 
 		newPages.forEach(function (pageData) {
-			var pageManager = { restored : restored },
+			var pageManager = Pages.createManager(true),
 				page        = Pages.startGeneration(pageData[0], pageManager, pageData[1]);
 			Events.init(page, EVENTS);
 			populatePageBackButton(page, lastPage);
@@ -911,11 +918,13 @@ App._core = function (window, document, Swapper, App, utils, Events, Dialog, Scr
 
 		window.addEventListener('online', function () {
 			stack.forEach(function (pageInfo) {
+				pageInfo[4].online = true;
 				Events.fire(pageInfo[1], EVENTS.ONLINE);
 			});
 		}, false);
 		window.addEventListener('offline', function () {
 			stack.forEach(function (pageInfo) {
+				pageInfo[4].online = false;
 				Events.fire(pageInfo[1], EVENTS.OFFLINE);
 			});
 		}, false);
