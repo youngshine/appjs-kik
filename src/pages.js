@@ -253,9 +253,13 @@ App._Pages = function (window, document, Clickable, Scrollable, App, utils, Even
 					back       = button.getAttribute('data-back'),
 					args;
 
-				try {
-					args = JSON.parse(targetArgs);
-				} catch (err) {}
+				if ( targetArgs !== null ) {
+					try {
+						args = JSON.parse(targetArgs);
+					} catch (err) {}
+				} else {
+					args = {};
+				}
 
 				if (back) {
 					Clickable.sticky(button, function (callback) {
