@@ -253,11 +253,10 @@ App._Pages = function (window, document, Clickable, Scrollable, App, utils, Even
 					back       = button.getAttribute('data-back'),
 					args;
 
-				if ( targetArgs !== null ) {
-					try {
-						args = JSON.parse(targetArgs);
-					} catch (err) {}
-				} else {
+				try {
+					args = JSON.parse(targetArgs);
+				} catch (err) {}
+				if ((typeof args !== 'object') || (args === null)) {
 					args = {};
 				}
 
