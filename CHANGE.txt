@@ -1,1 +1,6 @@
+- new styles
+- new dialog sytax
 - appBeforeBack
+- non-restorable pages
+- restored flag
+- data-target-args

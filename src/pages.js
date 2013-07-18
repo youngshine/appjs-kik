@@ -206,8 +206,14 @@ App._Pages = function (window, document, Clickable, Scrollable, App, utils, Even
 			function (button) {
 				Clickable(button);
 
-				var target = button.getAttribute('data-target'),
-					back   = button.getAttribute('data-back');
+				var target     = button.getAttribute('data-target'),
+					targetArgs = button.getAttribute('data-target-args'),
+					back       = button.getAttribute('data-back'),
+					args;
+
+				try {
+					args = JSON.parse(targetArgs);
+				} catch (err) {}
 
 				if (back) {
 					Clickable.sticky(button, function (callback) {
@@ -216,7 +222,7 @@ App._Pages = function (window, document, Clickable, Scrollable, App, utils, Even
 				}
 				else if (target) {
 					Clickable.sticky(button, function (callback) {
-						return App.load(target, {}, {}, callback);
+						return App.load(target, args, {}, callback);
 					});
 				}
 			}
