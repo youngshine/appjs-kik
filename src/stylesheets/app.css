@@ -149,7 +149,7 @@
 .app-android .dark-page .app-topbar .app-button.active {
 	background-color: rgba(0,0,0,1);
 }
-.app-topbar .app-button[data-back] {
+.app-topbar .app-button[data-back].left {
 	padding: 15px 0 15px 20px;
 	height: 14px;
 	background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAcCAMAAABf788oAAAATlBMVEUAAADBwcHBwcHKysrOzs7Dw8PX19fi5OTFxcXW1tbPz8/R0dHT09PU1NTV1dXGxsbHx8fMzMzNzc3Y2NjZ2dnIyMjs7u/w9PbCwsLLy8tnOIf3AAAAA3RSTlMAM5mHzooOAAAAdklEQVR4XnWRSQ7FMAhD3Z+k8zz/+1+0CgssWQq7Z5kEA7y6J1dyDsaRhibzSd7NEJx/xh0Ngwmtc2s80DCZUDmvxhsNdeYaMtNCwXgkRwmRGKIgoGdL4VH89VscMhguHR0zw0n84oLw6goRZcnAnYWGzEPpKT8fNg40KCJRswAAAABJRU5ErkJggg==);
@@ -159,23 +159,23 @@
 	background-size: 8px 14px;
 	line-height: 14px;
 }
-.app-topbar.white .app-button[data-back] {
+.app-topbar.white .app-button[data-back].left {
 	background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAcCAMAAABf788oAAAAQlBMVEUAAABPT09PT09fX19SUlJWVlZXV1dZWVlcXFxQUFBVVVVgYGBERERdXV1TU1M8PDxhYWFiYmJaWlpYWFhUVFReXl7J/HxRAAAAA3RSTlMAM5mHzooOAAAAc0lEQVR4XnWRSQ7FIAxD04ax4x/vf9UKL2LJEtk9y4BNLMaPMT04gysN2+A3+QtDDl7BTkODkIITuNHwh7AE/8CFhn3wbpLpogA+yVVKdJaYCPbhkcmlVvRZezHYJLo5y0l9/SBN56aFsnHuIWxkLkpX+QCqTAg113kiVgAAAABJRU5ErkJggg==);
 }
-.app-android .app-topbar .app-button[data-back] {
+.app-android .app-topbar .app-button[data-back].left {
 	padding-top: 17px;
 	padding-bottom: 17px;
 	width: 35%;
 	color: transparent;
 }
-.app-android .app-topbar .app-button[data-back].active,
-.app-android .dark-page .app-topbar .app-button[data-back].active {
+.app-android .app-topbar .app-button[data-back].left.active,
+.app-android .dark-page .app-topbar .app-button[data-back].left.active {
 	background-color: transparent;
 }
-.app-android .app-topbar .app-button[data-back].active ~ .app-title {
+.app-android .app-topbar .app-button[data-back].left.active ~ .app-title {
 	background-color: rgba(0,0,0,0.2);
 }
-.app-android .dark-page .app-topbar .app-button[data-back].active ~ .app-title {
+.app-android .dark-page .app-topbar .app-button[data-back].left.active ~ .app-title {
 	background-color: rgba(0,0,0,1);
 }
 

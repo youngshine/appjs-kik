@@ -6,3 +6,4 @@
 - data-target-args
 - this.ready for populators
 - populator classes
+- this.transition for page-specific transition declarations

@@ -416,6 +416,10 @@ App._core = function (window, document, Swapper, App, utils, Dialog, Scroll, Pag
 				restoreNode    = restoreData && restoreData[1],
 				restoreManager = restoreData && restoreData[4];
 
+			if (!options.transition && pageManager.transition) {
+				options.transition = pageManager.transition;
+			}
+
 			populatePageBackButton(page, oldNode || restoreNode);
 
 			if ( !current ) {
