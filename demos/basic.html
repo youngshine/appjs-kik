@@ -155,7 +155,7 @@
 		<form class="app-section">
 			<input class="app-input" name="subject" placeholder="Subject">
 			<textarea class="app-input" name="message" placeholder="Message"></textarea>
-			<div class="app-button green">Send</div>
+			<div class="app-button green app-submit">Send</div>
 		</form>
 	</div>
 </div>
@@ -210,6 +210,7 @@
 <script src="../src/scroll.js"         ></script>
 <script src="../src/pages.js"          ></script>
 <script src="../src/stack.js"          ></script>
+<script src="../src/form.js"           ></script>
 <script src="../src/core.js"           ></script>
 
 <script>
@@ -229,7 +230,15 @@
 	App.populator('home', function (page) {
 		setupPageColour(page);
 
-		Array.prototype.forEach.call(
+		var inputsButton = page.querySelector('[data-target="inputs"]');
+		inputsButton.removeAttribute('data-target');
+		inputsButton.addEventListener('click', function () {
+			App.pick('inputs', function (params) {
+				console.log(JSON.stringify(params));
+			});
+		}, false);
+
+		App._utils.forEach(
 			page.querySelectorAll('ul.colour-picker li'),
 			function (colourButton) {
 				colourButton
@@ -241,7 +250,7 @@
 							return;
 						}
 
-						colourPages.forEach(function (colourPage) {
+						App._utils.forEach(colourPages, function (colourPage) {
 							if (oldColour) {
 								colourPage.classList.remove(oldColour);
 							}
@@ -290,102 +299,9 @@
 
 	App.populator('inputs', function (page) {
 		setupPageColour(page);
-
 		this.transition = 'slideon-down';
-
-		App.form(
-			page.querySelector('form'),
-			function (params, unlock) {
-				console.log(params);
-				unlock();
-			}
-		);
+		App.form(page.querySelector('form'), this.reply);
 	});
-
-App.form = function (form, callback) {
-	//TODO: check if is node
-	switch (typeof callback) {
-		case 'undefined':
-			callback = function () {};
-		case 'function':
-			break;
-		default:
-			throw TypeError('callback must be a function, got '+callback);
-	}
-
-	var isForm = (form.nodeName === 'FORM'),
-		locked = false;
-
-	if (isForm) {
-		var submit = document.createElement('input');
-		submit.style.display = 'none';
-		submit.type = 'submit';
-		form.appendChild(submit);
-		form.addEventListener('submit', function (e) {
-			e.preventDefault();
-			submitForm();
-		}, false);
-	}
-	else {
-		form.addEventListener('keydown', function (e) {
-			if (e.which === 13) {
-				e.preventDefault();
-				submitForm();
-			}
-		}, false);
-	}
-
-	function submitForm () {
-		if (locked) {
-			return;
-		}
-		locked = true;
-		form.disabled = true;
-
-		var params = {},
-			inputs = isForm ? form.querySelectorAll('[name]') : [form],
-			done   = false;
-
-		if (isForm) {
-			Array.prototype.forEach.call(
-				form.querySelectorAll('[name]'),
-				function (elem) {
-					params[elem.name] = elem.value;
-				}
-			);
-		}
-		else {
-			params.value = form.value;
-			if (form.name) {
-				params[form.name] = form.value;
-			}
-		}
-
-		Array.prototype.forEach.call(
-			inputs,
-			function (elem) {
-				elem.disabled = true;
-			}
-		);
-
-		callback.call(this, params, function () {
-			if (done) {
-				return;
-			}
-			done = true;
-
-			Array.prototype.forEach.call(
-				inputs,
-				function (elem) {
-					elem.disabled = false;
-				}
-			);
-
-			locked = false;
-			form.disabled = false;
-		});
-	}
-};
 
 	try {
 		App.restore();
