@@ -27,6 +27,7 @@ App._Events = function (utils) {
 		if (hasCustomEvents) {
 			return;
 		}
+
 		if ( elem[APPJS_EVENTS_VAR] ) {
 			utils.forEach(names, elem[APPJS_EVENTS_VAR].addEventType);
 			return;

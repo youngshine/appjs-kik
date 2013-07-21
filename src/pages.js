@@ -2,6 +2,7 @@ App._Pages = function (window, document, Clickable, Scrollable, App, utils, Even
 	var PAGE_NAME  = 'data-page',
 		PAGE_CLASS = 'app-page',
 		APP_LOADED = 'app-loaded',
+		PAGE_READY_VAR = '__appjsFlushReadyQueue',
 		EVENTS = {
 			SHOW        : 'show'    ,
 			HIDE        : 'hide'    ,
@@ -219,16 +220,23 @@ App._Pages = function (window, document, Clickable, Scrollable, App, utils, Even
 			}
 		};
 
-		pageManager.__appjsFlushReadyQueue = function () {
-			if ( !readyQueue ) {
-				return;
-			}
-			var queue = readyQueue.slice();
-			readyQueue = null;
-			utils.forEach(queue, function (func) {
-				func.call(pageManager);
+		pageManager[PAGE_READY_VAR] = function () {
+			pageManager[PAGE_READY_VAR] = undefined;
+			utils.ready(function () {
+				if ( !readyQueue ) {
+					return;
+				}
+				var queue = readyQueue.slice();
+				readyQueue = null;
+				utils.forEach(queue, function (func) {
+					func.call(pageManager);
+				});
 			});
 		};
+
+		if (restored) {
+			pageManager[PAGE_READY_VAR]();
+		}
 
 		return pageManager;
 	}
@@ -308,6 +316,12 @@ App._Pages = function (window, document, Clickable, Scrollable, App, utils, Even
 
 		page.addEventListener('DOMNodeInsertedIntoDocument', function () {
 			firePageEvent(pageManager, page, EVENTS.LAYOUT);
+		}, false);
+
+		page.addEventListener(eventTypeToName(EVENTS.SHOW), function () {
+			if (typeof pageManager[PAGE_READY_VAR] === 'function') {
+				pageManager[PAGE_READY_VAR]();
+			}
 		}, false);
 
 		return page;
