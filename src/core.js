@@ -1,16 +1,6 @@
-App._core = function (window, document, Swapper, App, utils, Events, Dialog, Scroll, Pages) {
+App._core = function (window, document, Swapper, App, utils, Dialog, Scroll, Pages) {
 	var STACK_KEY  = '__APP_JS_STACK__' + window.location.pathname,
 		STACK_TIME = '__APP_JS_TIME__'  + window.location.pathname,
-		EVENTS = {
-			SHOW        : 'appShow'    ,
-			HIDE        : 'appHide'    ,
-			BACK        : 'appBack'    ,
-			FORWARD     : 'appForward' ,
-			BEFORE_BACK : 'appBeforeBack' ,
-			LAYOUT      : 'appLayout'  ,
-			ONLINE      : 'appOnline'  ,
-			OFFLINE     : 'appOffline'
-		},
 		DEFAULT_TRANSITION_IOS            = 'slide-left',
 		DEFAULT_TRANSITION_ANDROID        = 'implode-out',
 		DEFAULT_TRANSITION_ANDROID_OLD    = 'fade-on',
@@ -426,7 +416,6 @@ App._core = function (window, document, Swapper, App, utils, Events, Dialog, Scr
 				restoreNode    = restoreData && restoreData[1],
 				restoreManager = restoreData && restoreData[4];
 
-			Events.init(page, EVENTS);
 			populatePageBackButton(page, oldNode || restoreNode);
 
 			if ( !current ) {
@@ -451,8 +440,8 @@ App._core = function (window, document, Swapper, App, utils, Events, Dialog, Scr
 				current     = pageName;
 				currentNode = page;
 				stack.push([ pageName, page, options, args, pageManager ]);
-				if (oldNode) {
-					Events.fire(oldNode, EVENTS.FORWARD);
+				if (oldNode && restoreManager) {
+					Pages.fire(restoreManager, oldNode, Pages.EVENTS.FORWARD);
 				}
 			}
 
@@ -463,14 +452,12 @@ App._core = function (window, document, Swapper, App, utils, Events, Dialog, Scr
 				unlock();
 				callback();
 
-				if (oldNode) {
-					if (restoreManager) {
-						restoreManager.showing = false
-					}
-					Events.fire(oldNode, EVENTS.HIDE);
+				if (oldNode && restoreManager) {
+					restoreManager.showing = false
+					Pages.fire(restoreManager, oldNode, Pages.EVENTS.HIDE);
 				}
 				pageManager.showing = true;
-				Events.fire(page, EVENTS.SHOW);
+				Pages.fire(pageManager, page, Pages.EVENTS.SHOW);
 			}
 		});
 
@@ -495,7 +482,7 @@ App._core = function (window, document, Swapper, App, utils, Events, Dialog, Scr
 
 			var oldPage = stack[stack.length-1];
 
-			if ( !Events.fire(oldPage[1], EVENTS.BEFORE_BACK) ) {
+			if ( !Pages.fire(oldPage[4], oldPage[1], Pages.EVENTS.BEFORE_BACK) ) {
 				cancelled = true;
 				unlock();
 				return;
@@ -509,7 +496,7 @@ App._core = function (window, document, Swapper, App, utils, Events, Dialog, Scr
 				page       = data[1],
 				oldOptions = oldPage[2];
 
-			Events.fire(oldPage[1], EVENTS.BACK);
+			Pages.fire(oldPage[4], oldPage[1], Pages.EVENTS.BACK);
 
 			Pages.fixContent(page);
 
@@ -534,9 +521,9 @@ App._core = function (window, document, Swapper, App, utils, Events, Dialog, Scr
 				Scroll.restoreScrollStyle(page);
 
 				oldPage[4].showing = false
-				Events.fire(oldPage[1], EVENTS.HIDE);
+				Pages.fire(oldPage[4], oldPage[1], Pages.EVENTS.HIDE);
 				data[4].showing = true
-				Events.fire(page, EVENTS.SHOW);
+				Pages.fire(data[4], page, Pages.EVENTS.SHOW);
 
 				setTimeout(function () {
 					Pages.finishDestruction(oldPage[0], oldPage[4], oldPage[1], oldPage[3]);
@@ -603,7 +590,6 @@ App._core = function (window, document, Swapper, App, utils, Events, Dialog, Scr
 		newPages.forEach(function (pageData) {
 			var pageManager = Pages.createManager(true),
 				page        = Pages.startGeneration(pageData[0], pageManager, pageData[1]);
-			Events.init(page, EVENTS);
 			populatePageBackButton(page, lastPage);
 
 			Pages.finishGeneration(pageData[0], pageManager, page, pageData[1]);
@@ -896,7 +882,10 @@ App._core = function (window, document, Swapper, App, utils, Events, Dialog, Scr
 		function fixSizing () {
 			fixContentHeight();
 			if (currentNode) {
-				Events.fire(currentNode, EVENTS.LAYOUT);
+				var pageData = stack[stack.length-1];
+				if (pageData) {
+					Pages.fire(pageData[4], currentNode, Pages.EVENTS.LAYOUT);
+				}
 			}
 		}
 		function triggerSizeFix () {
@@ -919,13 +908,13 @@ App._core = function (window, document, Swapper, App, utils, Events, Dialog, Scr
 		window.addEventListener('online', function () {
 			stack.forEach(function (pageInfo) {
 				pageInfo[4].online = true;
-				Events.fire(pageInfo[1], EVENTS.ONLINE);
+				Pages.fire(pageInfo[4], pageInfo[1], Pages.EVENTS.ONLINE);
 			});
 		}, false);
 		window.addEventListener('offline', function () {
 			stack.forEach(function (pageInfo) {
 				pageInfo[4].online = false;
-				Events.fire(pageInfo[1], EVENTS.OFFLINE);
+				Pages.fire(pageInfo[4], pageInfo[1], Pages.EVENTS.OFFLINE);
 			});
 		}, false);
 
@@ -1022,4 +1011,4 @@ App._core = function (window, document, Swapper, App, utils, Events, Dialog, Scr
 			}
 		};
 	}
-}(window, document, Swapper, App, App._utils, App._Events, App._Dialog, App._Scroll, App._Pages);
+}(window, document, Swapper, App, App._utils, App._Dialog, App._Scroll, App._Pages);

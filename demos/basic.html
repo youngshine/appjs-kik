@@ -223,14 +223,11 @@
 		}
 	}
 
-	App.populator('home'   , setupPageColour);
-	App.populator('lists'  , setupPageColour);
-	App.populator('buttons', setupPageColour);
-	App.populator('inputs' , setupPageColour);
-
 
 
 	App.populator('home', function (page) {
+		setupPageColour(page);
+
 		Array.prototype.forEach.call(
 			page.querySelectorAll('ul.colour-picker li'),
 			function (colourButton) {
@@ -257,24 +254,28 @@
 	});
 
 	App.populator('lists', function (page) {
-		page.addEventListener('appShow', function () {
+		setupPageColour(page);
+
+		this.onShow = function () {
 			console.log('lists page is visible');
-		}, false);
+		};
 
-		page.addEventListener('appHide', function () {
+		this.onHide = function () {
 			console.log('lists page is invisible');
-		}, false);
+		};
 
-		page.addEventListener('appBack', function () {
+		this.onBack = function () {
 			console.log('lists page is going back');
-		}, false);
+		};
 
-		page.addEventListener('appForward', function () {
+		this.onForward = function () {
 			console.log('lists page is going forward');
-		}, false);
+		};
 	});
 
 	App.populator('buttons', function (page) {
+		setupPageColour(page);
+
 		page.querySelector('.app-menu').addEventListener('click', function () {
 			App.dialog({
 				tweetButton  : 'Share on Facebook' ,
@@ -287,6 +288,8 @@
 	});
 
 	App.populator('inputs', function (page) {
+		setupPageColour(page);
+
 		App.form(
 			page.querySelector('form'),
 			function (params, unlock) {

@@ -2,13 +2,23 @@ App._Pages = function (window, document, Clickable, Scrollable, App, utils, Even
 	var PAGE_NAME  = 'data-page',
 		PAGE_CLASS = 'app-page',
 		APP_LOADED = 'app-loaded',
-		EVENTS = { LAYOUT : 'appLayout' };
+		EVENTS = {
+			SHOW        : 'show'    ,
+			HIDE        : 'hide'    ,
+			BACK        : 'back'    ,
+			FORWARD     : 'forward' ,
+			BEFORE_BACK : 'beforeBack' ,
+			DESTROY     : 'destroy' ,
+			LAYOUT      : 'layout'  ,
+			ONLINE      : 'online'  ,
+			OFFLINE     : 'offline'
+		};
 
 	var preloaded       = false,
 		forceIScroll    = !!window['APP_FORCE_ISCROLL'],
 		pages           = {},
-		populators      = [],
-		unpopulators    = [];
+		populators      = {},
+		unpopulators    = {};
 
 
 	App.add = function (pageName, page) {
@@ -83,10 +93,12 @@ App._Pages = function (window, document, Clickable, Scrollable, App, utils, Even
 
 
 	return {
+		EVENTS                : EVENTS                ,
 		has                   : hasPage               ,
 		createManager         : createPageManager     ,
 		startGeneration       : startPageGeneration   ,
 		finishGeneration      : finishPageGeneration  ,
+		fire                  : firePageEvent         ,
 		startDestruction      : startPageDestruction  ,
 		finishDestruction     : finishPageDestruction ,
 		fixContent            : fixContentHeight
@@ -144,35 +156,35 @@ App._Pages = function (window, document, Clickable, Scrollable, App, utils, Even
 	/* Page populators */
 
 	function addPopulator (pageName, populator) {
-		if ( !populators[pageName] ) {
-			populators[pageName] = [ populator ];
-		}
-		else {
-			populators[pageName].push(populator);
-		}
+		populators[pageName] = populator;
 	}
 
 	function addUnpopulator (pageName, unpopulator) {
-		if ( !unpopulators[pageName] ) {
-			unpopulators[pageName] = [ unpopulator ];
-		}
-		else {
-			unpopulators[pageName].push(unpopulator);
-		}
+		unpopulators[pageName] = unpopulator;
 	}
 
 	function populatePage (pageName, pageManager, page, args) {
-		var pagePopulators = populators[pageName] || [];
-		pagePopulators.forEach(function (populator) {
-			populator.call(pageManager, page, args);
-		});
+		var populator = populators[pageName];
+		if ( !populator ) {
+			return;
+		}
+		for (var prop in populator) {
+			pageManager[prop] = populator[prop];
+		}
+		for (var prop in populator.prototype) {
+			pageManager[prop] = populator.prototype[prop];
+		}
+		pageManager.page = page;
+		pageManager.args = args;
+		populator.call(pageManager, page, args);
 	}
 
 	function unpopulatePage (pageName, pageManager, page, args) {
-		var pageUnpopulators = unpopulators[pageName] || [];
-		pageUnpopulators.forEach(function (unpopulator) {
+		var unpopulator = unpopulators[pageName];
+		if (unpopulator) {
 			unpopulator.call(pageManager, page, args);
-		});
+		}
+		firePageEvent(pageManager, page, EVENTS.DESTROY);
 	}
 
 
@@ -238,7 +250,11 @@ App._Pages = function (window, document, Clickable, Scrollable, App, utils, Even
 	function startPageGeneration (pageName, pageManager, args) {
 		var page = clonePage(pageName);
 
-		Events.init(page, EVENTS);
+		var eventNames = [];
+		for (var evt in EVENTS) {
+			eventNames.push( eventTypeToName(EVENTS[evt]) );
+		}
+		Events.init(page, eventNames);
 		metrics.watchPage(page, pageName, args);
 
 		fixContentHeight(page);
@@ -276,10 +292,33 @@ App._Pages = function (window, document, Clickable, Scrollable, App, utils, Even
 		populatePage(pageName, pageManager, page, args);
 
 		page.addEventListener('DOMNodeInsertedIntoDocument', function () {
-			Events.fire(page, EVENTS.LAYOUT);
+			firePageEvent(pageManager, page, EVENTS.LAYOUT);
 		}, false);
 
 		return page;
+	}
+
+	function firePageEvent (pageManager, page, eventType) {
+		var eventName = eventTypeToName(eventType),
+			funcName  = eventTypeToFunctionName(eventType),
+			success   = true;
+		if ( !Events.fire(page, eventName) ) {
+			success = false;
+		}
+		if (typeof pageManager[funcName] === 'function') {
+			if (pageManager[funcName]() === false) {
+				success = false;
+			}
+		}
+		return success;
+	}
+
+	function eventTypeToName (eventType) {
+		return 'app' + eventType[0].toUpperCase() + eventType.slice(1);
+	}
+
+	function eventTypeToFunctionName (eventType) {
+		return 'on' + eventType[0].toUpperCase() + eventType.slice(1);
 	}
 
 	function finishPageGeneration (pageName, pageManager, page, args) {
