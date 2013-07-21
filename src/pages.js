@@ -93,15 +93,16 @@ App._Pages = function (window, document, Clickable, Scrollable, App, utils, Even
 
 
 	return {
-		EVENTS                : EVENTS                ,
-		has                   : hasPage               ,
-		createManager         : createPageManager     ,
-		startGeneration       : startPageGeneration   ,
-		finishGeneration      : finishPageGeneration  ,
-		fire                  : firePageEvent         ,
-		startDestruction      : startPageDestruction  ,
-		finishDestruction     : finishPageDestruction ,
-		fixContent            : fixContentHeight
+		EVENTS                : EVENTS                 ,
+		has                   : hasPage                ,
+		createManager         : createPageManager      ,
+		startGeneration       : startPageGeneration    ,
+		finishGeneration      : finishPageGeneration   ,
+		fire                  : firePageEvent          ,
+		startDestruction      : startPageDestruction   ,
+		finishDestruction     : finishPageDestruction  ,
+		fixContent            : fixContentHeight       ,
+		populateBackButton    : populatePageBackButton
 	};
 
 
@@ -174,8 +175,8 @@ App._Pages = function (window, document, Clickable, Scrollable, App, utils, Even
 		for (var prop in populator.prototype) {
 			pageManager[prop] = populator.prototype[prop];
 		}
-		pageManager.page = page;
-		pageManager.args = args;
+		pageManager.page = page; //TODO: getter
+		pageManager.args = args; //TODO: getter (dont want this to hit localStorage)
 		populator.call(pageManager, page, args);
 	}
 
@@ -362,5 +363,25 @@ App._Pages = function (window, document, Clickable, Scrollable, App, utils, Even
 		}
 
 		content.style.height = (height - topbarHeight) + 'px';
+	}
+
+	function populatePageBackButton (page, oldPage) {
+		if ( !oldPage ) {
+			return;
+		}
+		var backButton = page.querySelector('.app-topbar .left.app-button'),
+			oldTitle   = oldPage.querySelector('.app-topbar .app-title');
+		if (!backButton || !oldTitle) {
+			return;
+		}
+		var oldText = oldTitle.textContent,
+			newText = backButton.textContent;
+		if (!oldText || newText) {
+			return;
+		}
+		if (oldText.length > 13) {
+			oldText = oldText.substr(0, 12) + '..';
+		}
+		backButton.textContent = oldText;
 	}
 }(window, document, Clickable, Scrollable, App, App._utils, App._Events, App._metrics, App._Scroll);

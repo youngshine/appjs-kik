@@ -1,7 +1,5 @@
-App._core = function (window, document, Swapper, App, utils, Dialog, Scroll, Pages) {
-	var STACK_KEY  = '__APP_JS_STACK__' + window.location.pathname,
-		STACK_TIME = '__APP_JS_TIME__'  + window.location.pathname,
-		DEFAULT_TRANSITION_IOS            = 'slide-left',
+App._core = function (window, document, Swapper, App, utils, Dialog, Scroll, Pages, Stack) {
+	var DEFAULT_TRANSITION_IOS            = 'slide-left',
 		DEFAULT_TRANSITION_ANDROID        = 'implode-out',
 		DEFAULT_TRANSITION_ANDROID_OLD    = 'fade-on',
 		DEFAULT_TRANSITION_ANDROID_GHETTO = 'instant',
@@ -38,14 +36,13 @@ App._core = function (window, document, Swapper, App, utils, Dialog, Scroll, Pag
 			'glideoff-right' : 'slideon-right'  ,
 			'glideon-left'   : 'glideoff-left'  ,
 			'glideoff-left'  : 'slideon-left'   ,
-			'glideon-down'  : 'glideoff-down'   ,
-			'glideoff-down' : 'slideon-down'    ,
-			'glideon-up'    : 'glideoff-up'     ,
-			'glideoff-up'   : 'slideon-up'
+			'glideon-down'   : 'glideoff-down'  ,
+			'glideoff-down'  : 'slideon-down'   ,
+			'glideon-up'     : 'glideoff-up'    ,
+			'glideoff-up'    : 'slideon-up'
 		};
 
-	var stack        = [],
-		navQueue     = [],
+	var navQueue     = [],
 		navLock      = false,
 		defaultTransition, reverseTransition,
 		current, currentNode;
@@ -221,160 +218,6 @@ App._core = function (window, document, Swapper, App, utils, Dialog, Scroll, Pag
 		return reverseTransition;
 	};
 
-	App.getStack = function () {
-		return fetchStack();
-	};
-
-	App.getPage = function (index) {
-		var stackSize = stack.length - 1;
-
-		switch (typeof index) {
-			case 'undefined':
-				index = stackSize;
-				break;
-			case 'number':
-				if (Math.abs(index) > stackSize) {
-					throw TypeError('absolute index cannot be greater than stack size, got ' + index);
-				}
-				if (index < 0) {
-					index = stackSize + index;
-				}
-				break;
-			default:
-				throw TypeError('page index must be a number if defined, got ' + index);
-		}
-		return fetchPage(index);
-	};
-
-	App.removeFromStack = function (startIndex, endIndex) {
-		// minus 1 because last item on stack is current page (which is untouchable)
-		var stackSize = stack.length - 1;
-
-		switch (typeof startIndex) {
-			case 'undefined':
-				startIndex = 0;
-				break;
-
-			case 'number':
-				if (Math.abs(startIndex) > stackSize) {
-					throw TypeError('absolute start index cannot be greater than stack size, got ' + startIndex);
-				}
-				if (startIndex < 0) {
-					startIndex = stackSize + startIndex;
-				}
-				break;
-
-			default:
-				throw TypeError('start index must be a number if defined, got ' + startIndex);
-		}
-
-		switch (typeof endIndex) {
-			case 'undefined':
-				endIndex = stackSize;
-				break;
-
-			case 'number':
-				if (Math.abs(endIndex) > stackSize) {
-					throw TypeError('absolute end index cannot be greater than stack size, got ' + endIndex);
-				}
-				if (endIndex < 0) {
-					endIndex = stackSize + endIndex;
-				}
-				break;
-
-			default:
-				throw TypeError('end index must be a number if defined, got ' + endIndex);
-		}
-
-		if (startIndex > endIndex) {
-			throw TypeError('start index cannot be greater than end index');
-		}
-
-		removeFromStack(startIndex, endIndex);
-	};
-
-	App.addToStack = function (index, newPages) {
-		// minus 1 because last item on stack is current page (which is untouchable)
-		var stackSize = stack.length - 1;
-
-		switch (typeof index) {
-			case 'undefined':
-				index = 0;
-				break;
-
-			case 'number':
-				if (Math.abs(index) > stackSize) {
-					throw TypeError('absolute index cannot be greater than stack size, got ' + index);
-				}
-				if (index < 0) {
-					index = stackSize + index;
-				}
-				break;
-
-			default:
-				throw TypeError('index must be a number if defined, got ' + index);
-		}
-
-		if ( !utils.isArray(newPages) ) {
-			throw TypeError('added pages must be an array, got ' + newPages);
-		}
-
-		newPages = newPages.slice();
-
-		newPages.forEach(function (page, i) {
-			if (typeof page === 'string') {
-				page = [page, {}];
-			}
-			else if ( utils.isArray(page) ) {
-				page = page.slice();
-			}
-			else {
-				throw TypeError('page description must be an array (page name, arguments), got ' + page);
-			}
-
-			if (typeof page[0] !== 'string') {
-				throw TypeError('page name must be a string, got ' + page[0]);
-			}
-
-			switch (typeof page[1]) {
-				case 'undefined':
-					page[1] = {};
-					break;
-
-				case 'object':
-					break;
-
-				default:
-					throw TypeError('page arguments must be an object if defined, got ' + page[1]);
-			}
-
-			switch (typeof page[2]) {
-				case 'undefined':
-					page[2] = {};
-					break;
-
-				case 'object':
-					break;
-
-				default:
-					throw TypeError('page options must be an object if defined, got ' + page[2]);
-			}
-
-			newPages[i] = page;
-		});
-
-		addToStack(index, newPages);
-	};
-
-	App.saveStack = function () {
-		saveStack();
-	};
-
-	App.destroyStack = function () {
-		destroyStack();
-	};
-
-	App.restore = setupRestoreFunction();
 	App._layout = setupListeners();
 
 	return {};
@@ -398,7 +241,7 @@ App._core = function (window, document, Swapper, App, utils, Dialog, Scroll, Pag
 
 		handler(function () {
 			navLock = false;
-			saveStack();
+			Stack.save();
 			processNavigationQueue();
 		});
 
@@ -412,15 +255,15 @@ App._core = function (window, document, Swapper, App, utils, Dialog, Scroll, Pag
 			var oldNode        = currentNode,
 				pageManager    = Pages.createManager(false),
 				page           = Pages.startGeneration(pageName, pageManager, args),
-				restoreData    = stack[stack.length-1],
-				restoreNode    = restoreData && restoreData[1],
-				restoreManager = restoreData && restoreData[4];
+				restoreData    = Stack.getCurrent(),
+				restoreNode    = restoreData && restoreData[3],
+				restoreManager = restoreData && restoreData[2];
 
 			if (!options.transition && pageManager.transition) {
 				options.transition = pageManager.transition;
 			}
 
-			populatePageBackButton(page, oldNode || restoreNode);
+			Pages.populateBackButton(page, oldNode || restoreNode);
 
 			if ( !current ) {
 				App.restore = null;
@@ -443,7 +286,7 @@ App._core = function (window, document, Swapper, App, utils, Dialog, Scroll, Pag
 			function updatePageData () {
 				current     = pageName;
 				currentNode = page;
-				stack.push([ pageName, page, options, args, pageManager ]);
+				Stack.push([ pageName, args, pageManager, page, options ]);
 				if (oldNode && restoreManager) {
 					Pages.fire(restoreManager, oldNode, Pages.EVENTS.FORWARD);
 				}
@@ -475,36 +318,36 @@ App._core = function (window, document, Swapper, App, utils, Dialog, Scroll, Pag
 			return;
 		}
 
-		var stackLength = stack.length,
+		var stackLength = Stack.size(),
 			cancelled   = false;
 
 		var navigatedImmediately = navigate(function (unlock) {
-			if (stack.length < 2) {
+			if (Stack.size() < 2) {
 				unlock();
 				return;
 			}
 
-			var oldPage = stack[stack.length-1];
+			var oldPage = Stack.getCurrent();
 
-			if ( !Pages.fire(oldPage[4], oldPage[1], Pages.EVENTS.BEFORE_BACK) ) {
+			if ( !Pages.fire(oldPage[2], oldPage[3], Pages.EVENTS.BEFORE_BACK) ) {
 				cancelled = true;
 				unlock();
 				return;
 			}
 			else {
-				stack.pop();
+				Stack.pop();
 			}
 
-			var data       = stack[stack.length - 1],
+			var data       = Stack.getCurrent(),
 				pageName   = data[0],
-				page       = data[1],
-				oldOptions = oldPage[2];
+				page       = data[3],
+				oldOptions = oldPage[4];
 
-			Pages.fire(oldPage[4], oldPage[1], Pages.EVENTS.BACK);
+			Pages.fire(oldPage[2], oldPage[3], Pages.EVENTS.BACK);
 
 			Pages.fixContent(page);
 
-			Pages.startDestruction(oldPage[0], oldPage[4], oldPage[1], oldPage[3]);
+			Pages.startDestruction(oldPage[0], oldPage[2], oldPage[3], oldPage[1]);
 
 			Scroll.restoreScrollPosition(page);
 
@@ -524,13 +367,13 @@ App._core = function (window, document, Swapper, App, utils, Dialog, Scroll, Pag
 			performTransition(page, newOptions, function () {
 				Scroll.restoreScrollStyle(page);
 
-				oldPage[4].showing = false
-				Pages.fire(oldPage[4], oldPage[1], Pages.EVENTS.HIDE);
-				data[4].showing = true
-				Pages.fire(data[4], page, Pages.EVENTS.SHOW);
+				oldPage[2].showing = false
+				Pages.fire(oldPage[2], oldPage[3], Pages.EVENTS.HIDE);
+				data[2].showing = true
+				Pages.fire(data[2], page, Pages.EVENTS.SHOW);
 
 				setTimeout(function () {
-					Pages.finishDestruction(oldPage[0], oldPage[4], oldPage[1], oldPage[3]);
+					Pages.finishDestruction(oldPage[0], oldPage[2], oldPage[3], oldPage[1]);
 
 					unlock();
 					callback();
@@ -544,98 +387,6 @@ App._core = function (window, document, Swapper, App, utils, Dialog, Scroll, Pag
 		if (cancelled || (navigatedImmediately && (stackLength < 2))) {
 			return false;
 		}
-	}
-
-
-
-	function fetchStack () {
-		return stack.slice().map(function (pageData) {
-			var pageName = pageData[0],
-				pageArgs = {};
-
-			for (var key in pageData[3]) {
-				pageArgs[key] = pageData[3][key];
-			}
-
-			return [ pageName, pageArgs ];
-		});
-	}
-
-	function fetchPage (index) {
-		var pageData = stack[index];
-
-		if (pageData) {
-			return pageData[1];
-		}
-	}
-
-	// you must manually save the stack if you choose to use this method
-	function removeFromStackNow (startIndex, endIndex) {
-		var deadPages = stack.splice(startIndex, endIndex - startIndex);
-
-		deadPages.forEach(function (pageData) {
-			Pages.startDestruction(pageData[0], pageData[4], pageData[1], pageData[3]);
-			Pages.finishDestruction(pageData[0], pageData[4], pageData[1], pageData[3]);
-		});
-	}
-
-	function removeFromStack (startIndex, endIndex) {
-		navigate(function (unlock) {
-			removeFromStackNow(startIndex, endIndex);
-			unlock();
-		});
-	}
-
-	// you must manually save the stack if you choose to use this method
-	function addToStackNow (index, newPages, restored) {
-		var pageDatas = [],
-			lastPage;
-
-		newPages.forEach(function (pageData) {
-			var pageManager = Pages.createManager(true),
-				page        = Pages.startGeneration(pageData[0], pageManager, pageData[1]);
-			populatePageBackButton(page, lastPage);
-
-			Pages.finishGeneration(pageData[0], pageManager, page, pageData[1]);
-
-			Scroll.saveScrollPosition(page);
-			Scroll.saveScrollStyle(page);
-
-			pageDatas.push([pageData[0], page, pageData[2], pageData[1], pageManager]);
-
-			lastPage = page;
-		});
-
-		pageDatas.unshift(0);
-		pageDatas.unshift(index);
-		Array.prototype.splice.apply(stack, pageDatas);
-	}
-
-	function addToStack (index, newPages) {
-		navigate(function (unlock) {
-			addToStackNow(index, newPages);
-			unlock();
-		});
-	}
-
-	function populatePageBackButton (page, oldPage) {
-		if ( !oldPage ) {
-			return;
-		}
-		var backButton = page.querySelector('.app-topbar .left.app-button'),
-			oldTitle   = oldPage.querySelector('.app-topbar .app-title');
-		if (!backButton || !oldTitle) {
-			return;
-		}
-		var oldText = oldTitle.textContent,
-			newText = backButton.textContent;
-		if (!oldText || newText) {
-			return;
-		}
-		if (oldText.length > 13) {
-			oldText = oldText.substr(0, 12) + '..';
-		}
-		backButton.textContent = oldText;
 	}
 
 
@@ -885,11 +636,9 @@ App._core = function (window, document, Swapper, App, utils, Dialog, Scroll, Pag
 		}
 		function fixSizing () {
 			fixContentHeight();
-			if (currentNode) {
-				var pageData = stack[stack.length-1];
-				if (pageData) {
-					Pages.fire(pageData[4], currentNode, Pages.EVENTS.LAYOUT);
-				}
+			var pageData = Stack.getCurrent();
+			if (pageData) {
+				Pages.fire(pageData[2], pageData[3], Pages.EVENTS.LAYOUT);
 			}
 		}
 		function triggerSizeFix () {
@@ -910,109 +659,18 @@ App._core = function (window, document, Swapper, App, utils, Dialog, Scroll, Pag
 		setTimeout(triggerSizeFix, 0);
 
 		window.addEventListener('online', function () {
-			stack.forEach(function (pageInfo) {
-				pageInfo[4].online = true;
-				Pages.fire(pageInfo[4], pageInfo[1], Pages.EVENTS.ONLINE);
+			Stack.get().forEach(function (pageInfo) {
+				pageInfo[2].online = true;
+				Pages.fire(pageInfo[2], pageInfo[3], Pages.EVENTS.ONLINE);
 			});
 		}, false);
 		window.addEventListener('offline', function () {
-			stack.forEach(function (pageInfo) {
-				pageInfo[4].online = false;
-				Pages.fire(pageInfo[4], pageInfo[1], Pages.EVENTS.OFFLINE);
+			Stack.get().forEach(function (pageInfo) {
+				pageInfo[2].online = false;
+				Pages.fire(pageInfo[2], pageInfo[3], Pages.EVENTS.OFFLINE);
 			});
 		}, false);
 
 		return triggerSizeFix;
 	}
-
-
-
-	function saveStack () {
-		try {
-			var storedStack = [];
-			for (var i=0, l=stack.length; i<l; i++) {
-				if (stack[i][4].restorable === false) {
-					break;
-				}
-				storedStack.push([stack[i][0], stack[i][3], stack[i][2]]);
-			}
-			localStorage[STACK_KEY] = JSON.stringify(storedStack);
-			localStorage[STACK_TIME] = +new Date() + '';
-		}
-		catch (err) {}
-	}
-
-	function destroyStack () {
-		delete localStorage[STACK_KEY];
-		delete localStorage[STACK_TIME];
-	}
-
-	function setupRestoreFunction (options) {
-		var storedStack, lastPage;
-
-		try {
-			storedStack = JSON.parse( localStorage[STACK_KEY] );
-			storedTime  = parseInt( localStorage[STACK_TIME] );
-			lastPage    = storedStack.pop();
-		}
-		catch (err) {
-			return;
-		}
-
-		return function (options, callback) {
-			switch (typeof options) {
-				case 'function':
-					callback = options;
-				case 'undefined':
-					options = {};
-				case 'object':
-					if (options !== null) {
-						break;
-					}
-				default:
-					throw TypeError('restore options must be an object if defined, got ' + options);
-			}
-
-			switch (typeof callback) {
-				case 'undefined':
-					callback = function () {};
-				case 'function':
-					break;
-				default:
-					throw TypeError('restore callback must be a function if defined, got ' + callback);
-			}
-
-			if (+new Date()-storedTime >= options.maxAge) {
-				throw TypeError('restore content is too old');
-			}
-
-			if ( !Pages.has(lastPage[0]) ) {
-				throw TypeError(lastPage[0] + ' is not a known page');
-			}
-
-			storedStack.forEach(function (pageData) {
-				if ( !Pages.has(pageData[0]) ) {
-					throw TypeError(pageData[0] + ' is not a known page');
-				}
-			});
-
-			try {
-				addToStackNow(0, storedStack, true);
-			}
-			catch (err) {
-				removeFromStackNow(0, stack.length);
-				throw Error('failed to restore stack');
-			}
-
-			saveStack();
-
-			try {
-				loadPage(lastPage[0], lastPage[1], lastPage[2], callback);
-			}
-			catch (err) {
-				removeFromStackNow(0, stack.length);
-				throw Error('failed to restore stack');
-			}
-		};
-	}
-}(window, document, Swapper, App, App._utils, App._Dialog, App._Scroll, App._Pages);
+}(window, document, Swapper, App, App._utils, App._Dialog, App._Scroll, App._Pages, App._Stack);
