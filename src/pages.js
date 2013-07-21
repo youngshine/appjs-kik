@@ -264,29 +264,43 @@ App._Pages = function (window, document, Clickable, Scrollable, App, utils, Even
 			page.querySelectorAll('.app-button'),
 			function (button) {
 				Clickable(button);
+				button.addEventListener('click', function () {
+					var target     = button.getAttribute('data-target'),
+						targetArgs = button.getAttribute('data-target-args'),
+						back       = button.getAttribute('data-back'),
+						args;
 
-				var target     = button.getAttribute('data-target'),
-					targetArgs = button.getAttribute('data-target-args'),
-					back       = button.getAttribute('data-back'),
-					args;
+					try {
+						args = JSON.parse(targetArgs);
+					} catch (err) {}
+					if ((typeof args !== 'object') || (args === null)) {
+						args = {};
+					}
 
-				try {
-					args = JSON.parse(targetArgs);
-				} catch (err) {}
-				if ((typeof args !== 'object') || (args === null)) {
-					args = {};
-				}
+					if (!back && !target) {
+						return;
+					}
 
-				if (back) {
-					Clickable.sticky(button, function (callback) {
-						return App.back({}, callback);
-					});
-				}
-				else if (target) {
-					Clickable.sticky(button, function (callback) {
-						return App.load(target, args, {}, callback);
-					});
-				}
+					var clickableClass = button.getAttribute('data-clickable-class');
+					if (clickableClass) {
+						button.disabled = true;
+						button.classList.add(clickableClass);
+					}
+
+					if (back) {
+						App.back({}, finish);
+					}
+					else if (target) {
+						App.load(target, args, {}, finish);
+					}
+
+					function finish () {
+						if (clickableClass) {
+							button.disabled = false;
+							button.classList.remove(clickableClass);
+						}
+					}
+				}, false);
 			}
 		);
 
