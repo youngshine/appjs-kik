@@ -9,6 +9,7 @@ App._Pages = function (window, document, Clickable, Scrollable, App, utils, Even
 			BACK        : 'back'    ,
 			FORWARD     : 'forward' ,
 			BEFORE_BACK : 'beforeBack' ,
+			READY       : 'ready'   ,
 			DESTROY     : 'destroy' ,
 			LAYOUT      : 'layout'  ,
 			ONLINE      : 'online'  ,
@@ -228,6 +229,9 @@ App._Pages = function (window, document, Clickable, Scrollable, App, utils, Even
 				}
 				var queue = readyQueue.slice();
 				readyQueue = null;
+				if ( utils.isNode(pageManager.page) ) {
+					firePageEvent(pageManager, pageManager.page, EVENTS.READY);
+				}
 				utils.forEach(queue, function (func) {
 					func.call(pageManager);
 				});

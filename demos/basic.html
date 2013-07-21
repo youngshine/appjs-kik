@@ -5,6 +5,7 @@
 
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 	<link rel="stylesheet" href="../src/stylesheets/base.css">
+	<link rel="stylesheet" href="../src/stylesheets/app.css">
 	<style>
 		body.demo-cursor {
 			cursor: pointer;
@@ -161,43 +162,6 @@
 </div>
 
 
-
-<script>
-	(function (window, document) {
-		var query = function (queryString) {
-			var re           = /([^&=]+)=([^&]+)/g,
-				decodedSpace = /\+/g;
-
-			var result = {},
-				m, key, value;
-
-			if (queryString) {
-				queryString = queryString.replace(decodedSpace, '%20');
-
-				while ((m = re.exec(queryString))) {
-					key   = decodeURIComponent( m[1] );
-					value = decodeURIComponent( m[2] );
-					result[ key ] = value;
-				}
-			}
-
-			return result;
-		}( window.location.href.split('?')[1] );
-
-		if ( !query.style ) {
-			return;
-		}
-
-		var link  = document.createElement('link');
-		link.rel = 'stylesheet';
-		link.href = '../src/stylesheets/'+query.style+'.css';
-		document.querySelector('head').appendChild(link);
-
-		if (query._app_platform) {
-			document.body.className += ' demo-cursor';
-		}
-	})(window, document);
-</script>
 
 <script src="../src/lib/swapper.js"    ></script>
 <script src="../src/lib/clickable.js"  ></script>
