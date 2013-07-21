@@ -178,7 +178,6 @@ App._Dialog = function (window, document, Clickable, App, utils) {
 		if ((typeof options !== 'object') || (options === null)) {
 			throw TypeError('dialog options must be an object, got ' + options);
 		}
-
 		switch (typeof options.dark) {
 			case 'undefined':
 			case 'boolean':
@@ -186,7 +185,6 @@ App._Dialog = function (window, document, Clickable, App, utils) {
 			default:
 				throw TypeError('dialog dark mode must a boolean if defined, got ' + options.dark);
 		}
-
 		switch (typeof options.title) {
 			case 'undefined':
 			case 'string':
@@ -194,7 +192,6 @@ App._Dialog = function (window, document, Clickable, App, utils) {
 			default:
 				throw TypeError('dialog title must be a string if defined, got ' + options.title);
 		}
-
 		switch (typeof options.text) {
 			case 'undefined':
 			case 'string':
@@ -204,7 +201,6 @@ App._Dialog = function (window, document, Clickable, App, utils) {
 					throw TypeError('dialog text must be a string if defined, got ' + options.text);
 				}
 		}
-
 		for (var key in options) {
 			if ((key !== 'dark') && (key !== 'rawText') && (key !== 'text')) {
 				switch (typeof options[key]) {
@@ -216,7 +212,6 @@ App._Dialog = function (window, document, Clickable, App, utils) {
 				}
 			}
 		}
-
 		switch (typeof callback) {
 			case 'undefined':
 				callback = function () {};

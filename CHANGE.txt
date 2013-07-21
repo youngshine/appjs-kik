@@ -7,3 +7,4 @@
 - this.ready for populators
 - populator classes
 - this.transition for page-specific transition declarations
+- pick/load pages with expected response data (App.pick)

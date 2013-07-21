@@ -10,7 +10,6 @@ App._Stack = function (window, document, App, utils, Scroll, Pages) {
 
 	App.getPage = function (index) {
 		var stackSize = stack.length - 1;
-
 		switch (typeof index) {
 			case 'undefined':
 				index = stackSize;
@@ -32,12 +31,10 @@ App._Stack = function (window, document, App, utils, Scroll, Pages) {
 	App.removeFromStack = function (startIndex, endIndex) {
 		// minus 1 because last item on stack is current page (which is untouchable)
 		var stackSize = stack.length - 1;
-
 		switch (typeof startIndex) {
 			case 'undefined':
 				startIndex = 0;
 				break;
-
 			case 'number':
 				if (Math.abs(startIndex) > stackSize) {
 					throw TypeError('absolute start index cannot be greater than stack size, got ' + startIndex);
@@ -46,16 +43,13 @@ App._Stack = function (window, document, App, utils, Scroll, Pages) {
 					startIndex = stackSize + startIndex;
 				}
 				break;
-
 			default:
 				throw TypeError('start index must be a number if defined, got ' + startIndex);
 		}
-
 		switch (typeof endIndex) {
 			case 'undefined':
 				endIndex = stackSize;
 				break;
-
 			case 'number':
 				if (Math.abs(endIndex) > stackSize) {
 					throw TypeError('absolute end index cannot be greater than stack size, got ' + endIndex);
@@ -64,11 +58,9 @@ App._Stack = function (window, document, App, utils, Scroll, Pages) {
 					endIndex = stackSize + endIndex;
 				}
 				break;
-
 			default:
 				throw TypeError('end index must be a number if defined, got ' + endIndex);
 		}
-
 		if (startIndex > endIndex) {
 			throw TypeError('start index cannot be greater than end index');
 		}
@@ -79,12 +71,10 @@ App._Stack = function (window, document, App, utils, Scroll, Pages) {
 	App.addToStack = function (index, newPages) {
 		// minus 1 because last item on stack is current page (which is untouchable)
 		var stackSize = stack.length - 1;
-
 		switch (typeof index) {
 			case 'undefined':
 				index = 0;
 				break;
-
 			case 'number':
 				if (Math.abs(index) > stackSize) {
 					throw TypeError('absolute index cannot be greater than stack size, got ' + index);
@@ -93,56 +83,40 @@ App._Stack = function (window, document, App, utils, Scroll, Pages) {
 					index = stackSize + index;
 				}
 				break;
-
 			default:
 				throw TypeError('index must be a number if defined, got ' + index);
 		}
-
 		if ( !utils.isArray(newPages) ) {
 			throw TypeError('added pages must be an array, got ' + newPages);
 		}
-
 		newPages = newPages.slice();
-
-		newPages.forEach(function (page, i) {
+		utils.forEach(newPages, function (page, i) {
 			if (typeof page === 'string') {
 				page = [page, {}];
-			}
-			else if ( utils.isArray(page) ) {
+			} else if ( utils.isArray(page) ) {
 				page = page.slice();
-			}
-			else {
+			} else {
 				throw TypeError('page description must be an array (page name, arguments), got ' + page);
 			}
-
 			if (typeof page[0] !== 'string') {
 				throw TypeError('page name must be a string, got ' + page[0]);
 			}
-
 			switch (typeof page[1]) {
 				case 'undefined':
 					page[1] = {};
-					break;
-
 				case 'object':
 					break;
-
 				default:
 					throw TypeError('page arguments must be an object if defined, got ' + page[1]);
 			}
-
 			switch (typeof page[2]) {
 				case 'undefined':
 					page[2] = {};
-					break;
-
 				case 'object':
 					break;
-
 				default:
 					throw TypeError('page options must be an object if defined, got ' + page[2]);
 			}
-
 			newPages[i] = page;
 		});
 
@@ -239,7 +213,7 @@ App._Stack = function (window, document, App, utils, Scroll, Pages) {
 	function removeFromStackNow (startIndex, endIndex) {
 		var deadPages = stack.splice(startIndex, endIndex - startIndex);
 
-		deadPages.forEach(function (pageData) {
+		utils.forEach(deadPages, function (pageData) {
 			Pages.startDestruction(pageData[0], pageData[4], pageData[1], pageData[3]);
 			Pages.finishDestruction(pageData[0], pageData[4], pageData[1], pageData[3]);
 		});
@@ -257,7 +231,7 @@ App._Stack = function (window, document, App, utils, Scroll, Pages) {
 		var pageDatas = [],
 			lastPage;
 
-		newPages.forEach(function (pageData) {
+		utils.forEach(newPages, function (pageData) {
 			var pageManager = Pages.createManager(true),
 				page        = Pages.startGeneration(pageData[0], pageManager, pageData[1]);
 			Pages.populateBackButton(page, lastPage);
@@ -331,7 +305,7 @@ App._Stack = function (window, document, App, utils, Scroll, Pages) {
 				throw TypeError(lastPage[0] + ' is not a known page');
 			}
 
-			storedStack.forEach(function (pageData) {
+			utils.forEach(storedStack, function (pageData) {
 				if ( !Pages.has(pageData[0]) ) {
 					throw TypeError(pageData[0] + ' is not a known page');
 				}

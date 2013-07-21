@@ -70,60 +70,38 @@ App._core = function (window, document, Swapper, App, utils, Dialog, Scroll, Pag
 		if (typeof pageName !== 'string') {
 			throw TypeError('page name must be a string, got ' + pageName);
 		}
-
 		switch (typeof args) {
 			case 'function':
-				callback = args;
-				args     = {};
-				options  = {};
-				break;
-
-			case 'undefined':
-				args = {};
-				break;
-
+				options = args;
+				args    = {};
 			case 'string':
 				callback = options;
 				options  = args;
-				args     = {};
-				break;
-
+			case 'undefined':
+				args = {};
 			case 'object':
 				break;
-
 			default:
 				throw TypeError('page arguments must be an object if defined, got ' + args);
 		}
-
 		switch (typeof options) {
 			case 'function':
 				callback = options;
-				options  = {};
-				break;
-
 			case 'undefined':
 				options = {};
+			case 'object':
 				break;
-
 			case 'string':
 				options = { transition : options };
 				break;
-
-			case 'object':
-				break;
-
 			default:
 				throw TypeError('options must be an object if defined, got ' + options);
 		}
-
 		switch (typeof callback) {
 			case 'undefined':
 				callback = function () {};
-				break;
-
 			case 'function':
 				break;
-
 			default:
 				throw TypeError('callback must be a function if defined, got ' + callback);
 		}
@@ -135,37 +113,75 @@ App._core = function (window, document, Swapper, App, utils, Dialog, Scroll, Pag
 		switch (typeof options) {
 			case 'function':
 				callback = options;
-				options  = {};
-				break;
-
 			case 'undefined':
-				options  = {};
+				options = {};
+			case 'object':
 				break;
-
 			case 'string':
 				options = { transition : options };
 				break;
-
-			case 'object':
-				break;
-
 			default:
 				throw TypeError('options must be an object if defined, got ' + options);
 		}
-
 		switch (typeof callback) {
 			case 'undefined':
 				callback = function () {};
-				break;
-
 			case 'function':
 				break;
-
 			default:
 				throw TypeError('callback must be a function if defined, got ' + callback);
 		}
 
 		return navigateBack(options, callback);
+	};
+
+	App.pick = function (pageName, args, options, loadCallback, callback) {
+		if (typeof pageName !== 'string') {
+			throw TypeError('page name must be a string, got ' + pageName);
+		}
+		switch (typeof args) {
+			case 'function':
+				options = args;
+				args    = {};
+			case 'string':
+				callback     = loadCallback;
+				loadCallback = options;
+				options      = args;
+			case 'undefined':
+				args = {};
+			case 'object':
+				break;
+			default:
+				throw TypeError('page arguments must be an object if defined, got ' + args);
+		}
+		switch (typeof options) {
+			case 'function':
+				callback     = loadCallback;
+				loadCallback = options;
+			case 'undefined':
+				options = {};
+			case 'object':
+				break;
+			case 'string':
+				options = { transition : options };
+				break;
+			default:
+				throw TypeError('options must be an object if defined, got ' + options);
+		}
+		if (typeof loadCallback !== 'function') {
+			throw TypeError('callback must be a function, got ' + loadCallback);
+		}
+		switch (typeof callback) {
+			case 'undefined':
+				callback     = loadCallback;
+				loadCallback = function () {};
+			case 'function':
+				break;
+			default:
+				throw TypeError('callback must be a function, got ' + callback);
+		}
+
+		return pickPage(pageName, args, options, loadCallback, callback);
 	};
 
 	App.setDefaultTransition = function (transition) {
@@ -174,26 +190,21 @@ App._core = function (window, document, Swapper, App, utils, Dialog, Scroll, Pag
 				case 'android':
 					if ((utils.os.version < 4) && transition.androidFallback) {
 						transition = transition.androidFallback;
-					}
-					else {
+					} else {
 						transition = transition.android;
 					}
 					break;
-
 				case 'ios':
 					if ((utils.os.version < 5) && transition.iosFallback) {
 						transition = transition.iosFallback;
-					}
-					else {
+					} else {
 						transition = transition.ios;
 					}
 					break;
-
 				default:
 					transition = transition.fallback;
 					break;
 			}
-
 			if ( !transition ) {
 				return;
 			}
@@ -250,11 +261,16 @@ App._core = function (window, document, Swapper, App, utils, Dialog, Scroll, Pag
 
 
 
-	function loadPage (pageName, args, options, callback) {
+	function loadPage (pageName, args, options, callback, setupPickerMode) {
 		navigate(function (unlock) {
-			var oldNode        = currentNode,
-				pageManager    = Pages.createManager(false),
-				page           = Pages.startGeneration(pageName, pageManager, args),
+			var oldNode     = currentNode,
+				pageManager = Pages.createManager(false);
+
+			if (setupPickerMode) {
+				setupPickerMode(pageManager);
+			}
+
+			var page           = Pages.startGeneration(pageName, pageManager, args),
 				restoreData    = Stack.getCurrent(),
 				restoreNode    = restoreData && restoreData[3],
 				restoreManager = restoreData && restoreData[2];
@@ -387,6 +403,20 @@ App._core = function (window, document, Swapper, App, utils, Dialog, Scroll, Pag
 		if (cancelled || (navigatedImmediately && (stackLength < 2))) {
 			return false;
 		}
+	}
+
+	function pickPage (pageName, args, options, loadCallback, callback) {
+		var finished = false;
+		loadPage(pageName, args, options, loadCallback, function (pageManager) {
+			pageManager.restorable = false;
+			pageManager.reply = function () {
+				if ( !finished ) {
+					finished = true;
+					navigateBack({}, function(){});
+					callback.apply(App, arguments);
+				}
+			};
+		});
 	}
 
 
@@ -659,13 +689,13 @@ App._core = function (window, document, Swapper, App, utils, Dialog, Scroll, Pag
 		setTimeout(triggerSizeFix, 0);
 
 		window.addEventListener('online', function () {
-			Stack.get().forEach(function (pageInfo) {
+			utils.forEach(Stack.get(), function (pageInfo) {
 				pageInfo[2].online = true;
 				Pages.fire(pageInfo[2], pageInfo[3], Pages.EVENTS.ONLINE);
 			});
 		}, false);
 		window.addEventListener('offline', function () {
-			Stack.get().forEach(function (pageInfo) {
+			utils.forEach(Stack.get(), function (pageInfo) {
 				pageInfo[2].online = false;
 				Pages.fire(pageInfo[2], pageInfo[3], Pages.EVENTS.OFFLINE);
 			});

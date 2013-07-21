@@ -205,7 +205,7 @@ App._utils = function (window, document, App) {
 		});
 
 		function setInitialStyles (callback) {
-			transitions.forEach(function (transition) {
+			forEach(transitions, function (transition) {
 				if (typeof transition.transitionStart !== 'undefined') {
 					setTransform(transition.elem, transition.transitionStart);
 				}
@@ -216,7 +216,7 @@ App._utils = function (window, document, App) {
 
 			setTimeout(function () {
 				var transitionString = 'transform '+(timeout/1000)+'s ease-in-out, opacity '+(timeout/1000)+'s ease-in-out';
-				transitions.forEach(function (transition) {
+				forEach(transitions, function (transition) {
 					setTransition(transition.elem, transitionString);
 				});
 
@@ -225,7 +225,7 @@ App._utils = function (window, document, App) {
 		}
 
 		function animateElems (callback) {
-			transitions.forEach(function (transition) {
+			forEach(transitions, function (transition) {
 				if (typeof transition.transitionEnd !== 'undefined') {
 					setTransform(transition.elem, transition.transitionEnd);
 				}
@@ -234,7 +234,7 @@ App._utils = function (window, document, App) {
 				}
 			});
 
-			transitions.forEach(function (transition) {
+			forEach(transitions, function (transition) {
 				transition.elem.addEventListener('webkitTransitionEnd' , transitionFinished , false);
 				transition.elem.addEventListener('transitionend'       , transitionFinished , false);
 				transition.elem.addEventListener('oTransitionEnd'      , transitionFinished , false);
@@ -260,7 +260,7 @@ App._utils = function (window, document, App) {
 				}
 				done = true;
 
-				transitions.forEach(function (transition) {
+				forEach(transitions, function (transition) {
 					transition.elem.removeEventListener('webkitTransitionEnd' , transitionFinished);
 					transition.elem.removeEventListener('transitionend'       , transitionFinished);
 					transition.elem.removeEventListener('oTransitionEnd'      , transitionFinished);
@@ -274,12 +274,12 @@ App._utils = function (window, document, App) {
 		}
 
 		function restoreStyles (callback) {
-			transitions.forEach(function (transition) {
+			forEach(transitions, function (transition) {
 				setTransition(transition.elem, '');
 			});
 
 			setTimeout(function () {
-				transitions.forEach(function (transition, i) {
+				forEach(transitions, function (transition, i) {
 					setTransform(transition.elem, '');
 					transition.elem.style.opacity = opacities[i];
 				});

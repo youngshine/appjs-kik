@@ -330,6 +330,9 @@ App._Pages = function (window, document, Clickable, Scrollable, App, utils, Even
 		if (!utils.os.ios || utils.os.version < 6) {
 			Scroll.disable(page);
 		}
+		if (typeof pageManager.reply === 'function') {
+			pageManager.reply();
+		}
 	}
 
 	function finishPageDestruction (pageName, pageManager, page, args) {
