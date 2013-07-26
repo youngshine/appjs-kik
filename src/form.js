@@ -1,6 +1,6 @@
 App._Form = function (window, document, App, utils) {
 	App.form = function (form, callback) {
-		if ( !App._utils.isNode(form) ) {
+		if ( !utils.isNode(form) ) {
 			throw TypeError('form must be a DOM node, got ' + form);
 		}
 		if (typeof callback !== 'function') {
@@ -31,7 +31,7 @@ App._Form = function (window, document, App, utils) {
 			submitButtons = [form];
 		}
 
-		App._utils.forEach(submitButtons, function (submitButton) {
+		utils.forEach(submitButtons, function (submitButton) {
 			if (submitButton.nodeName === 'TEXTAREA') {
 				isText = true;
 			} else if (submitButton.nodeName !== 'INPUT') {
@@ -76,7 +76,7 @@ App._Form = function (window, document, App, utils) {
 				done   = false;
 
 			if (isForm) {
-				App._utils.forEach(
+				utils.forEach(
 					form.querySelectorAll('[name]'),
 					function (elem) {
 						params[elem.name] = elem.value;
@@ -89,7 +89,7 @@ App._Form = function (window, document, App, utils) {
 				}
 			}
 
-			App._utils.forEach(inputs, function (elem) {
+			utils.forEach(inputs, function (elem) {
 				elem.disabled = true;
 			});
 
@@ -99,7 +99,7 @@ App._Form = function (window, document, App, utils) {
 				}
 				done = true;
 
-				App._utils.forEach(inputs, function (elem) {
+				utils.forEach(inputs, function (elem) {
 					elem.disabled = false;
 				});
 

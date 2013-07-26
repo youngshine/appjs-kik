@@ -74,7 +74,7 @@ App._Events = function (utils) {
 
 		elem.addEventListener = function (name, listener) {
 			if (names.indexOf(name) === -1) {
-				elem._addEventListener.apply(this, arguments);
+				elem[APPJS_EVENTS_VAR].addEventListener.apply(this, arguments);
 				return;
 			}
 
@@ -87,7 +87,7 @@ App._Events = function (utils) {
 
 		elem.removeEventListener = function (name, listener) {
 			if (names.indexOf(name) === -1) {
-				elem._removeEventListener.apply(this, arguments);
+				elem[APPJS_EVENTS_VAR].removeEventListener.apply(this, arguments);
 				return;
 			}
 
