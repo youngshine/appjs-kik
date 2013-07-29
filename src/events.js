@@ -63,7 +63,7 @@ App._Events = function (utils) {
 
 			utils.forEach(listeners[name], function (listener) {
 				setTimeout(function () {
-					if ( !listener.call(elem, evt) ) {
+					if (listener.call(elem, evt) === false) {
 						prevented = true;
 					}
 				}, 0);
