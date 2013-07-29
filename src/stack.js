@@ -220,7 +220,7 @@ App._Stack = function (window, document, App, utils, Scroll, Pages) {
 	}
 
 	function removeFromStack (startIndex, endIndex) {
-		navigate(function (unlock) {
+		App._navigate(function (unlock) {
 			removeFromStackNow(startIndex, endIndex);
 			unlock();
 		});
@@ -252,7 +252,7 @@ App._Stack = function (window, document, App, utils, Scroll, Pages) {
 	}
 
 	function addToStack (index, newPages) {
-		navigate(function (unlock) {
+		App._navigate(function (unlock) {
 			addToStackNow(index, newPages);
 			unlock();
 		});

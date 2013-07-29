@@ -230,6 +230,7 @@ App._core = function (window, document, Swapper, App, utils, Dialog, Scroll, Pag
 	};
 
 	App._layout = setupListeners();
+	App._navigate = navigate;
 
 	return {};
 
