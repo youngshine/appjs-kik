@@ -69,7 +69,7 @@ App._Events = function (utils) {
 				}, 0);
 			});
 
-			return prevented;
+			return !prevented;
 		}
 
 		elem.addEventListener = function (name, listener) {
