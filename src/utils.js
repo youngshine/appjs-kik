@@ -52,10 +52,10 @@ App._utils = function (window, document, App) {
 		data[ name ] = true;
 
 		if (data.ios) {
-			document.body.className += ' app-ios';
+			document.body.className += ' app-ios app-ios-'+parseInt(version);
 		}
 		else if (data.android) {
-			document.body.className += ' app-android';
+			document.body.className += ' app-android app-android-'+parseInt(version);
 		}
 		if (data.faked || (!data.ios && !data.android)) {
 			document.body.className += ' app-no-scrollbar';
