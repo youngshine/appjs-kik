@@ -406,7 +406,7 @@ App._Pages = function (window, document, Clickable, Scrollable, App, utils, Even
 		}
 		var backButton = page.querySelector('.app-topbar .left.app-button'),
 			oldTitle   = oldPage.querySelector('.app-topbar .app-title');
-		if (!backButton || !oldTitle) {
+		if (!backButton || !oldTitle || (backButton.getAttribute('data-autotitle') !== 'true')) {
 			return;
 		}
 		var oldText = oldTitle.textContent,
