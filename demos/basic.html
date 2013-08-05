@@ -46,6 +46,33 @@
 		ul.colour-picker li[data-colour="white"] {
 			background: #FFF;
 		}
+
+		@-webkit-keyframes pulse {
+			0% {
+				background-color: #CCC;
+			}
+			25% {
+				background-color: #EEE;
+			}
+			50% {
+				background-color: #CCC;
+			}
+			75% {
+				background-color: #EEE;
+			}
+			100% {
+				background-color: #CCC;
+			}
+		}
+		.scroll-page .loading {
+			margin: 12px auto;
+			border: 8px solid #AAA;
+			height: 16px;
+			width: 16px;
+			background: #CCC;
+			border-radius: 16px;
+			-webkit-animation: pulse 2s ease-in-out 0s infinite;
+		}
 	</style>
 </head>
 
@@ -80,6 +107,7 @@
 			<div class="app-button" data-target="lists">Lists</div>
 			<div class="app-button" data-target="buttons">Buttons</div>
 			<div class="app-button" data-target="inputs">Inputs</div>
+			<div class="app-button" data-target="scroll">Scrolling</div>
 		</div>
 	</div>
 </div>
@@ -158,6 +186,19 @@
 			<textarea class="app-input" name="message" placeholder="Message"></textarea>
 			<div class="app-button green app-submit">Send</div>
 		</form>
+	</div>
+</div>
+
+<div class="app-page scroll-page" data-page="scroll">
+	<div class="app-topbar">
+		<div class="left app-button" data-back="true" data-autotitle="true"></div>
+		<div class="app-title"><span class="app-icon"></span>Scrolling</div>
+	</div>
+	<div class="app-content">
+		<div class="loading"></div>
+		<ul class="app-list">
+			<li>Item <span></span></li>
+		</ul>
 	</div>
 </div>
 
@@ -265,6 +306,34 @@
 		setupPageColour(page);
 		this.transition = 'slideon-down';
 		App.form(page.querySelector('form'), this.reply);
+	});
+
+	App.populator('scroll', function (page) {
+		var loading  = page.querySelector('.loading'),
+			list     = page.querySelector('.app-list'),
+			listItem = page.querySelector('.app-list li'),
+			i = 1;
+
+		loading.parentNode.removeChild(loading);
+		listItem.parentNode.removeChild(listItem);
+
+		this.ready(function () {
+			Scrollable.infinite(list, { loading: loading }, function (callback) {
+				if (i >= 40) {
+					return null;
+				}
+				setTimeout(function () {
+					var list = [];
+					for (var j=0; j<12; j++) {
+						var node = listItem.cloneNode(true);
+						node.querySelector('span').textContent = i+j;
+						list.push(node);
+					}
+					i += 12;
+					callback(list);
+				}, 1200);
+			});
+		});
 	});
 
 	try {
