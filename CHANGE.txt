@@ -1,5 +1,5 @@
 - new styles
-- new dialog sytax
+- new dialog syntax
 - appBeforeBack
 - non-restorable pages
 - restored flag
@@ -10,3 +10,4 @@
 - pick/load pages with expected response data (App.pick)
 - automatic form management (App.form)
 - infinite scroll
+- search input (no-icon)
