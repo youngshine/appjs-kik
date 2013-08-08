@@ -10,8 +10,6 @@ App._Scroll = function (Scrollable, utils) {
 		TOUCH_SCROLL   : '-webkit-overflow-scrolling'
 	};
 
-	var forceIScroll = !!window['APP_FORCE_ISCROLL'];
-
 	return {
 		setup                 : setupScrollers            ,
 		disable               : disableScrolling          ,
@@ -42,6 +40,7 @@ App._Scroll = function (Scrollable, utils) {
 	}
 
 	function setupScroller (content) {
+		var forceIScroll = !!window['APP_FORCE_ISCROLL'];
 		Scrollable(content, forceIScroll);
 		content.className += ' '+TAGS.APP_SCROLLABLE;
 		if (!forceIScroll && utils.os.ios && utils.os.version < 6) {
