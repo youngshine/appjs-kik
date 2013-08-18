@@ -620,6 +620,7 @@ App._core = function (window, document, Swapper, App, utils, Dialog, Scroll, Pag
 		}
 
 		// slide contents
+		//TODO: ios7 slide on top of each other
 		transitions.push({
 			transitionStart : 'translate3d(0,0,0)' ,
 			transitionEnd   : 'translate3d('+(slideLeft?-100:100)+'%,0,0)' ,
