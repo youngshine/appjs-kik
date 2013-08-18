@@ -215,7 +215,7 @@ App._utils = function (window, document, App) {
 			});
 
 			setTimeout(function () {
-				var transitionString = 'transform '+(timeout/1000)+'s ease-in-out, opacity '+(timeout/1000)+'s ease-in-out';
+				var transitionString = 'transform '+(timeout/1000)+'s '+easing+', opacity '+(timeout/1000)+'s '+easing;
 				forEach(transitions, function (transition) {
 					setTransition(transition.elem, transitionString);
 				});

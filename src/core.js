@@ -476,7 +476,13 @@ App._core = function (window, document, Swapper, App, utils, Dialog, Scroll, Pag
 			options.transition = (reverse ? reverseTransition : defaultTransition);
 		}
 		if ( !options.duration ) {
-			options.duration = utils.os.ios ? 325 : 270;
+			if (utils.os.android) {
+				options.duration = 270;
+			} else if (utils.os.version < 7) {
+				options.duration = 325;
+			} else {
+				options.duration = 350;
+			}
 		}
 
 		uiBlockedTask(function (unblockUI) {
@@ -529,7 +535,8 @@ App._core = function (window, document, Swapper, App, utils, Dialog, Scroll, Pag
 			oldPage.parentNode.appendChild(page);
 		}
 
-		utils.animate(transitions, options.duration, 'ease-in-out', function () {
+		var easing = (utils.os.version < 7 ? 'ease-in-out' : 'cubic-bezier(0,0,0.15,1)');
+		utils.animate(transitions, options.duration, easing, function () {
 			oldPage.parentNode.removeChild(oldPage);
 
 			topPage.style.position   = oldPosition;
