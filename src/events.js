@@ -1,4 +1,4 @@
-App._Events = function (utils) {
+App._Events = function (Utils) {
 	var APPJS_EVENTS_VAR = '__appjsCustomEventing';
 
 	var hasCustomEvents = supportsCustomEventing();
@@ -29,7 +29,7 @@ App._Events = function (utils) {
 		}
 
 		if ( elem[APPJS_EVENTS_VAR] ) {
-			utils.forEach(names, elem[APPJS_EVENTS_VAR].addEventType);
+			Utils.forEach(names, elem[APPJS_EVENTS_VAR].addEventType);
 			return;
 		}
 
@@ -41,7 +41,7 @@ App._Events = function (utils) {
 		};
 
 		var listeners = {};
-		utils.forEach(names, function (name) {
+		Utils.forEach(names, function (name) {
 			listeners[name] = [];
 		});
 
@@ -61,7 +61,7 @@ App._Events = function (utils) {
 			var prevented = false,
 				evt       = { preventDefault: function(){ prevented=true }};
 
-			utils.forEach(listeners[name], function (listener) {
+			Utils.forEach(listeners[name], function (listener) {
 				setTimeout(function () {
 					if (listener.call(elem, evt) === false) {
 						prevented = true;
@@ -110,4 +110,4 @@ App._Events = function (utils) {
 			return elem.dispatchEvent(evt);
 		}
 	}
-}(App._utils);
+}(App._Utils);

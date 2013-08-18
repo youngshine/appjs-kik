@@ -1,4 +1,4 @@
-App._Pages = function (window, document, Clickable, Scrollable, App, utils, Events, metrics, Scroll) {
+App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Events, Metrics, Scroll) {
 	var PAGE_NAME  = 'data-page',
 		PAGE_CLASS = 'app-page',
 		APP_LOADED = 'app-loaded',
@@ -29,7 +29,7 @@ App._Pages = function (window, document, Clickable, Scrollable, App, utils, Even
 			pageName = undefined;
 		}
 
-		if ( !utils.isNode(page) ) {
+		if ( !Utils.isNode(page) ) {
 			throw TypeError('page template node must be a DOM node, got ' + page);
 		}
 
@@ -86,12 +86,14 @@ App._Pages = function (window, document, Clickable, Scrollable, App, utils, Even
 	};
 
 	App.destroy = function (page) {
-		if ( !utils.isNode(page) ) {
+		if ( !Utils.isNode(page) ) {
 			throw TypeError('page node must be a DOM node, got ' + page);
 		}
 
 		return destroyPage(page);
 	};
+
+	App._layout = triggerPageSizeFix;
 
 
 	return {
@@ -209,7 +211,7 @@ App._Pages = function (window, document, Clickable, Scrollable, App, utils, Even
 			}
 
 			if (restored) {
-				utils.ready(function () {
+				Utils.ready(function () {
 					func.call(pageManager);
 				});
 			}
@@ -223,16 +225,16 @@ App._Pages = function (window, document, Clickable, Scrollable, App, utils, Even
 
 		pageManager[PAGE_READY_VAR] = function () {
 			pageManager[PAGE_READY_VAR] = undefined;
-			utils.ready(function () {
+			Utils.ready(function () {
 				if ( !readyQueue ) {
 					return;
 				}
 				var queue = readyQueue.slice();
 				readyQueue = null;
-				if ( utils.isNode(pageManager.page) ) {
+				if ( Utils.isNode(pageManager.page) ) {
 					firePageEvent(pageManager, pageManager.page, EVENTS.READY);
 				}
-				utils.forEach(queue, function (func) {
+				Utils.forEach(queue, function (func) {
 					func.call(pageManager);
 				});
 			});
@@ -268,11 +270,11 @@ App._Pages = function (window, document, Clickable, Scrollable, App, utils, Even
 			eventNames.push( eventTypeToName(EVENTS[evt]) );
 		}
 		Events.init(page, eventNames);
-		metrics.watchPage(page, pageName, args);
+		Metrics.watchPage(page, pageName, args);
 
 		fixContentHeight(page);
 
-		utils.forEach(
+		Utils.forEach(
 			page.querySelectorAll('.app-button'),
 			function (button) {
 				Clickable(button);
@@ -359,7 +361,7 @@ App._Pages = function (window, document, Clickable, Scrollable, App, utils, Even
 	}
 
 	function startPageDestruction (pageName, pageManager, page, args) {
-		if (!utils.os.ios || utils.os.version < 6) {
+		if (!Utils.os.ios || Utils.os.version < 6) {
 			Scroll.disable(page);
 		}
 		if (typeof pageManager.reply === 'function') {
@@ -375,28 +377,64 @@ App._Pages = function (window, document, Clickable, Scrollable, App, utils, Even
 
 	/* Page layout */
 
+	function setupPageListeners () {
+		window.addEventListener('orientationchange', triggerPageSizeFix);
+		window.addEventListener('resize'           , triggerPageSizeFix);
+		window.addEventListener('load'             , triggerPageSizeFix);
+		setTimeout(triggerPageSizeFix, 0);
+
+		window.addEventListener('online', function () {
+			Utils.forEach(App._Stack.get(), function (pageInfo) {
+				pageInfo[2].online = true;
+				firePageEvent(pageInfo[2], pageInfo[3], EVENTS.ONLINE);
+			});
+		}, false);
+		window.addEventListener('offline', function () {
+			Utils.forEach(App._Stack.get(), function (pageInfo) {
+				pageInfo[2].online = false;
+				firePageEvent(pageInfo[2], pageInfo[3], EVENTS.OFFLINE);
+			});
+		}, false);
+	}
+
+	function triggerPageSizeFix () {
+		fixContentHeight();
+		var pageData = App._Stack.getCurrent();
+		if (pageData) {
+			firePageEvent(pageData[2], pageData[3], EVENTS.LAYOUT);
+		}
+
+		//TODO: turns out this isnt all that expensive, but still, lets kill it if we can
+		setTimeout(fixContentHeight,   0);
+		setTimeout(fixContentHeight,  10);
+		setTimeout(fixContentHeight, 100);
+	}
+
 	function fixContentHeight (page) {
+		if ( !page ) {
+			page = App._Navigation.getCurentNode();
+			if ( !page ) {
+				return;
+			}
+		}
+
 		var topbar  = page.querySelector('.app-topbar'),
-			content = page.querySelector('.app-content');
+			content = page.querySelector('.app-content'),
+			height  = window.innerHeight;
 
 		if ( !content ) {
 			return;
 		}
-
-		var height = window.innerHeight;
-
 		if ( !topbar ) {
 			content.style.height = height + 'px';
 			return;
 		}
 
 		var topbarStyles = document.defaultView.getComputedStyle(topbar, null),
-			topbarHeight = utils.os.android ? 48 : 44;
-
+			topbarHeight = Utils.os.android ? 48 : 44;
 		if (topbarStyles.height) {
 			topbarHeight = parseInt(topbarStyles.height) || 0;
 		}
-
 		content.style.height = (height - topbarHeight) + 'px';
 	}
 
@@ -419,4 +457,4 @@ App._Pages = function (window, document, Clickable, Scrollable, App, utils, Even
 		}
 		backButton.textContent = oldText;
 	}
-}(window, document, Clickable, Scrollable, App, App._utils, App._Events, App._metrics, App._Scroll);
+}(window, document, Clickable, Scrollable, App, App._Utils, App._Events, App._Metrics, App._Scroll);

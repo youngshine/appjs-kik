@@ -1,6 +1,68 @@
-App._Dialog = function (window, document, Clickable, App, utils) {
+App._Dialog = function (window, document, Clickable, App, Utils) {
 	var currentCallback,
 		dialogQueue;
+
+	App.dialog = function (options, callback) {
+		if ((typeof options !== 'object') || (options === null)) {
+			throw TypeError('dialog options must be an object, got ' + options);
+		}
+		switch (typeof options.dark) {
+			case 'undefined':
+			case 'boolean':
+				break;
+			default:
+				throw TypeError('dialog dark mode must a boolean if defined, got ' + options.dark);
+		}
+		switch (typeof options.title) {
+			case 'undefined':
+			case 'string':
+				break;
+			default:
+				throw TypeError('dialog title must be a string if defined, got ' + options.title);
+		}
+		switch (typeof options.text) {
+			case 'undefined':
+			case 'string':
+				break;
+			default:
+				if ( !Utils.isNode(options.text) ) {
+					throw TypeError('dialog text must be a string if defined, got ' + options.text);
+				}
+		}
+		for (var key in options) {
+			if ((key !== 'dark') && (key !== 'rawText') && (key !== 'text')) {
+				switch (typeof options[key]) {
+					case 'undefined':
+					case 'string':
+						break;
+					default:
+						throw TypeError('dialog button ('+key+') must be a string if defined, got ' + options[key]);
+				}
+			}
+		}
+		switch (typeof callback) {
+			case 'undefined':
+				callback = function () {};
+			case 'function':
+				break;
+			default:
+				throw TypeError('callback must be a function if defined, got ' + callback);
+		}
+
+		return showDialog(options, callback);
+	};
+
+	App.dialog.close = function () {
+		return closeDialog();
+	};
+
+	App.dialog.status = function () {
+		return hasDialog();
+	};
+
+	return App.dialog;
+
+
 
 	function preventDefault (e) {
 		e.preventDefault();
@@ -9,10 +71,10 @@ App._Dialog = function (window, document, Clickable, App, utils) {
 	function createDialog (options, callback) {
 		var dialogContainer = document.createElement('div');
 		dialogContainer.className += ' app-dialog-container';
-		if (utils.os.ios && (utils.os.version <= 5)) {
+		if (Utils.os.ios && (Utils.os.version <= 5)) {
 			dialogContainer.className += ' ios5';
 		}
-		if (!utils.os.android || (utils.os.version >= 4)) {
+		if (!Utils.os.android || (Utils.os.version >= 4)) {
 			dialogContainer.addEventListener('touchstart', preventDefault, false);
 		}
 
@@ -41,7 +103,7 @@ App._Dialog = function (window, document, Clickable, App, utils) {
 		if (options.text) {
 			var text = document.createElement('div');
 			text.className = 'text';
-			if ( utils.isNode(options.text) ) {
+			if ( Utils.isNode(options.text) ) {
 				text.appendChild(options.text);
 			}
 			else if (options.rawText) {
@@ -109,7 +171,7 @@ App._Dialog = function (window, document, Clickable, App, utils) {
 			innerDialog = dialog.firstChild;
 		currentCallback = dialogClosed;
 
-		if (utils.os.ios) {
+		if (Utils.os.ios) {
 			dialog.className += ' fancy';
 		}
 		document.body.appendChild(dialog);
@@ -171,67 +233,4 @@ App._Dialog = function (window, document, Clickable, App, utils) {
 		args.push(true);
 		showDialog.apply(window, args);
 	}
-
-
-
-	function Dialog (options, callback) {
-		if ((typeof options !== 'object') || (options === null)) {
-			throw TypeError('dialog options must be an object, got ' + options);
-		}
-		switch (typeof options.dark) {
-			case 'undefined':
-			case 'boolean':
-				break;
-			default:
-				throw TypeError('dialog dark mode must a boolean if defined, got ' + options.dark);
-		}
-		switch (typeof options.title) {
-			case 'undefined':
-			case 'string':
-				break;
-			default:
-				throw TypeError('dialog title must be a string if defined, got ' + options.title);
-		}
-		switch (typeof options.text) {
-			case 'undefined':
-			case 'string':
-				break;
-			default:
-				if ( !utils.isNode(options.text) ) {
-					throw TypeError('dialog text must be a string if defined, got ' + options.text);
-				}
-		}
-		for (var key in options) {
-			if ((key !== 'dark') && (key !== 'rawText') && (key !== 'text')) {
-				switch (typeof options[key]) {
-					case 'undefined':
-					case 'string':
-						break;
-					default:
-						throw TypeError('dialog button ('+key+') must be a string if defined, got ' + options[key]);
-				}
-			}
-		}
-		switch (typeof callback) {
-			case 'undefined':
-				callback = function () {};
-			case 'function':
-				break;
-			default:
-				throw TypeError('callback must be a function if defined, got ' + callback);
-		}
-
-		return showDialog(options, callback);
-	}
-
-	Dialog.close = function () {
-		return closeDialog();
-	};
-
-	Dialog.status = function () {
-		return hasDialog();
-	};
-
-	App.dialog = Dialog;
-	return Dialog;
-}(window, document, Clickable, App, App._utils);
+}(window, document, Clickable, App, App._Utils);

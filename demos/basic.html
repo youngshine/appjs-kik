@@ -214,11 +214,12 @@
 <script src="../src/events.js"         ></script>
 <script src="../src/metrics.js"        ></script>
 <script src="../src/dialog.js"         ></script>
+<script src="../src/form.js"           ></script>
 <script src="../src/scroll.js"         ></script>
+<script src="../src/transitions.js"    ></script>
 <script src="../src/pages.js"          ></script>
 <script src="../src/stack.js"          ></script>
-<script src="../src/form.js"           ></script>
-<script src="../src/core.js"           ></script>
+<script src="../src/navigation.js"     ></script>
 
 <script>
 	var COLOUR_KEY = '__BASIC_APP_COLOUR__';
@@ -247,7 +248,7 @@
 			});
 		}, false);
 
-		App._utils.forEach(
+		App._Utils.forEach(
 			page.querySelectorAll('ul.colour-picker li'),
 			function (colourButton) {
 				colourButton
@@ -260,7 +261,7 @@
 						}
 						localStorage[COLOUR_KEY] = colour;
 
-						App._utils.forEach(colourPages, function (colourPage) {
+						App._Utils.forEach(colourPages, function (colourPage) {
 							if (oldColour) {
 								colourPage.classList.remove(oldColour);
 							}

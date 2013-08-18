@@ -1,4 +1,4 @@
-App._Scroll = function (Scrollable, utils) {
+App._Scroll = function (Scrollable, Utils) {
 	var TAGS = {
 		APP_CONTENT    : 'app-content' ,
 		APP_SCROLLABLE : 'app-scrollable' ,
@@ -22,7 +22,7 @@ App._Scroll = function (Scrollable, utils) {
 
 
 	function setupScrollers (page) {
-		utils.forEach(
+		Utils.forEach(
 			page.querySelectorAll('.'+TAGS.APP_CONTENT),
 			function (content) {
 				if ( !content.getAttribute(TAGS.NO_SCROLL) ) {
@@ -31,7 +31,7 @@ App._Scroll = function (Scrollable, utils) {
 			}
 		);
 
-		utils.forEach(
+		Utils.forEach(
 			page.querySelectorAll('['+TAGS.SCROLLABLE+']'),
 			function (content) {
 				setupScroller(content);
@@ -43,13 +43,13 @@ App._Scroll = function (Scrollable, utils) {
 		var forceIScroll = !!window['APP_FORCE_ISCROLL'];
 		Scrollable(content, forceIScroll);
 		content.className += ' '+TAGS.APP_SCROLLABLE;
-		if (!forceIScroll && utils.os.ios && utils.os.version < 6) {
+		if (!forceIScroll && Utils.os.ios && Utils.os.version < 6) {
 			content.className += ' '+TAGS.APP_SCROLLHACK;
 		}
 	}
 
 	function disableScrolling (page) {
-		utils.forEach(
+		Utils.forEach(
 			page.querySelectorAll('*'),
 			function (elem) {
 				elem.style[TAGS.TOUCH_SCROLL] = '';
@@ -61,7 +61,7 @@ App._Scroll = function (Scrollable, utils) {
 		var elems = [];
 
 		if (page) {
-			utils.forEach(
+			Utils.forEach(
 				page.querySelectorAll('.'+TAGS.APP_SCROLLABLE),
 				function (elem) {
 					if (elem._scrollable) {
@@ -75,7 +75,7 @@ App._Scroll = function (Scrollable, utils) {
 	}
 
 	function savePageScrollPosition (page) {
-		utils.forEach(
+		Utils.forEach(
 			getScrollableElems(page),
 			function (elem) {
 				if (elem._iScroll) {
@@ -89,7 +89,7 @@ App._Scroll = function (Scrollable, utils) {
 	}
 
 	function savePageScrollStyle (page) {
-		utils.forEach(
+		Utils.forEach(
 			getScrollableElems(page),
 			function (elem) {
 				if (elem._iScroll) {
@@ -104,7 +104,7 @@ App._Scroll = function (Scrollable, utils) {
 	}
 
 	function restorePageScrollPosition (page, noTimeout) {
-		utils.forEach(
+		Utils.forEach(
 			getScrollableElems(page),
 			function (elem) {
 				if (elem._iScroll) {
@@ -128,7 +128,7 @@ App._Scroll = function (Scrollable, utils) {
 	}
 
 	function restorePageScrollStyle (page) {
-		utils.forEach(
+		Utils.forEach(
 			getScrollableElems(page),
 			function (elem) {
 				if (elem._iScroll) {
@@ -146,4 +146,4 @@ App._Scroll = function (Scrollable, utils) {
 
 		restorePageScrollPosition(page, true);
 	}
-}(Scrollable, App._utils);
+}(Scrollable, App._Utils);

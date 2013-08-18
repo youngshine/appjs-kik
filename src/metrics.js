@@ -1,4 +1,4 @@
-App._metrics = function (window, App) {
+App._Metrics = function (window, App) {
 	var analyticsEnabled = false;
 
 	App.enableGoogleAnalytics = function () {

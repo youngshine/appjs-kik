@@ -1,4 +1,4 @@
-App._Stack = function (window, document, App, utils, Scroll, Pages) {
+App._Stack = function (window, document, App, Utils, Scroll, Pages) {
 	var STACK_KEY  = '__APP_JS_STACK__' + window.location.pathname,
 		STACK_TIME = '__APP_JS_TIME__'  + window.location.pathname;
 
@@ -86,14 +86,14 @@ App._Stack = function (window, document, App, utils, Scroll, Pages) {
 			default:
 				throw TypeError('index must be a number if defined, got ' + index);
 		}
-		if ( !utils.isArray(newPages) ) {
+		if ( !Utils.isArray(newPages) ) {
 			throw TypeError('added pages must be an array, got ' + newPages);
 		}
 		newPages = newPages.slice();
-		utils.forEach(newPages, function (page, i) {
+		Utils.forEach(newPages, function (page, i) {
 			if (typeof page === 'string') {
 				page = [page, {}];
-			} else if ( utils.isArray(page) ) {
+			} else if ( Utils.isArray(page) ) {
 				page = page.slice();
 			} else {
 				throw TypeError('page description must be an array (page name, arguments), got ' + page);
@@ -213,16 +213,16 @@ App._Stack = function (window, document, App, utils, Scroll, Pages) {
 	function removeFromStackNow (startIndex, endIndex) {
 		var deadPages = stack.splice(startIndex, endIndex - startIndex);
 
-		utils.forEach(deadPages, function (pageData) {
+		Utils.forEach(deadPages, function (pageData) {
 			Pages.startDestruction(pageData[0], pageData[4], pageData[1], pageData[3]);
 			Pages.finishDestruction(pageData[0], pageData[4], pageData[1], pageData[3]);
 		});
 	}
 
 	function removeFromStack (startIndex, endIndex) {
-		App._navigate(function (unlock) {
+		App._Navigation.enqueue(function (finish) {
 			removeFromStackNow(startIndex, endIndex);
-			unlock();
+			finish();
 		});
 	}
 
@@ -231,7 +231,7 @@ App._Stack = function (window, document, App, utils, Scroll, Pages) {
 		var pageDatas = [],
 			lastPage;
 
-		utils.forEach(newPages, function (pageData) {
+		Utils.forEach(newPages, function (pageData) {
 			var pageManager = Pages.createManager(true),
 				page        = Pages.startGeneration(pageData[0], pageManager, pageData[1]);
 			Pages.populateBackButton(page, lastPage);
@@ -252,9 +252,9 @@ App._Stack = function (window, document, App, utils, Scroll, Pages) {
 	}
 
 	function addToStack (index, newPages) {
-		App._navigate(function (unlock) {
+		App._Navigation.enqueue(function (finish) {
 			addToStackNow(index, newPages);
-			unlock();
+			finish();
 		});
 	}
 
@@ -305,7 +305,7 @@ App._Stack = function (window, document, App, utils, Scroll, Pages) {
 				throw TypeError(lastPage[0] + ' is not a known page');
 			}
 
-			utils.forEach(storedStack, function (pageData) {
+			Utils.forEach(storedStack, function (pageData) {
 				if ( !Pages.has(pageData[0]) ) {
 					throw TypeError(pageData[0] + ' is not a known page');
 				}
@@ -330,4 +330,4 @@ App._Stack = function (window, document, App, utils, Scroll, Pages) {
 			}
 		};
 	}
-}(window, document, App, App._utils, App._Scroll, App._Pages);
+}(window, document, App, App._Utils, App._Scroll, App._Pages);

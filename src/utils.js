@@ -1,4 +1,4 @@
-App._utils = function (window, document, App) {
+App._Utils = function (window, document, App) {
 	var query = function (queryString) {
 		var re           = /([^&=]+)=([^&]+)/g,
 			decodedSpace = /\+/g;
@@ -185,6 +185,11 @@ App._utils = function (window, document, App) {
 		};
 	}
 
+	function isVisible (elem) {
+		var styles = getStyles(elem);
+		return (styles.display !== 'none' && styles.opacity !== '0');
+	}
+
 	// this is tuned for use with the iOS transition
 	// be careful if using this elsewhere
 	function transitionElems (transitions, timeout, easing, callback) {
@@ -295,6 +300,7 @@ App._utils = function (window, document, App) {
 		setTransform  : setTransform  ,
 		setTransition : setTransition ,
 		animate       : transitionElems ,
-		getStyles     : getStyles
+		getStyles     : getStyles     ,
+		isVisible     : isVisible
 	};
 }(window, document, App);

@@ -1,6 +1,6 @@
-App._Form = function (window, document, App, utils) {
+App._Form = function (window, document, App, Utils) {
 	App.form = function (form, callback) {
-		if ( !utils.isNode(form) ) {
+		if ( !Utils.isNode(form) ) {
 			throw TypeError('form must be a DOM node, got ' + form);
 		}
 		if (typeof callback !== 'function') {
@@ -31,7 +31,7 @@ App._Form = function (window, document, App, utils) {
 			submitButtons = [form];
 		}
 
-		utils.forEach(submitButtons, function (submitButton) {
+		Utils.forEach(submitButtons, function (submitButton) {
 			if (submitButton.nodeName === 'TEXTAREA') {
 				isText = true;
 			} else if (submitButton.nodeName !== 'INPUT') {
@@ -76,7 +76,7 @@ App._Form = function (window, document, App, utils) {
 				done   = false;
 
 			if (isForm) {
-				utils.forEach(
+				Utils.forEach(
 					form.querySelectorAll('[name]'),
 					function (elem) {
 						params[elem.name] = elem.value;
@@ -89,7 +89,7 @@ App._Form = function (window, document, App, utils) {
 				}
 			}
 
-			utils.forEach(inputs, function (elem) {
+			Utils.forEach(inputs, function (elem) {
 				elem.disabled = true;
 			});
 
@@ -99,7 +99,7 @@ App._Form = function (window, document, App, utils) {
 				}
 				done = true;
 
-				utils.forEach(inputs, function (elem) {
+				Utils.forEach(inputs, function (elem) {
 					elem.disabled = false;
 				});
 
@@ -108,4 +108,4 @@ App._Form = function (window, document, App, utils) {
 			});
 		}
 	}
-}(window, document, App, App._utils);
+}(window, document, App, App._Utils);
