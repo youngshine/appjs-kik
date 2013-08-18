@@ -110,6 +110,10 @@ body {
 	z-index: 2000;
 	position: relative;
 	background: #FFF;
+	overflow: auto;
+}
+.app-ios-7 .app-content {
+	box-shadow: 0 0 8px rgba(0,0,0,0.18);
 }
 .app-scrollhack > * {
 	/*

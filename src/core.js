@@ -476,23 +476,23 @@ App._core = function (window, document, Swapper, App, utils, Dialog, Scroll, Pag
 			options.transition = (reverse ? reverseTransition : defaultTransition);
 		}
 		if ( !options.duration ) {
-			if (utils.os.android) {
+			if ( !utils.os.ios ) {
 				options.duration = 270;
 			} else if (utils.os.version < 7) {
 				options.duration = 325;
 			} else {
-				options.duration = 350;
+				options.duration = 375;
 			}
 		}
 
 		uiBlockedTask(function (unblockUI) {
-			if ( shouldUseNativeIOSTransition(options) ) {
-				performNativeIOSTransition(page, options, cleanup);
-			}
-			else if (options.transition === 'instant') {
+			if (options.transition === 'instant') {
 				Swapper(currentNode, page, options, function () {
 					setTimeout(cleanup, 0);
 				});
+			}
+			else if ( shouldUseNativeIOSTransition(options) ) {
+				performNativeIOSTransition(page, options, cleanup);
 			}
 			else {
 				Swapper(currentNode, page, options, cleanup);
@@ -535,7 +535,7 @@ App._core = function (window, document, Swapper, App, utils, Dialog, Scroll, Pag
 			oldPage.parentNode.appendChild(page);
 		}
 
-		var easing = (utils.os.version < 7 ? 'ease-in-out' : 'cubic-bezier(0,0,0.15,1)');
+		var easing = (utils.os.version < 7 ? 'ease-in-out' : 'cubic-bezier(0,0,0.22,1)');
 		utils.animate(transitions, options.duration, easing, function () {
 			oldPage.parentNode.removeChild(oldPage);
 
@@ -620,22 +620,35 @@ App._core = function (window, document, Swapper, App, utils, Dialog, Scroll, Pag
 		}
 
 		// slide contents
-		//TODO: ios7 slide on top of each other
-		transitions.push({
-			transitionStart : 'translate3d(0,0,0)' ,
-			transitionEnd   : 'translate3d('+(slideLeft?-100:100)+'%,0,0)' ,
-			elem            : currentContent
-		}, {
-			transitionStart : 'translate3d('+(slideLeft?100:-100)+'%,0,0)' ,
-			transitionEnd   : 'translate3d(0,0,0)' ,
-			elem            : newContent
-		});
+		if (utils.os.version < 7) {
+			transitions.push({
+				transitionStart : 'translate3d(0,0,0)' ,
+				transitionEnd   : 'translate3d('+(slideLeft?-100:100)+'%,0,0)' ,
+				elem            : currentContent
+			}, {
+				transitionStart : 'translate3d('+(slideLeft?100:-100)+'%,0,0)' ,
+				transitionEnd   : 'translate3d(0,0,0)' ,
+				elem            : newContent
+			});
+		} else {
+			transitions.push({
+				easing          : 'cubic-bezier(0,0,0.36,1)',
+				transitionStart : 'translate3d(0,0,0)' ,
+				transitionEnd   : 'translate3d('+(slideLeft?-30:100)+'%,0,0)' ,
+				elem            : currentContent
+			}, {
+				easing          : 'cubic-bezier(0,0,0.36,1)',
+				transitionStart : 'translate3d('+(slideLeft?100:-30)+'%,0,0)' ,
+				transitionEnd   : 'translate3d(0,0,0)' ,
+				elem            : newContent
+			});
+		}
 
 		return transitions;
 	}
 
 	function getBackTransform (backButton, oldButton, toCenter) {
-		var fullWidth = backButton.textContent.length * 10,
+		var fullWidth = backButton.textContent.length * (utils.os.version<7?10:12),
 			oldWidth  = oldButton ? (oldButton.textContent.length*15) : 0;
 
 		if ( !toCenter ) {
@@ -649,7 +662,7 @@ App._core = function (window, document, Swapper, App, utils, Dialog, Scroll, Pag
 	function getTitleTransform (backButton, toLeft) {
 		var fullWidth = 0;
 		if (backButton && (utils.os.version >= 5)) {
-			fullWidth = backButton.textContent.length * 10;
+			fullWidth = backButton.textContent.length * (utils.os.version<7?10:12);
 		}
 
 		if ( !toLeft ) {

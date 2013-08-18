@@ -11,3 +11,4 @@
 - automatic form management (App.form)
 - infinite scroll
 - search input (no-icon)
+- ios7 support

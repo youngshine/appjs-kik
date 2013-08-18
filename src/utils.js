@@ -215,8 +215,9 @@ App._utils = function (window, document, App) {
 			});
 
 			setTimeout(function () {
-				var transitionString = 'transform '+(timeout/1000)+'s '+easing+', opacity '+(timeout/1000)+'s '+easing;
 				forEach(transitions, function (transition) {
+					var e                = transition.easing||easing,
+						transitionString = 'transform '+(timeout/1000)+'s '+e+', opacity '+(timeout/1000)+'s '+e;
 					setTransition(transition.elem, transitionString);
 				});
 
@@ -234,39 +235,29 @@ App._utils = function (window, document, App) {
 				}
 			});
 
-			forEach(transitions, function (transition) {
-				transition.elem.addEventListener('webkitTransitionEnd' , transitionFinished , false);
-				transition.elem.addEventListener('transitionend'       , transitionFinished , false);
-				transition.elem.addEventListener('oTransitionEnd'      , transitionFinished , false);
-				transition.elem.addEventListener('otransitionend'      , transitionFinished , false);
-				transition.elem.addEventListener('MSTransitionEnd'     , transitionFinished , false);
-				transition.elem.addEventListener('transitionend'       , transitionFinished , false);
-			});
+			var lastTransition = transitions[transitions.length-1];
+			lastTransition.elem.addEventListener('webkitTransitionEnd' , transitionFinished , false);
+			lastTransition.elem.addEventListener('transitionend'       , transitionFinished , false);
+			lastTransition.elem.addEventListener('onTransitionEnd'     , transitionFinished , false);
+			lastTransition.elem.addEventListener('ontransitionend'     , transitionFinished , false);
+			lastTransition.elem.addEventListener('MSTransitionEnd'     , transitionFinished , false);
+			lastTransition.elem.addEventListener('transitionend'       , transitionFinished , false);
 
 			var done = false;
 
-			function isTransitionElem (elem) {
-				for (var i=0, l=transitions.length; i<l; i++) {
-					if (elem === transitions[i].elem) {
-						return true;
-					}
-				}
-				return false;
-			}
-
 			function transitionFinished (e) {
-				if (done || !isTransitionElem(e.target)) {
+				if (done || (e.target !== lastTransition.elem)) {
 					return;
 				}
 				done = true;
 
 				forEach(transitions, function (transition) {
-					transition.elem.removeEventListener('webkitTransitionEnd' , transitionFinished);
-					transition.elem.removeEventListener('transitionend'       , transitionFinished);
-					transition.elem.removeEventListener('oTransitionEnd'      , transitionFinished);
-					transition.elem.removeEventListener('otransitionend'      , transitionFinished);
-					transition.elem.removeEventListener('MSTransitionEnd'     , transitionFinished);
-					transition.elem.removeEventListener('transitionend'       , transitionFinished);
+					lastTransition.elem.removeEventListener('webkitTransitionEnd' , transitionFinished);
+					lastTransition.elem.removeEventListener('transitionend'       , transitionFinished);
+					lastTransition.elem.removeEventListener('onTransitionEnd'     , transitionFinished);
+					lastTransition.elem.removeEventListener('ontransitionend'     , transitionFinished);
+					lastTransition.elem.removeEventListener('MSTransitionEnd'     , transitionFinished);
+					lastTransition.elem.removeEventListener('transitionend'       , transitionFinished);
 				});
 
 				callback();

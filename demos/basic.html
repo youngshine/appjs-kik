@@ -21,9 +21,11 @@
 			float: left;
 			height: 54px;
 			width: 25%;
-			background: #2B9;
 			-webkit-box-sizing: border-box;
 			box-sizing: border-box;
+		}
+		ul.colour-picker li[data-colour="teal"] {
+			background: #2B9;
 		}
 		ul.colour-picker li[data-colour="green"] {
 			background: #3C7;
@@ -91,7 +93,7 @@
 		<div class="app-section">
 			<b>Topbar colours:</b><br>
 			<ul class="colour-picker">
-				<li data-colour=""></li>
+				<li data-colour="teal"></li>
 				<li data-colour="green"></li>
 				<li data-colour="yellow"></li>
 				<li data-colour="orange"></li>
@@ -219,8 +221,10 @@
 <script src="../src/core.js"           ></script>
 
 <script>
+	var COLOUR_KEY = '__BASIC_APP_COLOUR__';
+
 	var colourPages = [],
-		colour      = '';
+		colour      = localStorage[COLOUR_KEY] || 'teal';
 
 	function setupPageColour (page) {
 		var topbar = page.querySelector('.app-topbar');
@@ -254,6 +258,7 @@
 						if (oldColour === colour) {
 							return;
 						}
+						localStorage[COLOUR_KEY] = colour;
 
 						App._utils.forEach(colourPages, function (colourPage) {
 							if (oldColour) {
@@ -309,6 +314,8 @@
 	});
 
 	App.populator('scroll', function (page) {
+		setupPageColour(page);
+
 		var loading  = page.querySelector('.loading'),
 			list     = page.querySelector('.app-list'),
 			listItem = page.querySelector('.app-list li'),
