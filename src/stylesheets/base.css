@@ -113,7 +113,7 @@ body {
 	overflow: auto;
 }
 .app-ios-7 .app-content {
-	box-shadow: 0 0 8px rgba(0,0,0,0.18);
+	box-shadow: 0 0 12px rgba(0,0,0,0.2);
 }
 .app-scrollhack > * {
 	/*
