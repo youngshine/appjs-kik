@@ -1,4 +1,4 @@
-App._Transitions = function (window, document, Swapper, App, Utils, Scroll) {
+App._Transitions = function (window, document, Swapper, App, Utils, Scroll, Stack) {
 	var DEFAULT_TRANSITION_IOS            = 'slide-left',
 		DEFAULT_TRANSITION_ANDROID        = 'implode-out',
 		DEFAULT_TRANSITION_ANDROID_OLD    = 'fade-on',
@@ -40,9 +40,13 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll) {
 			'glideoff-down'  : 'slideon-down'   ,
 			'glideon-up'     : 'glideoff-up'    ,
 			'glideoff-up'    : 'slideon-up'
-		};
+		},
+		TOPBAR_HEIGHT = 44,
+		WALL_RADIUS   = 10,
+		DRAG_RADIUS   = 0.34;
 
-	var defaultTransition, reverseTransition;
+
+	var defaultTransition, reverseTransition, dragLock;
 
 	if (Utils.os.ios) {
 		setDefaultTransition(DEFAULT_TRANSITION_IOS);
@@ -104,8 +108,10 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll) {
 
 
 	return {
-		REVERSE_TRANSITION : REVERSE_TRANSITION ,
-		run                : performTransition
+		REVERSE_TRANSITION : REVERSE_TRANSITION        ,
+		run                : performTransition         ,
+		enableDrag         : enableIOS7DragTransition  ,
+		disableDrag        : disableIOS7DragTransition
 	};
 
 
@@ -318,4 +324,197 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll) {
 			return (fullWidth-window.innerWidth) / 2;
 		}
 	}
-}(window, document, Swapper, App, App._Utils, App._Scroll);
+
+
+
+	//TODO: make generic slide drag as well
+	function enableIOS7DragTransition () {
+		var pages        = Stack.get().slice(-2),
+			previousPage = pages[0],
+			currentPage  = pages[1],
+			draggingTouch, lastTouch, navigationLock, dead;
+		if (!previousPage || !currentPage) {
+			return;
+		}
+
+		var currentNode    = currentPage[3],
+			currentBar     = currentPage[3].querySelector('.app-topbar'),
+			currentTitle   = currentPage[3].querySelector('.app-topbar .app-title'),
+			currentBack    = currentPage[3].querySelector('.app-topbar .left.app-button'),
+			currentContent = currentPage[3].querySelector('.app-content'),
+			oldNode        = previousPage[3],
+			oldBar         = previousPage[3].querySelector('.app-topbar'),
+			oldTitle       = previousPage[3].querySelector('.app-topbar .app-title'),
+			oldBack        = previousPage[3].querySelector('.app-topbar .left.app-button'),
+			oldContent     = previousPage[3].querySelector('.app-content');
+
+		//TODO: put previous page underneath
+		var oldPosition   = currentPage[3].style.position,
+			oldZIndex     = currentPage[3].style.zIndex,
+			oldBackground = currentPage[3].style.background;//TODO
+		currentPage[3].style.position   = 'fixed';
+		currentPage[3].style.zIndex     = '10000';
+		currentPage[3].style.background = 'none';//TODO
+		if (currentPage[3].nextSibling) {
+			currentPage[3].parentNode.insertBefore(previousPage[3], currentPage[3].nextSibling);
+		}
+		else {
+			currentPage[3].parentNode.appendChild(previousPage[3]);
+		}
+
+		window.addEventListener('touchstart', function (e) {
+			if (draggingTouch || navigationLock || dead) {
+				return;
+			}
+			var touch = (e.touches && e.touches[0]);
+			if (!touch || (touch.pageX > WALL_RADIUS) || (touch.pageY <= TOPBAR_HEIGHT)) {
+				return;
+			}
+
+			e.preventDefault();
+
+			App._Navigation.enqueue(function (unlock) {
+				navigationLock = unlock;
+				//TODO: what if transition is already over?
+			});
+
+			draggingTouch = lastTouch = { x: touch.pageX, y: touch.pageY };
+			//TODO: actual transitions
+			currentBar.style.webkitTransition = 'all 0s linear';
+			currentTitle.style.webkitTransition = 'all 0s linear';
+			if (currentBack) {
+				currentBack.style.webkitTransition = 'all 0s linear';
+			}
+			currentContent.style.webkitTransition = 'all 0s linear';
+			oldBar.style.webkitTransition = 'all 0s linear';
+			oldTitle.style.webkitTransition = 'all 0s linear';
+			if (oldBack) {
+				oldBack.style.webkitTransition = 'all 0s linear';
+			}
+			oldContent.style.webkitTransition = 'all 0s linear';
+		}, false);
+
+		window.addEventListener('touchmove', function (e) {
+			if (draggingTouch && e.touches && e.touches[0] && !dead) {
+				lastTouch = { x: e.touches[0].pageX, y: e.touches[0].pageY };
+				var progress = Math.min(Math.max(0, (lastTouch.x-draggingTouch.x)/window.innerWidth), 1);
+				//TODO: actual transitions
+				setDragPosition(progress);
+			}
+		}, false);
+
+		window.addEventListener('touchcancel', finishDrag, false);
+		window.addEventListener('touchend'   , finishDrag, false);
+		function finishDrag (e) {
+			if (!draggingTouch || !navigationLock || dead) {
+				return;
+			}
+			lastTouch = (e.touches && e.touches[0]) || lastTouch;
+			var progess = 0;
+			if (lastTouch) {
+				progress = (lastTouch.x-draggingTouch.x)/window.innerWidth;
+			}
+
+			if (0.1 < progress && progress < 0.9) {
+				currentBar.style.webkitTransitionDuration = '0.15s';
+				currentTitle.style.webkitTransitionDuration = '0.15s';
+				if (currentBack) {
+					currentBack.style.webkitTransitionDuration = '0.15s';
+				}
+				currentContent.style.webkitTransitionDuration = '0.15s';
+				oldBar.style.webkitTransitionDuration = '0.15s';
+				oldTitle.style.webkitTransitionDuration = '0.15s';
+				if (oldBack) {
+					oldBack.style.webkitTransitionDuration = '0.15s';
+				}
+				oldContent.style.webkitTransitionDuration = '0.15s';
+			}
+
+			if (progress < DRAG_RADIUS) {
+				//TODO: page events
+				//TODO: actual transitions
+				setDragPosition(0);
+			} else {
+				//TODO: page events
+				//TODO: actual transitions
+				setDragPosition(1);
+			}
+			draggingTouch = lastTouch = null;
+
+			if (0.1 < progress && progress < 0.9) {
+				currentPage[3].addEventListener('webkitTransitionEnd', finishTransition, false);
+			} else {
+				finishTransition();
+			}
+			function finishTransition () {
+				if (progress < DRAG_RADIUS) {
+					if (previousPage[3].parentNode) {
+						previousPage[3].parentNode.removeChild(previousPage[3]);
+					}
+				} else {
+					if (currentPage[3].parentNode) {
+						currentPage[3].parentNode.removeChild(currentPage[3]);
+					}
+				}
+
+				currentPage[3].style.position   = oldPosition;
+				currentPage[3].style.zIndex     = oldZIndex;
+				currentPage[3].style.background = oldBackground;
+
+				currentBar.style.webkitTransition = 'none';
+				currentBar.style.webkitTransform = 'none';
+				currentTitle.style.webkitTransition = 'none';
+				currentTitle.style.webkitTransform = 'none';
+				if (currentBack) {
+					currentBack.style.webkitTransition = 'none';
+					currentBack.style.webkitTransform = 'none';
+				}
+				currentContent.style.webkitTransition = 'none';
+				currentContent.style.webkitTransform = 'none';
+				oldBar.style.webkitTransition = 'none';
+				oldBar.style.webkitTransform = 'none';
+				oldTitle.style.webkitTransition = 'none';
+				oldTitle.style.webkitTransform = 'none';
+				if (oldBack) {
+					oldBack.style.webkitTransition = 'none';
+					oldBack.style.webkitTransform = 'none';
+				}
+				oldContent.style.webkitTransition = 'none';
+				oldContent.style.webkitTransform = 'none';
+
+				if (progress >= DRAG_RADIUS) {
+					//TODO
+					Stack.pop();
+					App._Navigation.update();
+				}
+
+				//TODO: clean up pages
+				//TODO: page events
+				//TODO: stack update
+				navigationLock();
+			}
+		}
+
+		function setDragPosition (progress) {
+			currentBar.style.opacity = 1-progress;
+			currentTitle.style.webkitTransform = 'translate3d('+(progress*window.innerWidth/2)+'px,0,0)';
+			if (currentBack) {
+				currentBack.style.webkitTransform = 'translate3d('+(progress*(window.innerWidth-currentBack.textContent.length*12)/2)+'px,0,0)';
+			}
+			currentContent.style.webkitTransform = 'translate3d('+(progress*100)+'%,0,0)';
+			oldBar.style.opacity = progress;
+			oldTitle.style.webkitTransform = 'translate3d('+((1-progress)*(window.innerWidth-currentBack.textContent.length*12)/-2)+'px,0,0)';
+			if (oldBack) {
+				oldBack.style.webkitTransform = 'translate3d('+((1-progress)*-150)+'%,0,0)';
+			}
+			oldContent.style.webkitTransform = 'translate3d('+((1-progress)*-30)+'%,0,0)';
+		}
+	}
+
+	function disableIOS7DragTransition () {
+		if (dragLock) {
+			dragLock();
+			dragLock = null;
+		}
+	}
+}(window, document, Swapper, App, App._Utils, App._Scroll, App._Stack);

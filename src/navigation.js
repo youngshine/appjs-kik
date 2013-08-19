@@ -127,23 +127,30 @@ App._Navigation = function (window, document, App, Dialog, Scroll, Pages, Stack,
 
 	return {
 		getCurrentNode : getCurrentNode ,
+		update         : updateCurrentNode ,
 		enqueue        : navigate
 	};
 
 
 
-	function navigate (handler) {
+	function navigate (handler, dragTransition) {
 		if (navLock) {
 			navQueue.push(handler);
 			return false;
 		}
 
 		navLock = true;
+		if ( !dragTransition ) {
+			Transitions.disableDrag();
+		}
 
 		handler(function () {
-			navLock = false;
 			Stack.save();
-			processNavigationQueue();
+
+			navLock = false;
+			if ( !processNavigationQueue() ) {
+				Transitions.enableDrag();
+			}
 		});
 
 		return true;
@@ -152,14 +159,22 @@ App._Navigation = function (window, document, App, Dialog, Scroll, Pages, Stack,
 	function processNavigationQueue () {
 		if ( navQueue.length ) {
 			navigate( navQueue.shift() );
+			return true;
+		} else {
+			return false;
 		}
-
 	}
 
 
 
 	function getCurrentNode () {
 		return currentNode;
+	}
+
+	function updateCurrentNode () {
+		var lastStackItem = Stack.getCurrent();
+		current = lastStackItem[0]
+		currentNode = lastStackItem[3];
 	}
 
 	function loadPage (pageName, args, options, callback, setupPickerMode) {
