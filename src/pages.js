@@ -1,8 +1,9 @@
 App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Events, Metrics, Scroll) {
-	var PAGE_NAME  = 'data-page',
-		PAGE_CLASS = 'app-page',
-		APP_LOADED = 'app-loaded',
-		PAGE_READY_VAR = '__appjsFlushReadyQueue',
+	var PAGE_NAME        = 'data-page',
+		PAGE_CLASS       = 'app-page',
+		APP_LOADED       = 'app-loaded',
+		PAGE_READY_VAR   = '__appjsFlushReadyQueue',
+		PAGE_MANAGER_VAR = '__appjsPageManager',
 		EVENTS = {
 			SHOW        : 'show'    ,
 			HIDE        : 'hide'    ,
@@ -272,6 +273,8 @@ App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Even
 		Events.init(page, eventNames);
 		Metrics.watchPage(page, pageName, args);
 
+		page[PAGE_MANAGER_VAR] = pageManager;
+
 		fixContentHeight(page);
 
 		Utils.forEach(
@@ -412,7 +415,7 @@ App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Even
 
 	function fixContentHeight (page) {
 		if ( !page ) {
-			page = App._Navigation.getCurentNode();
+			page = App._Navigation.getCurrentNode();
 			if ( !page ) {
 				return;
 			}
@@ -433,7 +436,11 @@ App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Even
 		var topbarStyles = document.defaultView.getComputedStyle(topbar, null),
 			topbarHeight = Utils.os.android ? 48 : 44;
 		if (topbarStyles.height) {
-			topbarHeight = parseInt(topbarStyles.height) || 0;
+			topbarHeight = (parseInt(topbarStyles.height) || 0);
+			if ((topbarStyles.boxSizing || topbarStyles.webkitBoxSizing) !== 'border-box') {
+				topbarHeight += (parseInt(topbarStyles.paddingBottom) || 0) + (parseInt(topbarStyles.paddingTop) || 0);
+				topbarHeight += (parseInt(topbarStyles.borderBottomWidth) || 0) + (parseInt(topbarStyles.borderTopWidth) || 0);
+			}
 		}
 		content.style.height = (height - topbarHeight) + 'px';
 	}

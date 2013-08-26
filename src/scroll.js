@@ -1,13 +1,21 @@
 App._Scroll = function (Scrollable, Utils) {
 	var TAGS = {
-		APP_CONTENT    : 'app-content' ,
-		APP_SCROLLABLE : 'app-scrollable' ,
-		APP_SCROLLHACK : 'app-scrollhack' ,
-		NO_SCROLL      : 'data-no-scroll' ,
-		SCROLLABLE     : 'data-scrollable' ,
-		LAST_SCROLL    : 'data-last-scroll' ,
-		SCROLL_STYLE   : 'data-scroll-style' ,
-		TOUCH_SCROLL   : '-webkit-overflow-scrolling'
+			APP_CONTENT    : 'app-content' ,
+			APP_SCROLLABLE : 'app-scrollable' ,
+			APP_SCROLLHACK : 'app-scrollhack' ,
+			NO_SCROLL      : 'data-no-scroll' ,
+			SCROLLABLE     : 'data-scrollable' ,
+			LAST_SCROLL    : 'data-last-scroll' ,
+			SCROLL_STYLE   : 'data-scroll-style' ,
+			TOUCH_SCROLL   : '-webkit-overflow-scrolling'
+		},
+		PAGE_MANAGER_VAR = '__appjsPageManager';
+
+	App.infiniteScroll = function (elem, options, generator) {
+		if ( !Utils.isNode(elem) ) {
+			throw TypeError('infinite scroll container must be a DOM node, got ' + elem);
+		}
+		setupInfiniteScroll(elem, options, generator);
 	};
 
 	return {
@@ -145,5 +153,38 @@ App._Scroll = function (Scrollable, Utils) {
 		);
 
 		restorePageScrollPosition(page, true);
+	}
+
+
+
+	function setupInfiniteScroll (elem, options, generator) {
+		var page        = getParentPage(elem),
+			pageManager = getPageManager(page);
+
+		if (!page || !pageManager) {
+			throw Error('could not find parent app-page');
+		}
+
+		pageManager.ready(function () {
+			var scroller = Scrollable.infinite(elem, options, generator);
+			page.addEventListener('appShow', function () {
+				scroller.layout();
+			});
+		});
+	}
+
+	function getParentPage (elem) {
+		var parent = elem;
+		do {
+			if ( /\bapp\-page\b/.test(parent.className) ) {
+				return parent;
+			}
+		} while (parent = parent.parentNode);
+	}
+
+	function getPageManager (page) {
+		if (page) {
+			return page[PAGE_MANAGER_VAR];
+		}
 	}
 }(Scrollable, App._Utils);
