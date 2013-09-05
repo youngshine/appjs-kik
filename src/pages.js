@@ -328,9 +328,11 @@ App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Even
 		}, false);
 
 		page.addEventListener(eventTypeToName(EVENTS.SHOW), function () {
-			if (typeof pageManager[PAGE_READY_VAR] === 'function') {
-				pageManager[PAGE_READY_VAR]();
-			}
+			setTimeout(function () {
+				if (typeof pageManager[PAGE_READY_VAR] === 'function') {
+					pageManager[PAGE_READY_VAR]();
+				}
+			}, 0);
 		}, false);
 
 		return page;
