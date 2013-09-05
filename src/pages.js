@@ -284,7 +284,7 @@ App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Even
 				button.addEventListener('click', function () {
 					var target     = button.getAttribute('data-target'),
 						targetArgs = button.getAttribute('data-target-args'),
-						back       = button.getAttribute('data-back'),
+						back       = (button.getAttribute('data-back') === 'true'),
 						args;
 
 					try {
