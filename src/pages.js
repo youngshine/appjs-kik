@@ -18,11 +18,16 @@ App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Even
 			OFFLINE     : 'offline'
 		};
 
-	var preloaded       = false,
-		forceIScroll    = !!window['APP_FORCE_ISCROLL'],
-		pages           = {},
-		populators      = {},
-		unpopulators    = {};
+	var preloaded        = false,
+		forceIScroll     = !!window['APP_FORCE_ISCROLL'],
+		pages            = {},
+		populators       = {},
+		unpopulators     = {},
+		statusBarEnabled = false;
+
+	if (window.APP_ENABLE_IOS_STATUSBAR) {
+		enableIOSStatusBar();
+	}
 
 
 	App.add = function (pageName, page) {
@@ -470,6 +475,10 @@ App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Even
 	}
 
 	function enableIOSStatusBar () {
+		if (statusBarEnabled) {
+			return;
+		}
+		statusBarEnabled = true;
 		document.body.className += ' ' + APP_STATUSBAR;
 	}
 }(window, document, Clickable, Scrollable, App, App._Utils, App._Events, App._Metrics, App._Scroll);
