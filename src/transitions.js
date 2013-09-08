@@ -138,6 +138,11 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll) {
 				options.duration = 270;
 			} else if (Utils.os.version < 7) {
 				options.duration = 325;
+			} else if ((options.transition === 'slideon-down') || (options.transition === 'slideoff-down')) {
+				options.duration = 475;
+				if ( !options.easing ) {
+					options.easing = 'cubic-bezier(0.1,0.7,0.1,1)';
+				}
 			} else {
 				options.duration = 375;
 			}
@@ -186,7 +191,12 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll) {
 			oldPage.parentNode.appendChild(page);
 		}
 
-		var easing = (Utils.os.version < 7 ? 'ease-in-out' : 'cubic-bezier(0,0,0.22,1)');
+		var easing;
+		if (options.easing) {
+			easing = options.easing;
+		} else {
+			easing = (Utils.os.version < 7 ? 'ease-in-out' : 'cubic-bezier(0,0,0.22,1)');
+		}
 		Utils.animate(transitions, options.duration, easing, function () {
 			oldPage.parentNode.removeChild(oldPage);
 
