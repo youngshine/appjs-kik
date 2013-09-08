@@ -56,6 +56,9 @@ body {
 .app-loaded .app-page {
 	display: block;
 }
+.app-ios-7 .app-page {
+	box-shadow: 0 0 12px rgba(0,0,0,0.2);
+}
 
 
 
