@@ -133,19 +133,20 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll) {
 		if ( !options.transition ) {
 			options.transition = (reverse ? reverseTransition : defaultTransition);
 		}
+		var isIOS7SlideUp = (Utils.os.ios && (Utils.os.version >= 7) && { 'slideon-down':1, 'slideoff-down':1 }[options.transition]);
 		if ( !options.duration ) {
 			if ( !Utils.os.ios ) {
 				options.duration = 270;
 			} else if (Utils.os.version < 7) {
 				options.duration = 325;
-			} else if ((options.transition === 'slideon-down') || (options.transition === 'slideoff-down')) {
+			} else if (isIOS7SlideUp) {
 				options.duration = 475;
-				if ( !options.easing ) {
-					options.easing = 'cubic-bezier(0.4,0.6,0.05,1)';
-				}
 			} else {
-				options.duration = 375;
+				options.duration = 425;
 			}
+		}
+		if (!options.easing && isIOS7SlideUp) {
+			options.easing = 'cubic-bezier(0.4,0.6,0.05,1)';
 		}
 
 		if (options.transition === 'instant') {
@@ -191,13 +192,13 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll) {
 			oldPage.parentNode.appendChild(page);
 		}
 
-		var easing;
-		if (options.easing) {
-			easing = options.easing;
+		if (Utils.os.version < 7) {
+			options.easing = 'ease-in-out';
 		} else {
-			easing = (Utils.os.version < 7 ? 'ease-in-out' : 'cubic-bezier(0,0,0.22,1)');
+			options.easing = 'cubic-bezier(0.4,0.6,0.2,1)';
 		}
-		Utils.animate(transitions, options.duration, easing, function () {
+
+		Utils.animate(transitions, options.duration, options.easing, function () {
 			oldPage.parentNode.removeChild(oldPage);
 
 			topPage.style.position   = oldPosition;
@@ -292,12 +293,10 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll) {
 			});
 		} else {
 			transitions.push({
-				easing          : 'cubic-bezier(0,0,0.36,1)',
 				transitionStart : 'translate3d(0,0,0)' ,
 				transitionEnd   : 'translate3d('+(slideLeft?-30:100)+'%,0,0)' ,
 				elem            : currentContent
 			}, {
-				easing          : 'cubic-bezier(0,0,0.36,1)',
 				transitionStart : 'translate3d('+(slideLeft?100:-30)+'%,0,0)' ,
 				transitionEnd   : 'translate3d(0,0,0)' ,
 				elem            : newContent

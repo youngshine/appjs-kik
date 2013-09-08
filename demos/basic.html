@@ -242,11 +242,12 @@
 
 		var inputsButton = page.querySelector('[data-target="inputs"]');
 		inputsButton.removeAttribute('data-target');
-		inputsButton.addEventListener('click', function () {
+		Clickable.sticky(inputsButton, function (unlock) {
 			App.pick('inputs', function (params) {
 				console.log(JSON.stringify(params));
+				unlock();
 			});
-		}, false);
+		});
 
 		App._Utils.forEach(
 			page.querySelectorAll('ul.colour-picker li'),
