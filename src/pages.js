@@ -2,6 +2,7 @@ App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Even
 	var PAGE_NAME        = 'data-page',
 		PAGE_CLASS       = 'app-page',
 		APP_LOADED       = 'app-loaded',
+		APP_STATUSBAR    = 'app-ios-statusbar',
 		PAGE_READY_VAR   = '__appjsFlushReadyQueue',
 		PAGE_MANAGER_VAR = '__appjsPageManager',
 		EVENTS = {
@@ -94,7 +95,8 @@ App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Even
 		return destroyPage(page);
 	};
 
-	App._layout = triggerPageSizeFix;
+	App._layout             = triggerPageSizeFix;
+	App._enableIOSStatusBar = enableIOSStatusBar;
 
 
 	return {
@@ -465,5 +467,9 @@ App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Even
 			oldText = oldText.substr(0, 12) + '..';
 		}
 		backButton.textContent = oldText;
+	}
+
+	function enableIOSStatusBar () {
+		document.body.className += ' ' + APP_STATUSBAR;
 	}
 }(window, document, Clickable, Scrollable, App, App._Utils, App._Events, App._Metrics, App._Scroll);

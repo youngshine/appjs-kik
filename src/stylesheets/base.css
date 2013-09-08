@@ -74,7 +74,7 @@ body {
 }
 .app-topbar .app-button {
 	position: absolute;
-	top: 0;
+	bottom: 0;
 	padding: 0 8px;
 	height: 100%;
 	line-height: 44px;
@@ -100,6 +100,12 @@ body {
 }
 .app-android .app-topbar .app-title {
 	line-height: 48px;
+}
+.app-ios-statusbar .app-topbar {
+	padding-top: 20px;
+}
+.app-ios-statusbar .app-topbar .app-button {
+	height: 44px;
 }
 
 
