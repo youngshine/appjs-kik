@@ -480,5 +480,8 @@ App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Even
 		}
 		statusBarEnabled = true;
 		document.body.className += ' ' + APP_STATUSBAR;
+		Utils.ready(function () {
+			setTimeout(triggerPageSizeFix, 6);
+		});
 	}
 }(window, document, Clickable, Scrollable, App, App._Utils, App._Events, App._Metrics, App._Scroll);
