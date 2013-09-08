@@ -141,7 +141,7 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll) {
 			} else if ((options.transition === 'slideon-down') || (options.transition === 'slideoff-down')) {
 				options.duration = 475;
 				if ( !options.easing ) {
-					options.easing = 'cubic-bezier(0.1,0.7,0.1,1)';
+					options.easing = 'cubic-bezier(0.4,0.6,0.05,1)';
 				}
 			} else {
 				options.duration = 375;
