@@ -26,12 +26,12 @@ App._Utils = function (window, document, App) {
 		if (query['_app_platform'] === 'android') {
 			faked   = true;
 			name    = 'android';
-			version = '4.2';
+			version = '4.4';
 		}
 		else if (query['_app_platform'] === 'ios') {
 			faked   = true;
 			name    = 'ios';
-			version = '6.0';
+			version = '7.0';
 		}
 		else if (match = /\bCPU.*OS (\d+(_\d+)?)/i.exec(userAgent)) {
 			name    = 'ios';
