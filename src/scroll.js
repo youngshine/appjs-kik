@@ -15,7 +15,7 @@ App._Scroll = function (Scrollable, Utils) {
 		if ( !Utils.isNode(elem) ) {
 			throw TypeError('infinite scroll container must be a DOM node, got ' + elem);
 		}
-		setupInfiniteScroll(elem, options, generator);
+		return setupInfiniteScroll(elem, options, generator);
 	};
 
 	return {
@@ -165,12 +165,20 @@ App._Scroll = function (Scrollable, Utils) {
 			throw Error('could not find parent app-page');
 		}
 
+		if ( !options ) {
+			options = {};
+		}
+		options.autoStart = false;
+
+		var scroller = Scrollable.infinite(elem, options, generator);
 		pageManager.ready(function () {
-			var scroller = Scrollable.infinite(elem, options, generator);
+			scroller.enable();
 			page.addEventListener('appShow', function () {
 				scroller.layout();
 			});
 		});
+
+		return scroller;
 	}
 
 	function getParentPage (elem) {
