@@ -176,6 +176,9 @@ App._Scroll = function (Scrollable, Utils) {
 			page.addEventListener('appShow', function () {
 				scroller.layout();
 			});
+			page.addEventListener('appDestroy', function () {
+				scroller.destroy();
+			});
 		});
 
 		return scroller;
