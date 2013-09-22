@@ -152,6 +152,9 @@
 	font-weight: 400;
 	text-align: left;
 }
+.app-ios-7 .app-topbar .app-title {
+	font-size: 17px;
+}
 .app-topbar .app-title .app-icon {
 	display: none;
 	float: left;
