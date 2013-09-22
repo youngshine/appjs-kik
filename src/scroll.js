@@ -168,11 +168,17 @@ App._Scroll = function (Scrollable, Utils) {
 		if ( !options ) {
 			options = {};
 		}
-		options.autoStart = false;
+		if (typeof options.autoStart !== 'boolean') {
+			options.autoStart = false;
+		}
+		if (typeof options.scroller === 'undefined') {
+			options.scroller = getParentScroller(elem);
+		}
 
 		var scroller = Scrollable.infinite(elem, options, generator);
 		pageManager.ready(function () {
 			scroller.enable();
+			scroller.layout();
 			page.addEventListener('appShow', function () {
 				scroller.layout();
 			});
@@ -188,6 +194,15 @@ App._Scroll = function (Scrollable, Utils) {
 		var parent = elem;
 		do {
 			if ( /\bapp\-page\b/.test(parent.className) ) {
+				return parent;
+			}
+		} while (parent = parent.parentNode);
+	}
+
+	function getParentScroller (elem) {
+		var parent = elem;
+		do {
+			if ( /\bapp\-content\b/.test(parent.className) ) {
 				return parent;
 			}
 		} while (parent = parent.parentNode);

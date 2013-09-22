@@ -1,5 +1,6 @@
 App._Transitions = function (window, document, Swapper, App, Utils, Scroll) {
-	var DEFAULT_TRANSITION_IOS            = 'slide-left',
+	var TRANSITION_CLASS                  = 'app-transition',
+		DEFAULT_TRANSITION_IOS            = 'slide-left',
 		DEFAULT_TRANSITION_ANDROID        = 'implode-out',
 		DEFAULT_TRANSITION_ANDROID_OLD    = 'fade-on',
 		DEFAULT_TRANSITION_ANDROID_GHETTO = 'instant',
@@ -149,16 +150,23 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll) {
 			options.easing = 'cubic-bezier(0.4,0.6,0.05,1)';
 		}
 
+		document.body.className += ' ' + TRANSITION_CLASS;
+
 		if (options.transition === 'instant') {
 			Swapper(oldPage, page, options, function () {
 				//TODO: this is stupid. let it be synchronous if it can be.
 				//TODO: fix the root of the race in core navigation.
-				setTimeout(callback, 0);
+				setTimeout(finish, 0);
 			});
 		} else if ( shouldUseNativeIOSTransition(options.transition) ) {
-			performNativeIOSTransition(oldPage, page, options, callback);
+			performNativeIOSTransition(oldPage, page, options, finish);
 		} else {
-			Swapper(oldPage, page, options, callback);
+			Swapper(oldPage, page, options, finish);
+		}
+
+		function finish () {
+			document.body.className = document.body.className.replace(new RegExp('\\b'+TRANSITION_CLASS+'\\b'), '');
+			callback();
 		}
 	}
 
