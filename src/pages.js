@@ -25,6 +25,7 @@ App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Even
 		unpopulators     = {},
 		statusBarEnabled = false;
 
+	setupPageListeners();
 	if (window.APP_ENABLE_IOS_STATUSBAR) {
 		enableIOSStatusBar();
 	}
