@@ -1,4 +1,4 @@
-App._Transitions = function (window, document, Swapper, App, Utils, Scroll, Stack) {
+App._Transitions = function (window, document, Swapper, App, Utils, Scroll, Pages, Stack) {
 	var TRANSITION_CLASS                  = 'app-transition',
 		DEFAULT_TRANSITION_IOS            = 'slide-left',
 		DEFAULT_TRANSITION_ANDROID        = 'implode-out',
@@ -342,7 +342,6 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll, Stac
 
 
 
-	//TODO: make generic slide drag as well
 	function enableIOS7DragTransition () {
 		if (!Utils.os.ios || (Utils.os.version < 7)) {
 			return;
@@ -375,19 +374,21 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll, Stac
 			return;
 		}
 
-		//TODO: put previous page underneath
 		var oldPosition   = currentPage[3].style.position,
 			oldZIndex     = currentPage[3].style.zIndex,
-			oldBackground = currentPage[3].style.background; //TODO
+			oldBackground = currentPage[3].style.background;
 		currentPage[3].style.position   = 'fixed';
 		currentPage[3].style.zIndex     = '4000';
-		currentPage[3].style.background = 'none';//TODO
+		currentPage[3].style.background = 'none'; //TODO: this sucks
 		if (currentPage[3].nextSibling) {
 			currentPage[3].parentNode.insertBefore(previousPage[3], currentPage[3].nextSibling);
 		}
 		else {
 			currentPage[3].parentNode.appendChild(previousPage[3]);
 		}
+
+		Pages.fixContent(oldNode);
+		Scroll.restoreScrollPosition(oldNode);
 
 		window.addEventListener('touchstart' , startDrag , false);
 		window.addEventListener('touchmove'  , dragMove  , false);
@@ -426,6 +427,10 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll, Stac
 				return;
 			}
 
+			if ( !Pages.fire(currentPage[2], currentPage[3], Pages.EVENTS.BEFORE_BACK) ) {
+				return;
+			}
+
 			e.preventDefault();
 
 			App._Navigation.enqueue(function (unlock) {
@@ -436,7 +441,7 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll, Stac
 			document.body.className += ' ' + TRANSITION_CLASS;
 
 			draggingTouch = lastTouch = { x: touch.pageX, y: touch.pageY };
-			//TODO: actual transitions
+
 			currentBar.style.webkitTransition = 'all 0s linear';
 			if (currentTitle) {
 				currentTitle.style.webkitTransition = 'all 0s linear';
@@ -461,8 +466,8 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll, Stac
 					goBack = (lastTouch.x < e.touches[0].pageX);
 				}
 				lastTouch = { x: e.touches[0].pageX, y: e.touches[0].pageY };
+
 				var progress = Math.min(Math.max(0, (lastTouch.x-draggingTouch.x)/window.innerWidth), 1);
-				//TODO: actual transitions
 				setDragPosition(progress);
 			}
 		}
@@ -500,10 +505,9 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll, Stac
 			}
 
 			if (goBack) {
-				//TODO: page events
+				Pages.fire(currentPage[2], currentPage[3], Pages.EVENTS.BACK);
 				setDragPosition(1);
 			} else {
-				//TODO: page events
 				setDragPosition(0);
 			}
 			draggingTouch = lastTouch = null;
@@ -531,40 +535,46 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll, Stac
 				currentPage[3].style.zIndex     = oldZIndex;
 				currentPage[3].style.background = oldBackground;
 
-				currentBar.style.webkitTransition = 'none';
-				currentBar.style.webkitTransform = 'none';
+				currentBar.style.webkitTransition = '';
+				currentBar.style.webkitTransform = '';
 				if (currentTitle) {
-					currentTitle.style.webkitTransition = 'none';
-					currentTitle.style.webkitTransform = 'none';
+					currentTitle.style.webkitTransition = '';
+					currentTitle.style.webkitTransform = '';
 				}
 				if (currentBack) {
-					currentBack.style.webkitTransition = 'none';
-					currentBack.style.webkitTransform = 'none';
+					currentBack.style.webkitTransition = '';
+					currentBack.style.webkitTransform = '';
 				}
-				currentContent.style.webkitTransition = 'none';
-				currentContent.style.webkitTransform = 'none';
-				oldBar.style.webkitTransition = 'none';
-				oldBar.style.webkitTransform = 'none';
+				currentContent.style.webkitTransition = '';
+				currentContent.style.webkitTransform = '';
+				oldBar.style.webkitTransition = '';
+				oldBar.style.webkitTransform = '';
 				if (oldTitle) {
-					oldTitle.style.webkitTransition = 'none';
-					oldTitle.style.webkitTransform = 'none';
+					oldTitle.style.webkitTransition = '';
+					oldTitle.style.webkitTransform = '';
 				}
 				if (oldBack) {
-					oldBack.style.webkitTransition = 'none';
-					oldBack.style.webkitTransform = 'none';
+					oldBack.style.webkitTransition = '';
+					oldBack.style.webkitTransform = '';
 				}
-				oldContent.style.webkitTransition = 'none';
-				oldContent.style.webkitTransform = 'none';
+				oldContent.style.webkitTransition = '';
+				oldContent.style.webkitTransform = '';
 
 				document.body.className = document.body.className.replace(new RegExp('\\b'+TRANSITION_CLASS+'\\b'), '');
 
 				if (goBack) {
-					//TODO
+					Pages.startDestruction(currentPage[0], currentPage[2], currentPage[3], currentPage[1]);
+					Pages.fixContent(oldNode);
+					Scroll.restoreScrollStyle(oldNode);
+					currentPage[2].showing = false
+					Pages.fire(currentPage[2], currentPage[3], Pages.EVENTS.HIDE);
+					previousPage[2].showing = true
+					Pages.fire(previousPage[2], oldNode, Pages.EVENTS.SHOW);
+					Pages.finishDestruction(currentPage[0], currentPage[2], currentPage[3], currentPage[1]);
+
 					Stack.pop();
 					App._Navigation.update();
 				}
-
-				//TODO: page events
 
 				dragLock = null;
 				navigationLock();
@@ -572,7 +582,6 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll, Stac
 		}
 
 		function setDragPosition (progress) {
-			//TODO: opacity in topbar is shit
 			currentBar.style.opacity = 1-progress;
 			if (currentTitle) {
 				currentTitle.style.webkitTransform = 'translate3d('+(progress*window.innerWidth/2)+'px,0,0)';
@@ -597,4 +606,4 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll, Stac
 			dragLock = null;
 		}
 	}
-}(window, document, Swapper, App, App._Utils, App._Scroll, App._Stack);
+}(window, document, Swapper, App, App._Utils, App._Scroll, App._Pages, App._Stack);
