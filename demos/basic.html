@@ -3,7 +3,7 @@
 <head>
 	<title>Basic App</title>
 
-	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 	<link rel="stylesheet" href="../src/stylesheets/base.css">
 	<link rel="stylesheet" href="../src/stylesheets/app.css">
 	<style>
@@ -326,22 +326,20 @@
 		loading.parentNode.removeChild(loading);
 		listItem.parentNode.removeChild(listItem);
 
-		this.ready(function () {
-			Scrollable.infinite(list, { loading: loading }, function (callback) {
-				if (i >= 40) {
-					return null;
+		App.infiniteScroll(list, { loading: loading }, function (callback) {
+			if (i >= 40) {
+				return null;
+			}
+			setTimeout(function () {
+				var list = [];
+				for (var j=0; j<12; j++) {
+					var node = listItem.cloneNode(true);
+					node.querySelector('span').textContent = i+j;
+					list.push(node);
 				}
-				setTimeout(function () {
-					var list = [];
-					for (var j=0; j<12; j++) {
-						var node = listItem.cloneNode(true);
-						node.querySelector('span').textContent = i+j;
-						list.push(node);
-					}
-					i += 12;
-					callback(list);
-				}, 1200);
-			});
+				i += 12;
+				callback(list);
+			}, 1200);
 		});
 	});
 
