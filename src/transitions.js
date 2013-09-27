@@ -45,7 +45,8 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll, Page
 		WALL_RADIUS = 10;
 
 
-	var defaultTransition, reverseTransition, dragLock;
+	var shouldDrag = false,
+		defaultTransition, reverseTransition, dragLock;
 
 	if (Utils.os.ios) {
 		setDefaultTransition(DEFAULT_TRANSITION_IOS);
@@ -103,6 +104,10 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll, Page
 
 	App.getReverseTransition = function () {
 		return reverseTransition;
+	};
+
+	App.enableDragTransition = function () {
+		allowDragging();
 	};
 
 
@@ -342,8 +347,12 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll, Page
 
 
 
+	function allowDragging () {
+		shouldDrag = true;
+	}
+
 	function enableIOS7DragTransition () {
-		if (!Utils.os.ios || (Utils.os.version < 7)) {
+		if (!shouldDrag || !Utils.os.ios || (Utils.os.version < 7)) {
 			return;
 		}
 
