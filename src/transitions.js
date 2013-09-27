@@ -344,7 +344,7 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll, Stac
 
 	//TODO: make generic slide drag as well
 	function enableIOS7DragTransition () {
-		if ( !Utils.os.ios ) {
+		if (!Utils.os.ios || (Utils.os.version < 7)) {
 			return;
 		}
 
