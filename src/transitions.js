@@ -42,9 +42,7 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll, Stac
 			'glideon-up'     : 'glideoff-up'    ,
 			'glideoff-up'    : 'slideon-up'
 		},
-		TOPBAR_HEIGHT = 44,
-		WALL_RADIUS   = 10,
-		DRAG_RADIUS   = 0.34;
+		WALL_RADIUS = 10;
 
 
 	var defaultTransition, reverseTransition, dragLock;
@@ -193,7 +191,7 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll, Stac
 			oldZIndex     = topPage.style.zIndex,
 			oldBackground = topPage.style.background;
 		topPage.style.position   = 'fixed';
-		topPage.style.zIndex     = '10000';
+		topPage.style.zIndex     = '4000';
 		topPage.style.background = 'none';
 
 		if (slideLeft) {
@@ -346,6 +344,10 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll, Stac
 
 	//TODO: make generic slide drag as well
 	function enableIOS7DragTransition () {
+		if ( !Utils.os.ios ) {
+			return;
+		}
+
 		var pages        = Stack.get().slice(-2),
 			previousPage = pages[0],
 			currentPage  = pages[1],
@@ -365,12 +367,20 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll, Stac
 			oldBack        = previousPage[3].querySelector('.app-topbar .left.app-button'),
 			oldContent     = previousPage[3].querySelector('.app-content');
 
+		if (!currentNode || !currentBar || !currentContent || !oldNode || !oldBar || !oldContent) {
+			return;
+		}
+
+		if ((currentPage[4].transition !== 'slide-left') && (currentPage[4].transition || defaultTransition !== 'slide-left')) {
+			return;
+		}
+
 		//TODO: put previous page underneath
 		var oldPosition   = currentPage[3].style.position,
 			oldZIndex     = currentPage[3].style.zIndex,
-			oldBackground = currentPage[3].style.background;//TODO
+			oldBackground = currentPage[3].style.background; //TODO
 		currentPage[3].style.position   = 'fixed';
-		currentPage[3].style.zIndex     = '10000';
+		currentPage[3].style.zIndex     = '4000';
 		currentPage[3].style.background = 'none';//TODO
 		if (currentPage[3].nextSibling) {
 			currentPage[3].parentNode.insertBefore(previousPage[3], currentPage[3].nextSibling);
@@ -379,12 +389,40 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll, Stac
 			currentPage[3].parentNode.appendChild(previousPage[3]);
 		}
 
-		window.addEventListener('touchstart', function (e) {
+		window.addEventListener('touchstart' , startDrag , false);
+		window.addEventListener('touchmove'  , dragMove  , false);
+		window.addEventListener('touchcancel', finishDrag, false);
+		window.addEventListener('touchend'   , finishDrag, false);
+
+		var goBack = false;
+
+		dragLock = function () {
+			unbindListeners();
+			cleanupElems();
+		};
+
+		function unbindListeners () {
+			window.removeEventListener('touchstart' , startDrag );
+			window.removeEventListener('touchmove'  , dragMove  );
+			window.removeEventListener('touchcancel', finishDrag);
+			window.removeEventListener('touchend'   , finishDrag);
+		}
+
+		function cleanupElems () {
+			currentPage[3].style.position   = oldPosition;
+			currentPage[3].style.zIndex     = oldZIndex;
+			currentPage[3].style.background = oldBackground;
+			if (previousPage[3].parentNode) {
+				previousPage[3].parentNode.removeChild(previousPage[3]);
+			}
+		}
+
+		function startDrag (e) {
 			if (draggingTouch || navigationLock || dead) {
 				return;
 			}
 			var touch = (e.touches && e.touches[0]);
-			if (!touch || (touch.pageX > WALL_RADIUS) || (touch.pageY <= TOPBAR_HEIGHT)) {
+			if (!touch || (touch.pageX > WALL_RADIUS)) {
 				return;
 			}
 
@@ -393,39 +431,49 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll, Stac
 			App._Navigation.enqueue(function (unlock) {
 				navigationLock = unlock;
 				//TODO: what if transition is already over?
-			});
+			}, true);
+
+			document.body.className += ' ' + TRANSITION_CLASS;
 
 			draggingTouch = lastTouch = { x: touch.pageX, y: touch.pageY };
 			//TODO: actual transitions
 			currentBar.style.webkitTransition = 'all 0s linear';
-			currentTitle.style.webkitTransition = 'all 0s linear';
+			if (currentTitle) {
+				currentTitle.style.webkitTransition = 'all 0s linear';
+			}
 			if (currentBack) {
 				currentBack.style.webkitTransition = 'all 0s linear';
 			}
 			currentContent.style.webkitTransition = 'all 0s linear';
 			oldBar.style.webkitTransition = 'all 0s linear';
-			oldTitle.style.webkitTransition = 'all 0s linear';
+			if (oldTitle) {
+				oldTitle.style.webkitTransition = 'all 0s linear';
+			}
 			if (oldBack) {
 				oldBack.style.webkitTransition = 'all 0s linear';
 			}
 			oldContent.style.webkitTransition = 'all 0s linear';
-		}, false);
+		}
 
-		window.addEventListener('touchmove', function (e) {
+		function dragMove (e) {
 			if (draggingTouch && e.touches && e.touches[0] && !dead) {
+				if (lastTouch) {
+					goBack = (lastTouch.x < e.touches[0].pageX);
+				}
 				lastTouch = { x: e.touches[0].pageX, y: e.touches[0].pageY };
 				var progress = Math.min(Math.max(0, (lastTouch.x-draggingTouch.x)/window.innerWidth), 1);
 				//TODO: actual transitions
 				setDragPosition(progress);
 			}
-		}, false);
+		}
 
-		window.addEventListener('touchcancel', finishDrag, false);
-		window.addEventListener('touchend'   , finishDrag, false);
 		function finishDrag (e) {
 			if (!draggingTouch || !navigationLock || dead) {
 				return;
 			}
+
+			unbindListeners();
+
 			lastTouch = (e.touches && e.touches[0]) || lastTouch;
 			var progess = 0;
 			if (lastTouch) {
@@ -434,27 +482,29 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll, Stac
 
 			if (0.1 < progress && progress < 0.9) {
 				currentBar.style.webkitTransitionDuration = '0.15s';
-				currentTitle.style.webkitTransitionDuration = '0.15s';
+				if (currentTitle) {
+					currentTitle.style.webkitTransitionDuration = '0.15s';
+				}
 				if (currentBack) {
 					currentBack.style.webkitTransitionDuration = '0.15s';
 				}
 				currentContent.style.webkitTransitionDuration = '0.15s';
 				oldBar.style.webkitTransitionDuration = '0.15s';
-				oldTitle.style.webkitTransitionDuration = '0.15s';
+				if (oldTitle) {
+					oldTitle.style.webkitTransitionDuration = '0.15s';
+				}
 				if (oldBack) {
 					oldBack.style.webkitTransitionDuration = '0.15s';
 				}
 				oldContent.style.webkitTransitionDuration = '0.15s';
 			}
 
-			if (progress < DRAG_RADIUS) {
+			if (goBack) {
 				//TODO: page events
-				//TODO: actual transitions
-				setDragPosition(0);
+				setDragPosition(1);
 			} else {
 				//TODO: page events
-				//TODO: actual transitions
-				setDragPosition(1);
+				setDragPosition(0);
 			}
 			draggingTouch = lastTouch = null;
 
@@ -463,14 +513,17 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll, Stac
 			} else {
 				finishTransition();
 			}
+
 			function finishTransition () {
-				if (progress < DRAG_RADIUS) {
-					if (previousPage[3].parentNode) {
-						previousPage[3].parentNode.removeChild(previousPage[3]);
-					}
-				} else {
+				currentPage[3].removeEventListener('webkitTransitionEnd', finishTransition);
+
+				if (goBack) {
 					if (currentPage[3].parentNode) {
 						currentPage[3].parentNode.removeChild(currentPage[3]);
+					}
+				} else {
+					if (previousPage[3].parentNode) {
+						previousPage[3].parentNode.removeChild(previousPage[3]);
 					}
 				}
 
@@ -480,8 +533,10 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll, Stac
 
 				currentBar.style.webkitTransition = 'none';
 				currentBar.style.webkitTransform = 'none';
-				currentTitle.style.webkitTransition = 'none';
-				currentTitle.style.webkitTransform = 'none';
+				if (currentTitle) {
+					currentTitle.style.webkitTransition = 'none';
+					currentTitle.style.webkitTransform = 'none';
+				}
 				if (currentBack) {
 					currentBack.style.webkitTransition = 'none';
 					currentBack.style.webkitTransform = 'none';
@@ -490,8 +545,10 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll, Stac
 				currentContent.style.webkitTransform = 'none';
 				oldBar.style.webkitTransition = 'none';
 				oldBar.style.webkitTransform = 'none';
-				oldTitle.style.webkitTransition = 'none';
-				oldTitle.style.webkitTransform = 'none';
+				if (oldTitle) {
+					oldTitle.style.webkitTransition = 'none';
+					oldTitle.style.webkitTransform = 'none';
+				}
 				if (oldBack) {
 					oldBack.style.webkitTransition = 'none';
 					oldBack.style.webkitTransform = 'none';
@@ -499,28 +556,34 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll, Stac
 				oldContent.style.webkitTransition = 'none';
 				oldContent.style.webkitTransform = 'none';
 
-				if (progress >= DRAG_RADIUS) {
+				document.body.className = document.body.className.replace(new RegExp('\\b'+TRANSITION_CLASS+'\\b'), '');
+
+				if (goBack) {
 					//TODO
 					Stack.pop();
 					App._Navigation.update();
 				}
 
-				//TODO: clean up pages
 				//TODO: page events
-				//TODO: stack update
+
+				dragLock = null;
 				navigationLock();
 			}
 		}
 
 		function setDragPosition (progress) {
+			//TODO: opacity in topbar is shit
 			currentBar.style.opacity = 1-progress;
-			currentTitle.style.webkitTransform = 'translate3d('+(progress*window.innerWidth/2)+'px,0,0)';
+			if (currentTitle) {
+				currentTitle.style.webkitTransform = 'translate3d('+(progress*window.innerWidth/2)+'px,0,0)';
+			}
 			if (currentBack) {
 				currentBack.style.webkitTransform = 'translate3d('+(progress*(window.innerWidth-currentBack.textContent.length*12)/2)+'px,0,0)';
 			}
 			currentContent.style.webkitTransform = 'translate3d('+(progress*100)+'%,0,0)';
-			oldBar.style.opacity = progress;
-			oldTitle.style.webkitTransform = 'translate3d('+((1-progress)*(window.innerWidth-currentBack.textContent.length*12)/-2)+'px,0,0)';
+			if (oldTitle) {
+				oldTitle.style.webkitTransform = 'translate3d('+((1-progress)*(window.innerWidth-currentBack.textContent.length*12)/-2)+'px,0,0)';
+			}
 			if (oldBack) {
 				oldBack.style.webkitTransform = 'translate3d('+((1-progress)*-150)+'%,0,0)';
 			}

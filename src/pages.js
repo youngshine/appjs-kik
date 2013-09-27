@@ -412,7 +412,10 @@ App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Even
 
 	function triggerPageSizeFix () {
 		fixContentHeight();
-		var pageData = App._Stack.getCurrent();
+		var pageData;
+		if (App._Stack) {
+			pageData = App._Stack.getCurrent();
+		}
 		if (pageData) {
 			firePageEvent(pageData[2], pageData[3], EVENTS.LAYOUT);
 		}
@@ -425,7 +428,9 @@ App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Even
 
 	function fixContentHeight (page) {
 		if ( !page ) {
-			page = App._Navigation.getCurrentNode();
+			if (App._Navigation) {
+				page = App._Navigation.getCurrentNode();
+			}
 			if ( !page ) {
 				return;
 			}
