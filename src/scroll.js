@@ -1,13 +1,21 @@
 App._Scroll = function (Scrollable, Utils) {
 	var TAGS = {
-		APP_CONTENT    : 'app-content' ,
-		APP_SCROLLABLE : 'app-scrollable' ,
-		APP_SCROLLHACK : 'app-scrollhack' ,
-		NO_SCROLL      : 'data-no-scroll' ,
-		SCROLLABLE     : 'data-scrollable' ,
-		LAST_SCROLL    : 'data-last-scroll' ,
-		SCROLL_STYLE   : 'data-scroll-style' ,
-		TOUCH_SCROLL   : '-webkit-overflow-scrolling'
+			APP_CONTENT    : 'app-content' ,
+			APP_SCROLLABLE : 'app-scrollable' ,
+			APP_SCROLLHACK : 'app-scrollhack' ,
+			NO_SCROLL      : 'data-no-scroll' ,
+			SCROLLABLE     : 'data-scrollable' ,
+			LAST_SCROLL    : 'data-last-scroll' ,
+			SCROLL_STYLE   : 'data-scroll-style' ,
+			TOUCH_SCROLL   : '-webkit-overflow-scrolling'
+		},
+		PAGE_MANAGER_VAR = '__appjsPageManager';
+
+	App.infiniteScroll = function (elem, options, generator) {
+		if ( !Utils.isNode(elem) ) {
+			throw TypeError('infinite scroll container must be a DOM node, got ' + elem);
+		}
+		return setupInfiniteScroll(elem, options, generator);
 	};
 
 	return {
@@ -145,5 +153,64 @@ App._Scroll = function (Scrollable, Utils) {
 		);
 
 		restorePageScrollPosition(page, true);
+	}
+
+
+
+	function setupInfiniteScroll (elem, options, generator) {
+		var page        = getParentPage(elem),
+			pageManager = getPageManager(page);
+
+		if (!page || !pageManager) {
+			throw Error('could not find parent app-page');
+		}
+
+		if ( !options ) {
+			options = {};
+		}
+		if (typeof options.autoStart !== 'boolean') {
+			options.autoStart = false;
+		}
+		if (typeof options.scroller === 'undefined') {
+			options.scroller = getParentScroller(elem);
+		}
+
+		var scroller = Scrollable.infinite(elem, options, generator);
+		pageManager.ready(function () {
+			scroller.enable();
+			scroller.layout();
+			page.addEventListener('appShow', function () {
+				scroller.layout();
+			});
+			page.addEventListener('appDestroy', function () {
+				scroller.destroy();
+			});
+		});
+
+		return scroller;
+	}
+
+	function getParentPage (elem) {
+		var parent = elem;
+		do {
+			if ( /\bapp\-page\b/.test(parent.className) ) {
+				return parent;
+			}
+		} while (parent = parent.parentNode);
+	}
+
+	function getParentScroller (elem) {
+		var parent = elem;
+		do {
+			if ( /\bapp\-content\b/.test(parent.className) ) {
+				return parent;
+			}
+		} while (parent = parent.parentNode);
+	}
+
+	function getPageManager (page) {
+		if (page) {
+			return page[PAGE_MANAGER_VAR];
+		}
 	}
 }(Scrollable, App._Utils);

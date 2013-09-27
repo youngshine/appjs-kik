@@ -1,5 +1,6 @@
 App._Transitions = function (window, document, Swapper, App, Utils, Scroll, Stack) {
-	var DEFAULT_TRANSITION_IOS            = 'slide-left',
+	var TRANSITION_CLASS                  = 'app-transition',
+		DEFAULT_TRANSITION_IOS            = 'slide-left',
 		DEFAULT_TRANSITION_ANDROID        = 'implode-out',
 		DEFAULT_TRANSITION_ANDROID_OLD    = 'fade-on',
 		DEFAULT_TRANSITION_ANDROID_GHETTO = 'instant',
@@ -139,26 +140,39 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll, Stac
 		if ( !options.transition ) {
 			options.transition = (reverse ? reverseTransition : defaultTransition);
 		}
+		var isIOS7SlideUp = (Utils.os.ios && (Utils.os.version >= 7) && { 'slideon-down':1, 'slideoff-down':1 }[options.transition]);
 		if ( !options.duration ) {
 			if ( !Utils.os.ios ) {
 				options.duration = 270;
 			} else if (Utils.os.version < 7) {
 				options.duration = 325;
+			} else if (isIOS7SlideUp) {
+				options.duration = 475;
 			} else {
-				options.duration = 375;
+				options.duration = 425;
 			}
 		}
+		if (!options.easing && isIOS7SlideUp) {
+			options.easing = 'cubic-bezier(0.4,0.6,0.05,1)';
+		}
+
+		document.body.className += ' ' + TRANSITION_CLASS;
 
 		if (options.transition === 'instant') {
 			Swapper(oldPage, page, options, function () {
 				//TODO: this is stupid. let it be synchronous if it can be.
 				//TODO: fix the root of the race in core navigation.
-				setTimeout(callback, 0);
+				setTimeout(finish, 0);
 			});
 		} else if ( shouldUseNativeIOSTransition(options.transition) ) {
-			performNativeIOSTransition(oldPage, page, options, callback);
+			performNativeIOSTransition(oldPage, page, options, finish);
 		} else {
-			Swapper(oldPage, page, options, callback);
+			Swapper(oldPage, page, options, finish);
+		}
+
+		function finish () {
+			document.body.className = document.body.className.replace(new RegExp('\\b'+TRANSITION_CLASS+'\\b'), '');
+			callback();
 		}
 	}
 
@@ -192,8 +206,13 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll, Stac
 			oldPage.parentNode.appendChild(page);
 		}
 
-		var easing = (Utils.os.version < 7 ? 'ease-in-out' : 'cubic-bezier(0,0,0.22,1)');
-		Utils.animate(transitions, options.duration, easing, function () {
+		if (Utils.os.version < 7) {
+			options.easing = 'ease-in-out';
+		} else {
+			options.easing = 'cubic-bezier(0.4,0.6,0.2,1)';
+		}
+
+		Utils.animate(transitions, options.duration, options.easing, function () {
 			oldPage.parentNode.removeChild(oldPage);
 
 			topPage.style.position   = oldPosition;
@@ -288,12 +307,10 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll, Stac
 			});
 		} else {
 			transitions.push({
-				easing          : 'cubic-bezier(0,0,0.36,1)',
 				transitionStart : 'translate3d(0,0,0)' ,
 				transitionEnd   : 'translate3d('+(slideLeft?-30:100)+'%,0,0)' ,
 				elem            : currentContent
 			}, {
-				easing          : 'cubic-bezier(0,0,0.36,1)',
 				transitionStart : 'translate3d('+(slideLeft?100:-30)+'%,0,0)' ,
 				transitionEnd   : 'translate3d(0,0,0)' ,
 				elem            : newContent

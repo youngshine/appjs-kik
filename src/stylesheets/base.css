@@ -56,6 +56,9 @@ body {
 .app-loaded .app-page {
 	display: block;
 }
+.app-ios-7 .app-page {
+	box-shadow: 0 0 12px rgba(0,0,0,0.2);
+}
 
 
 
@@ -74,7 +77,7 @@ body {
 }
 .app-topbar .app-button {
 	position: absolute;
-	top: 0;
+	bottom: 0;
 	padding: 0 8px;
 	height: 100%;
 	line-height: 44px;
@@ -101,6 +104,12 @@ body {
 .app-android .app-topbar .app-title {
 	line-height: 48px;
 }
+.app-ios-statusbar .app-topbar {
+	padding-top: 20px;
+}
+.app-ios-statusbar .app-topbar .app-button {
+	height: 44px;
+}
 
 
 
@@ -113,7 +122,7 @@ body {
 	overflow: auto;
 }
 .app-ios-7 .app-content {
-	box-shadow: 0 0 8px rgba(0,0,0,0.18);
+	box-shadow: 0 0 12px rgba(0,0,0,0.2);
 }
 .app-scrollhack > * {
 	/*
@@ -278,8 +287,8 @@ textarea.app-input {
 	transition: opacity 0.282s ease-in-out;
 }
 .app-dialog-container.fancy {
-	-webkit-transition: opacity 0.282s ease-in-out;
-	transition: opacity 0.282s ease-in-out;
+	-webkit-transition: opacity 0.425s cubic-bezier(0.4,0.6,0.05,1);
+	transition: opacity 0.425s cubic-bezier(0.4,0.6,0.05,1);
 }
 .app-dialog-container.ios5 {
 	position: absolute;
@@ -290,8 +299,8 @@ textarea.app-input {
 .app-dialog-container.fancy {
 	background: rgba(0,0,0,0);
 	opacity: 1;
-	-webkit-transition: background 0.282s ease-in-out;
-	transition: background 0.282s ease-in-out;
+	-webkit-transition: background 0.425s cubic-bezier(0.4,0.6,0.05,1);
+	transition: background 0.425s cubic-bezier(0.4,0.6,0.05,1);
 }
 .app-dialog-container.fancy.enabled {
 	background: rgba(0,0,0,0.8);
@@ -328,8 +337,8 @@ textarea.app-input {
 	background: rgba(255,255,255,0.85);
 	-webkit-transform: translate3d(0,110%,0);
 	transform: translate3d(0,110%,0);
-	-webkit-transition: -webkit-transform 0.282s ease-in-out;
-	transition: transform 0.282s ease-in-out;
+	-webkit-transition: -webkit-transform 0.425s cubic-bezier(0.4,0.6,0.05,1);
+	transition: transform 0.425s cubic-bezier(0.4,0.6,0.05,1);
 }
 .app-dialog-container.fancy .app-dialog.dark {
 	background: rgba(51,51,50,0.9);

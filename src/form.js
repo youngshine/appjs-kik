@@ -91,7 +91,13 @@ App._Form = function (window, document, App, Utils) {
 
 			Utils.forEach(inputs, function (elem) {
 				elem.disabled = true;
+				if (elem.blur) {
+					elem.blur();
+				}
 			});
+			if (isForm && form.blur) {
+				form.blur();
+			}
 
 			callback.call(this, params, function () {
 				if (done) {

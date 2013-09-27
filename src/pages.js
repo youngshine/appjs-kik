@@ -1,8 +1,10 @@
 App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Events, Metrics, Scroll) {
-	var PAGE_NAME  = 'data-page',
-		PAGE_CLASS = 'app-page',
-		APP_LOADED = 'app-loaded',
-		PAGE_READY_VAR = '__appjsFlushReadyQueue',
+	var PAGE_NAME        = 'data-page',
+		PAGE_CLASS       = 'app-page',
+		APP_LOADED       = 'app-loaded',
+		APP_STATUSBAR    = 'app-ios-statusbar',
+		PAGE_READY_VAR   = '__appjsFlushReadyQueue',
+		PAGE_MANAGER_VAR = '__appjsPageManager',
 		EVENTS = {
 			SHOW        : 'show'    ,
 			HIDE        : 'hide'    ,
@@ -16,11 +18,17 @@ App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Even
 			OFFLINE     : 'offline'
 		};
 
-	var preloaded       = false,
-		forceIScroll    = !!window['APP_FORCE_ISCROLL'],
-		pages           = {},
-		populators      = {},
-		unpopulators    = {};
+	var preloaded        = false,
+		forceIScroll     = !!window['APP_FORCE_ISCROLL'],
+		pages            = {},
+		populators       = {},
+		unpopulators     = {},
+		statusBarEnabled = false;
+
+	setupPageListeners();
+	if (window.APP_ENABLE_IOS_STATUSBAR) {
+		enableIOSStatusBar();
+	}
 
 
 	App.add = function (pageName, page) {
@@ -93,7 +101,8 @@ App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Even
 		return destroyPage(page);
 	};
 
-	App._layout = triggerPageSizeFix;
+	App._layout             = triggerPageSizeFix;
+	App._enableIOSStatusBar = enableIOSStatusBar;
 
 
 	return {
@@ -272,6 +281,8 @@ App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Even
 		Events.init(page, eventNames);
 		Metrics.watchPage(page, pageName, args);
 
+		page[PAGE_MANAGER_VAR] = pageManager;
+
 		fixContentHeight(page);
 
 		Utils.forEach(
@@ -281,7 +292,7 @@ App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Even
 				button.addEventListener('click', function () {
 					var target     = button.getAttribute('data-target'),
 						targetArgs = button.getAttribute('data-target-args'),
-						back       = button.getAttribute('data-back'),
+						back       = (button.getAttribute('data-back') === 'true'),
 						args;
 
 					try {
@@ -325,9 +336,11 @@ App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Even
 		}, false);
 
 		page.addEventListener(eventTypeToName(EVENTS.SHOW), function () {
-			if (typeof pageManager[PAGE_READY_VAR] === 'function') {
-				pageManager[PAGE_READY_VAR]();
-			}
+			setTimeout(function () {
+				if (typeof pageManager[PAGE_READY_VAR] === 'function') {
+					pageManager[PAGE_READY_VAR]();
+				}
+			}, 0);
 		}, false);
 
 		return page;
@@ -412,7 +425,7 @@ App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Even
 
 	function fixContentHeight (page) {
 		if ( !page ) {
-			page = App._Navigation.getCurentNode();
+			page = App._Navigation.getCurrentNode();
 			if ( !page ) {
 				return;
 			}
@@ -433,7 +446,11 @@ App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Even
 		var topbarStyles = document.defaultView.getComputedStyle(topbar, null),
 			topbarHeight = Utils.os.android ? 48 : 44;
 		if (topbarStyles.height) {
-			topbarHeight = parseInt(topbarStyles.height) || 0;
+			topbarHeight = (parseInt(topbarStyles.height) || 0);
+			if ((topbarStyles.boxSizing || topbarStyles.webkitBoxSizing) !== 'border-box') {
+				topbarHeight += (parseInt(topbarStyles.paddingBottom) || 0) + (parseInt(topbarStyles.paddingTop) || 0);
+				topbarHeight += (parseInt(topbarStyles.borderBottomWidth) || 0) + (parseInt(topbarStyles.borderTopWidth) || 0);
+			}
 		}
 		content.style.height = (height - topbarHeight) + 'px';
 	}
@@ -456,5 +473,16 @@ App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Even
 			oldText = oldText.substr(0, 12) + '..';
 		}
 		backButton.textContent = oldText;
+	}
+
+	function enableIOSStatusBar () {
+		if (statusBarEnabled) {
+			return;
+		}
+		statusBarEnabled = true;
+		document.body.className += ' ' + APP_STATUSBAR;
+		Utils.ready(function () {
+			setTimeout(triggerPageSizeFix, 6);
+		});
 	}
 }(window, document, Clickable, Scrollable, App, App._Utils, App._Events, App._Metrics, App._Scroll);
