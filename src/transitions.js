@@ -209,6 +209,11 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll, Page
 			oldPage.parentNode.appendChild(page);
 		}
 
+		if (App._Pages) {
+			App._Pages.fixContent(oldPage);
+			App._Pages.fixContent(page);
+		}
+
 		if (Utils.os.version < 7) {
 			options.easing = 'ease-in-out';
 		} else {
