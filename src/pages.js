@@ -397,16 +397,20 @@ App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Even
 		setTimeout(triggerPageSizeFix, 0);
 
 		window.addEventListener('online', function () {
-			Utils.forEach(App._Stack.get(), function (pageInfo) {
-				pageInfo[2].online = true;
-				firePageEvent(pageInfo[2], pageInfo[3], EVENTS.ONLINE);
-			});
+			if (App._Stack) {
+				Utils.forEach(App._Stack.get(), function (pageInfo) {
+					pageInfo[2].online = true;
+					firePageEvent(pageInfo[2], pageInfo[3], EVENTS.ONLINE);
+				});
+			}
 		}, false);
 		window.addEventListener('offline', function () {
-			Utils.forEach(App._Stack.get(), function (pageInfo) {
-				pageInfo[2].online = false;
-				firePageEvent(pageInfo[2], pageInfo[3], EVENTS.OFFLINE);
-			});
+			if (App._Stack) {
+				Utils.forEach(App._Stack.get(), function (pageInfo) {
+					pageInfo[2].online = false;
+					firePageEvent(pageInfo[2], pageInfo[3], EVENTS.OFFLINE);
+				});
+			}
 		}, false);
 	}
 
