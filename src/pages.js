@@ -397,22 +397,29 @@ App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Even
 		setTimeout(triggerPageSizeFix, 0);
 
 		window.addEventListener('online', function () {
-			Utils.forEach(App._Stack.get(), function (pageInfo) {
-				pageInfo[2].online = true;
-				firePageEvent(pageInfo[2], pageInfo[3], EVENTS.ONLINE);
-			});
+			if (App._Stack) {
+				Utils.forEach(App._Stack.get(), function (pageInfo) {
+					pageInfo[2].online = true;
+					firePageEvent(pageInfo[2], pageInfo[3], EVENTS.ONLINE);
+				});
+			}
 		}, false);
 		window.addEventListener('offline', function () {
-			Utils.forEach(App._Stack.get(), function (pageInfo) {
-				pageInfo[2].online = false;
-				firePageEvent(pageInfo[2], pageInfo[3], EVENTS.OFFLINE);
-			});
+			if (App._Stack) {
+				Utils.forEach(App._Stack.get(), function (pageInfo) {
+					pageInfo[2].online = false;
+					firePageEvent(pageInfo[2], pageInfo[3], EVENTS.OFFLINE);
+				});
+			}
 		}, false);
 	}
 
 	function triggerPageSizeFix () {
 		fixContentHeight();
-		var pageData = App._Stack.getCurrent();
+		var pageData;
+		if (App._Stack) {
+			pageData = App._Stack.getCurrent();
+		}
 		if (pageData) {
 			firePageEvent(pageData[2], pageData[3], EVENTS.LAYOUT);
 		}
@@ -425,7 +432,9 @@ App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Even
 
 	function fixContentHeight (page) {
 		if ( !page ) {
-			page = App._Navigation.getCurrentNode();
+			if (App._Navigation) {
+				page = App._Navigation.getCurrentNode();
+			}
 			if ( !page ) {
 				return;
 			}
