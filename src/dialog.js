@@ -1,4 +1,6 @@
 App._Dialog = function (window, document, Clickable, App, Utils) {
+	var DIALOG_INDICATOR_CLASS = 'app-dialog-visible';
+
 	var currentCallback,
 		dialogQueue;
 
@@ -177,6 +179,7 @@ App._Dialog = function (window, document, Clickable, App, Utils) {
 		document.body.appendChild(dialog);
 		setTimeout(function () {
 			dialog.className += ' enabled';
+			document.body.className += ' ' + DIALOG_INDICATOR_CLASS;
 		}, 50);
 
 		function dialogClosed (status) {
@@ -192,6 +195,7 @@ App._Dialog = function (window, document, Clickable, App, Utils) {
 			currentCallback = null;
 
 			dialog.className = dialog.className.replace(/\benabled\b/g, '');
+			document.body.className = document.body.className.replace(new RegExp('\\b'+DIALOG_INDICATOR_CLASS+'\\b', 'g'), '');
 
 			setTimeout(function () {
 				processDialogQueue();
