@@ -498,8 +498,9 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll, Page
 			if (lastTouch) {
 				progress = (lastTouch.x-draggingTouch.x)/window.innerWidth;
 			}
+			var dontTransition = ((progress < 0.1 && !goBack) || (0.9 < progress && goBack));
 
-			if (0.1 < progress && progress < 0.9) {
+			if ( !dontTransition ) {
 				currentBar.style.webkitTransitionDuration = '0.15s';
 				if (currentTitle) {
 					currentTitle.style.webkitTransitionDuration = '0.15s';
@@ -526,7 +527,7 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll, Page
 			}
 			draggingTouch = lastTouch = null;
 
-			if (0.1 < progress && progress < 0.9) {
+			if ( !dontTransition ) {
 				currentPage[3].addEventListener('webkitTransitionEnd', finishTransition, false);
 			} else {
 				finishTransition();
