@@ -321,7 +321,9 @@ App._Navigation = function (window, document, App, Dialog, Scroll, Pages, Stack,
 			pageManager.reply = function () {
 				if ( !finished ) {
 					finished = true;
-					navigateBack({}, function(){});
+					if ( !pageManager._appNoBack ) {
+						navigateBack({}, function(){});
+					}
 					callback.apply(App, arguments);
 				}
 			};

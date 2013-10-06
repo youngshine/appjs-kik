@@ -378,6 +378,7 @@ App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Even
 			Scroll.disable(page);
 		}
 		if (typeof pageManager.reply === 'function') {
+			pageManager._appNoBack = true;
 			pageManager.reply();
 		}
 	}
