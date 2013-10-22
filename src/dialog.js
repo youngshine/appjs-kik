@@ -102,7 +102,7 @@ App._Dialog = function (window, document, Clickable, App, Utils) {
 			dialog.appendChild(title);
 		}
 
-		if (options.text) {
+		if (options.text || options.rawText) {
 			var text = document.createElement('div');
 			text.className = 'text';
 			if ( Utils.isNode(options.text) ) {
