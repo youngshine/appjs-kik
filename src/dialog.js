@@ -109,7 +109,7 @@ App._Dialog = function (window, document, Clickable, App, Utils) {
 				text.appendChild(options.text);
 			}
 			else if (options.rawText) {
-				text.innerHTML = options.text;
+				text.innerHTML = options.rawText;
 			}
 			else {
 				text.textContent = options.text;
