@@ -189,6 +189,7 @@ App._Dialog = function (window, document, Clickable, App, Utils) {
 			dialogLock = true;
 
 			if ((typeof status !== 'string') && !options.cancelButton) {
+				dialogLock = false;
 				return true;
 			}
 
@@ -204,9 +205,8 @@ App._Dialog = function (window, document, Clickable, App, Utils) {
 
 			setTimeout(function () {
 				try {
-					document.body.removeChild(dialog);
-				}
-				catch (err) {}
+					dialog.parentNode.removeChild(dialog);
+				} catch (err) {}
 			}, 600);
 
 			return true;
