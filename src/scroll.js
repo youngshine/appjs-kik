@@ -186,7 +186,12 @@ App._Scroll = function (Scrollable, Utils) {
 		});
 		pageManager.ready(function () {
 			scrollReady = true;
-			scroller.enable();
+			try {
+				scroller.enable();
+			} catch (err) {
+				// scroll is already destroyed
+				return;
+			}
 			scroller.layout();
 			page.addEventListener('appShow', function () {
 				scroller.layout();
