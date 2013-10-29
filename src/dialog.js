@@ -102,14 +102,14 @@ App._Dialog = function (window, document, Clickable, App, Utils) {
 			dialog.appendChild(title);
 		}
 
-		if (options.text) {
+		if (options.text || options.rawText) {
 			var text = document.createElement('div');
 			text.className = 'text';
 			if ( Utils.isNode(options.text) ) {
 				text.appendChild(options.text);
 			}
 			else if (options.rawText) {
-				text.innerHTML = options.text;
+				text.innerHTML = options.rawText;
 			}
 			else {
 				text.textContent = options.text;
@@ -189,6 +189,7 @@ App._Dialog = function (window, document, Clickable, App, Utils) {
 			dialogLock = true;
 
 			if ((typeof status !== 'string') && !options.cancelButton) {
+				dialogLock = false;
 				return true;
 			}
 
@@ -204,9 +205,8 @@ App._Dialog = function (window, document, Clickable, App, Utils) {
 
 			setTimeout(function () {
 				try {
-					document.body.removeChild(dialog);
-				}
-				catch (err) {}
+					dialog.parentNode.removeChild(dialog);
+				} catch (err) {}
 			}, 600);
 
 			return true;

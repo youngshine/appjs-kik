@@ -175,8 +175,17 @@ App._Scroll = function (Scrollable, Utils) {
 			options.scroller = getParentScroller(elem);
 		}
 
-		var scroller = Scrollable.infinite(elem, options, generator);
+		var scroller    = Scrollable.infinite(elem, options, generator),
+			scrollReady = false;
+		Utils.ready(function () {
+			if ( !scrollReady ) {
+				scroller.enable();
+				scroller.forceLayout();
+				scroller.disable();
+			}
+		});
 		pageManager.ready(function () {
+			scrollReady = true;
 			scroller.enable();
 			scroller.layout();
 			page.addEventListener('appShow', function () {
