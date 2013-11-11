@@ -320,6 +320,7 @@ App._Navigation = function (window, document, App, Dialog, Scroll, Pages, Stack,
 						callback();
 					}, 0);
 				}, true);
+				Pages.fire(data[2], page, Pages.EVENTS.LAYOUT);
 			});
 
 			current     = pageName;
