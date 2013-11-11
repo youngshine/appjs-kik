@@ -212,22 +212,16 @@ App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Even
 			online   : navigator.onLine
 		};
 
-		var readyQueue = restored ? null : [];
+		var readyQueue = [];
 
 		pageManager.ready = function (func) {
 			if (typeof func !== 'function') {
 				throw TypeError('ready must be called with a function, got ' + func);
 			}
 
-			if (restored) {
-				Utils.ready(function () {
-					func.call(pageManager);
-				});
-			}
-			else if (readyQueue) {
+			if (readyQueue) {
 				readyQueue.push(func);
-			}
-			else {
+			} else {
 				func.call(pageManager);
 			}
 		};
