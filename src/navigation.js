@@ -200,6 +200,7 @@ App._Navigation = function (window, document, App, Dialog, Scroll, Pages, Stack,
 			if ( !current ) {
 				App.restore = null;
 				document.body.appendChild(page);
+				Pages.fire(pageManager, page, Pages.EVENTS.LAYOUT);
 				updatePageData();
 				finish();
 			} else {
@@ -214,6 +215,7 @@ App._Navigation = function (window, document, App, Dialog, Scroll, Pages, Stack,
 						unlockUI();
 						finish();
 					});
+					Pages.fire(pageManager, page, Pages.EVENTS.LAYOUT);
 				});
 				//TODO: what if instant swap?
 				updatePageData();
