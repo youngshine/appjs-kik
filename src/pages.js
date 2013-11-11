@@ -226,8 +226,7 @@ App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Even
 			}
 		};
 
-		pageManager[PAGE_READY_VAR] = function () {
-			pageManager[PAGE_READY_VAR] = undefined;
+		function flushReadyQueue() {
 			Utils.ready(function () {
 				if ( !readyQueue ) {
 					return;
@@ -241,10 +240,11 @@ App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Even
 					func.call(pageManager);
 				});
 			});
-		};
+		}
 
+		pageManager[PAGE_READY_VAR] = flushReadyQueue;
 		if (restored) {
-			pageManager[PAGE_READY_VAR]();
+			flushReadyQueue();
 		}
 
 		return pageManager;
