@@ -331,10 +331,6 @@ App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Even
 
 		populatePage(pageName, pageManager, page, args);
 
-		page.addEventListener('DOMNodeInsertedIntoDocument', function () {
-			firePageEvent(pageManager, page, EVENTS.LAYOUT);
-		}, false);
-
 		page.addEventListener(eventTypeToName(EVENTS.SHOW), function () {
 			setTimeout(function () {
 				if (typeof pageManager[PAGE_READY_VAR] === 'function') {

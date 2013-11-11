@@ -234,6 +234,11 @@ App._Stack = function (window, document, App, Utils, Scroll, Pages) {
 		Utils.forEach(newPages, function (pageData) {
 			var pageManager = Pages.createManager(true),
 				page        = Pages.startGeneration(pageData[0], pageManager, pageData[1]);
+
+			if (!pageData[2].transition && pageManager.transition) {
+				pageData[2].transition = pageManager.transition;
+			}
+
 			Pages.populateBackButton(page, lastPage);
 
 			Pages.finishGeneration(pageData[0], pageManager, page, pageData[1]);
