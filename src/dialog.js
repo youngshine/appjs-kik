@@ -54,8 +54,8 @@ App._Dialog = function (window, document, Clickable, App, Utils) {
 		return showDialog(options, callback);
 	};
 
-	App.dialog.close = function () {
-		return closeDialog();
+	App.dialog.close = function (status) {
+		return closeDialog(status || false);
 	};
 
 	App.dialog.status = function () {
@@ -213,9 +213,9 @@ App._Dialog = function (window, document, Clickable, App, Utils) {
 		}
 	}
 
-	function closeDialog () {
+	function closeDialog (status) {
 		if (currentCallback) {
-			return currentCallback(false);
+			return currentCallback(status || false);
 		}
 	}
 
