@@ -60,6 +60,8 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll, Page
 		}
 	}
 
+	checkForDragTransitionMetaTag();
+
 
 	App.setDefaultTransition = function (transition) {
 		if (typeof transition === 'object') {
@@ -354,6 +356,16 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll, Page
 
 	function allowDragging () {
 		shouldDrag = true;
+	}
+
+	function checkForDragTransitionMetaTag() {
+		var metas = document.querySelectorAll('meta');
+		for (var i=0, l=metas.length; i<l; i++) {
+			if ((metas[i].name === 'app-drag-transition') && (metas[i].content === 'true')) {
+				allowDragging();
+				return;
+			}
+		}
 	}
 
 	function enableIOS7DragTransition () {
