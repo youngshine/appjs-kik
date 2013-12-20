@@ -50,19 +50,16 @@ App._Navigation = function (window, document, App, Dialog, Scroll, Pages, Stack,
 		return loadPage(pageName, args, options, callback);
 	};
 
-	App.back = function (options, callback) {
-		switch (typeof options) {
+	App.back = function (pageName, callback) {
+		switch (typeof pageName) {
 			case 'function':
-				callback = options;
+				callback = pageName;
 			case 'undefined':
-				options = {};
-			case 'object':
-				break;
+				pageName = undefined;
 			case 'string':
-				options = { transition : options };
 				break;
 			default:
-				throw TypeError('options must be an object if defined, got ' + options);
+				throw TypeError('pageName must be a string if defined, got ' + pageName);
 		}
 		switch (typeof callback) {
 			case 'undefined':
@@ -73,7 +70,7 @@ App._Navigation = function (window, document, App, Dialog, Scroll, Pages, Stack,
 				throw TypeError('callback must be a function if defined, got ' + callback);
 		}
 
-		return navigateBack(options, callback);
+		return navigateBack(pageName, callback);
 	};
 
 	App.pick = function (pageName, args, options, loadCallback, callback) {
@@ -251,12 +248,31 @@ App._Navigation = function (window, document, App, Dialog, Scroll, Pages, Stack,
 		}
 	}
 
-	function navigateBack (options, callback) {
+	function navigateBack (backPageName, callback) {
 		if (Dialog.status() && Dialog.close()) {
 			return;
 		}
 
-		var stackLength = Stack.size(),
+		var stack = Stack.get().map(function (page) {
+			return page[0];
+		});
+
+		if (backPageName) {
+			var index = -1;
+			for (var i=stack.length-2; i--;) {
+				if (stack[i] === backPageName) {
+					index = i;
+				}
+			}
+			if (index === -1) {
+				throw Error(backPageName+' is not currently in the stack, cannot go back to it');
+			}
+			if (index !== stack.length-2) {
+				App.removeFromStack(index+1);
+			}
+		}
+
+		var stackLength = stack.length,
 			cancelled   = false;
 
 		var navigatedImmediately = navigate(function (unlock) {
@@ -298,9 +314,6 @@ App._Navigation = function (window, document, App, Dialog, Scroll, Pages, Stack,
 					newOptions[key] = oldOptions[key];
 				}
 			}
-			for (var key in options) {
-				newOptions[key] = options[key];
-			}
 
 			uiBlockedTask(function (unlockUI) {
 				Transitions.run(currentNode, page, newOptions, function () {
@@ -340,7 +353,7 @@ App._Navigation = function (window, document, App, Dialog, Scroll, Pages, Stack,
 				if ( !finished ) {
 					finished = true;
 					if ( !pageManager._appNoBack ) {
-						navigateBack({}, function(){});
+						navigateBack(undefined, function(){});
 					}
 					callback.apply(App, arguments);
 				}

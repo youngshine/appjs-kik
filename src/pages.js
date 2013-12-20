@@ -302,7 +302,7 @@ App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Even
 					}
 
 					if (back) {
-						App.back({}, finish);
+						App.back(finish);
 					}
 					else if (target) {
 						App.load(target, args, {}, finish);

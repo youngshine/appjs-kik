@@ -12,3 +12,4 @@
 - infinite scroll
 - search input (no-icon)
 - ios7 support
+- App.back('pageName');
