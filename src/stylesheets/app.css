@@ -39,17 +39,17 @@
 .app-topbar.yellow {
 	background-color: #EC1;
 	-webkit-box-shadow:
-		inset 0 -1px 0 #E91,
+		inset 0 -1px 0 #DB0,
 		0 1px 0 rgba(0,0,0,0.1),
 		0 1px 7px rgba(0,0,0,0.18);
 	box-shadow:
-		inset 0 -1px 0 #E91,
+		inset 0 -1px 0 #DB0,
 		0 1px 0 rgba(0,0,0,0.1),
 		0 1px 7px rgba(0,0,0,0.18);
 	color: #F3F4F5;
 }
 .app-ios-7 .app-topbar.yellow {
-	box-shadow: inset 0 -1px 0 #E91;
+	box-shadow: inset 0 -1px 0 #DB0;
 }
 .app-topbar.orange {
 	background-color: #E82;
@@ -373,7 +373,7 @@ p.app-section {
 	color: #F3F4F5;
 }
 .app-content .app-button.yellow.active {
-	background-color: #E91;
+	background-color: #DB0;
 }
 .app-content .app-button.orange {
 	background-color: #E82;
