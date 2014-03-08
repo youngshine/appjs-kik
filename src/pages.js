@@ -21,8 +21,8 @@ App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Even
 	var preloaded        = false,
 		forceIScroll     = !!window['APP_FORCE_ISCROLL'],
 		pages            = {},
-		populators       = {},
-		unpopulators     = {},
+		controllers      = {},
+		cleanups         = {},
 		statusBarEnabled = false;
 
 	setupPageListeners();
@@ -44,34 +44,35 @@ App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Even
 		addPage(page, pageName);
 	};
 
-	App.populator = function (pageName, populator, unpopulator) {
+	App.controller = function (pageName, controller, cleanup) {
 		if (typeof pageName !== 'string') {
 			throw TypeError('page name must be a string, got ' + pageName);
 		}
 
-		if (typeof populator !== 'function') {
-			throw TypeError('page populator must be a function, got ' + populator);
+		if (typeof controller !== 'function') {
+			throw TypeError('page controller must be a function, got ' + controller);
 		}
 
-		switch (typeof unpopulator) {
+		switch (typeof cleanup) {
 			case 'undefined':
-				unpopulator = function () {};
+				cleanup = function(){};
 				break;
 
 			case 'function':
 				break;
 
 			default:
-				throw TypeError('page unpopulator must be a function, got ' + unpopulator);
+				throw TypeError('page cleanup handler must be a function, got ' + cleanup);
 		}
 
-		if (populator) {
-			addPopulator(pageName, populator);
+		if (controller) {
+			addController(pageName, controller);
 		}
-		if (unpopulator) {
-			addUnpopulator(pageName, unpopulator);
+		if (cleanup) {
+			addCleanup(pageName, cleanup);
 		}
 	};
+	App.populator = App.controller; // backwards compat
 
 	App.generate = function (pageName, args) {
 		if (typeof pageName !== 'string') {
@@ -167,36 +168,36 @@ App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Even
 
 
 
-	/* Page populators */
+	/* Page controllers */
 
-	function addPopulator (pageName, populator) {
-		populators[pageName] = populator;
+	function addController (pageName, controller) {
+		controllers[pageName] = controller;
 	}
 
-	function addUnpopulator (pageName, unpopulator) {
-		unpopulators[pageName] = unpopulator;
+	function addCleanup (pageName, cleanup) {
+		cleanups[pageName] = cleanup;
 	}
 
 	function populatePage (pageName, pageManager, page, args) {
-		var populator = populators[pageName];
-		if ( !populator ) {
+		var controller = controllers[pageName];
+		if ( !controller ) {
 			return;
 		}
-		for (var prop in populator) {
-			pageManager[prop] = populator[prop];
+		for (var prop in controller) {
+			pageManager[prop] = controller[prop];
 		}
-		for (var prop in populator.prototype) {
-			pageManager[prop] = populator.prototype[prop];
+		for (var prop in controller.prototype) {
+			pageManager[prop] = controller.prototype[prop];
 		}
 		pageManager.page = page; //TODO: getter
 		pageManager.args = args; //TODO: getter (dont want this to hit localStorage)
-		populator.call(pageManager, page, args);
+		controller.call(pageManager, page, args);
 	}
 
 	function unpopulatePage (pageName, pageManager, page, args) {
-		var unpopulator = unpopulators[pageName];
-		if (unpopulator) {
-			unpopulator.call(pageManager, page, args);
+		var cleanup = cleanups[pageName];
+		if (cleanup) {
+			cleanup.call(pageManager, page, args);
 		}
 		firePageEvent(pageManager, page, EVENTS.DESTROY);
 	}
