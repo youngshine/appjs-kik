@@ -11,6 +11,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<link rel="stylesheet" href="css/bootstrap.min.css">
 		<link rel="stylesheet" href="css/styles.css">
+		<link rel="stylesheet" href="css/{{ page.title | downcase }}.css">
 
 		<!--[if lt IE 9]>
 			<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
@@ -49,7 +50,7 @@
 						<ul class="list-unstyled">
 							<li class="pull-right"><a href="#">Back to top</a></li>
 							<li><a href="https://github.com/kikinteractive/app">GitHub</a></li>
-							<li><a href="../v1/">v1 docs</a></li>
+							<li><a href="../1/">v1 docs</a></li>
 							<li><a href="https://github.com/kikinteractive/app/issues?state=open">Issues</a></li>
 							<li><a href="https://github.com/kikinteractive/app/releases">Releases</a></li>
 						</ul>
@@ -68,6 +69,7 @@
 		<script src="js/jquery.min.js"></script>
 		<script src="js/bootstrap.min.js"></script>
 		<script src="js/main.js"></script>
+		<script src="js/{{ page.title | downcase }}.js"></script>
 		<script>
 			(function () {
 				var ga   = document.createElement('script');

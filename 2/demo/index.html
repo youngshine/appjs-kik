@@ -311,7 +311,9 @@
 
 			App.controller('inputs', function (page) {
 				setupPageColour(page);
-				this.transition = 'slideon-down';
+				if (App.platform === 'ios') {
+					this.transition = 'slideon-down';
+				}
 				App.form(page.querySelector('form'), this.reply);
 			});
 
