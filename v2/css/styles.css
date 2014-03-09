@@ -1,0 +1,22 @@
+body {
+	padding-top: 70px;
+}
+
+@media screen and (min-width: 768px) {
+	.jumbotron h1, .jumbotron .h1 {
+		font-size: 39px;
+	}
+}
+
+footer {
+	margin: 5em 0;
+}
+footer li {
+	float: left;
+	margin-right: 1.5em;
+	margin-bottom: 1.5em;
+}
+footer p {
+	margin-bottom: 0;
+	clear: left;
+}
