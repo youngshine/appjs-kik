@@ -97,6 +97,7 @@ body {
 	overflow: hidden;
 }
 .demo iframe {
+	position: relative;
 	display: block;
 	margin: 14.415301% auto 0;
 	height: 85.54216867%;
@@ -106,6 +107,7 @@ body {
 	outline: none;
 	border-radius: 6px;
 }
+
 @media (max-width:561px) {
 	.features {
 		margin: 0 auto;
