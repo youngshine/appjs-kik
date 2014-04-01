@@ -24,8 +24,10 @@ buildProject () {
 
 buildZip () {
 	mkdir "${ZIP_DIR}"
-	cp -r bundle/* "${ZIP_DIR}"
-	cp -r "${BUILD_DIR}"/* "${ZIP_DIR}"
+	cp bundle/* "${ZIP_DIR}"
+	cp "${BUILD_DIR}"/app.min.css "${ZIP_DIR}"
+	cp "${BUILD_DIR}"/app.min.js "${ZIP_DIR}"
+	rm -f "${ZIP_FILE}"
 	zip -r "${ZIP_FILE}" "${ZIP_DIR}"
 	rm -r "${ZIP_DIR}"
 }
