@@ -257,9 +257,13 @@ App._Navigation = function (window, document, App, Dialog, Scroll, Pages, Stack,
 			return page[0];
 		});
 
+		if ( !stack.length ) {
+			throw Error(backPageName+' is not currently in the stack, cannot go back to it');
+		}
+
 		if (backPageName) {
 			var index = -1;
-			for (var i=stack.length-2; i--;) {
+			for (var i=stack.length-1; i--;) {
 				if (stack[i] === backPageName) {
 					index = i;
 				}
