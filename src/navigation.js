@@ -249,7 +249,8 @@ App._Navigation = function (window, document, App, Dialog, Scroll, Pages, Stack,
 	}
 
 	function navigateBack (backPageName, callback) {
-		if (Dialog.status() && Dialog.close()) {
+		if (Dialog.status() && Dialog.close() && !backPageName) {
+			callback();
 			return;
 		}
 
@@ -263,9 +264,10 @@ App._Navigation = function (window, document, App, Dialog, Scroll, Pages, Stack,
 
 		if (backPageName) {
 			var index = -1;
-			for (var i=stack.length-1; i--;) {
+			for (var i=stack.length-1; i>=0; i--) {
 				if (stack[i] === backPageName) {
 					index = i;
+					break;
 				}
 			}
 			if (index === -1) {

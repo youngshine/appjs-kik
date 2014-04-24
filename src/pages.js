@@ -278,6 +278,9 @@ App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Even
 		Utils.forEach(
 			page.querySelectorAll('.app-button'),
 			function (button) {
+				if (button.getAttribute('data-no-click') === 'true') {
+					return;
+				}
 				Clickable(button);
 				button.addEventListener('click', function () {
 					var target     = button.getAttribute('data-target'),
