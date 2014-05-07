@@ -286,6 +286,7 @@ App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Even
 					var target     = button.getAttribute('data-target'),
 						targetArgs = button.getAttribute('data-target-args'),
 						back       = (button.getAttribute('data-back') === 'true'),
+						manualBack = (button.getAttribute('data-manual-back') === 'true'),
 						args;
 
 					try {
@@ -296,6 +297,9 @@ App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Even
 					}
 
 					if (!back && !target) {
+						return;
+					}
+					if (back && manualBack) {
 						return;
 					}
 
