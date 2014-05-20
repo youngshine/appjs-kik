@@ -12,27 +12,113 @@ title: Docs
 
 			<section>
 				<h1 id="started">Getting Started</h1>
+				<p>//TODO</p>
+
 				<h3 id="started-anatomy">Anatomy of an App</h3>
 				<p>//TODO</p>
+
 				<h3 id="started-first">Your first App</h3>
 				<p>//TODO</p>
 			</section>
 
 			<section>
-				<h1>API Reference</h1>
+				<h1 id="pages">Pages</h1>
+				<p>//TODO</p>
+
+				<h3 id="pages-controllers">Controllers</h3>
+				<p>//TODO</p>
+
+				<h3 id="pages-navigation">Navigation stack</h3>
 				<p>//TODO</p>
 			</section>
+
+			<section>
+				<h1 id="ui">UI Components</h1>
+				<p>//TODO</p>
+
+				<h3 id="ui-styles">Styling</h3>
+				<p>//TODO</p>
+
+				<h3 id="ui-pages">Pages</h3>
+				<p>//TODO</p>
+
+				<h3 id="ui-topbar">Topbar</h3>
+				<p>//TODO</p>
+
+				<h3 id="ui-content">Content</h3>
+				<p>//TODO</p>
+
+				<h3 id="ui-buttons">Buttons</h3>
+				<p>//TODO</p>
+
+				<h3 id="ui-lists">Lists &amp; scrolling</h3>
+				<p>//TODO</p>
+
+				<h3 id="ui-forms">Forms &amp; inputs</h3>
+				<p>//TODO</p>
+
+				<h3 id="ui-sections">Sections</h3>
+				<p>//TODO</p>
+
+				<h3 id="ui-dialogs">Dialogs</h3>
+				<p>//TODO</p>
+
+				<h3 id="ui-photoviewer">PhotoViewer</h3>
+				<p>PhotoViewer.js is customizable photo gallery for App.js. It is native-feeling and trivial to setup.</p>
+				<pre class="prettyprint lang-html">
+&lt;!-- in your html --&gt;
+&lt;div class="app-page dark-page" data-page="viewer"&gt;
+  &lt;div class="app-topbar"&gt;
+    &lt;div class="left app-button" data-back data-autotitle&gt;&lt;/div&gt;
+    &lt;div class="app-title"&gt;Viewer&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class="app-content"&gt;&lt;/div&gt;
+&lt;/div&gt;
+</pre>
+				<pre class="prettyprint lang-js">
+// in your js
+App.controller('viewer', function (page, data) {
+  var photoViewer = new PhotoViewer(page, data.urls);
+});
+</pre>
+				<pre class="prettyprint lang-js">
+// to use the viewer
+App.load('viewer', {
+  urls: [
+    'http://i.imgur.com/yDK68Ff.jpg',
+    'http://i.imgur.com/rKIESYd.jpg',
+    'http://i.imgur.com/OTaodxO.jpg'
+  ]
+});
+</pre>
+			</section>
 		</div>
-		<div class="col-sm-3">
+
+		<div class="col-sm-3 legend">
 			<h3>Getting Started</h3>
 			<div class="list-group">
-				<a href="#started-anatomy" class="list-group-item">Anatomy of an App</a>
-				<a href="#started-first" class="list-group-item">Your first App</a>
+				<a class="list-group-item" href="#started-anatomy">Anatomy of an App</a>
+				<a class="list-group-item" href="#started-first"  >Your first App</a>
 			</div>
-			<h3>API Reference</h3>
+			<h3>Pages</h3>
 			<div class="list-group">
-				<a href="#" class="list-group-item">//TODO</a>
+				<a class="list-group-item" href="#pages-controllers">Controllers</a>
+				<a class="list-group-item" href="#pages-navigation" >Navigation stack</a>
+			</div>
+			<h3>UI Components</h3>
+			<div class="list-group">
+				<a class="list-group-item" href="#ui-styles"     >Styling</a>
+				<a class="list-group-item" href="#ui-pages"      >Pages</a>
+				<a class="list-group-item" href="#ui-topbar"     >Topbar</a>
+				<a class="list-group-item" href="#ui-content"    >Content</a>
+				<a class="list-group-item" href="#ui-buttons"    >Buttons</a>
+				<a class="list-group-item" href="#ui-lists"      >Lists &amp; scrolling</a>
+				<a class="list-group-item" href="#ui-forms"      >Forms &amp; inputs</a>
+				<a class="list-group-item" href="#ui-sections"   >Sections</a>
+				<a class="list-group-item" href="#ui-dialogs"    >Dialogs</a>
+				<a class="list-group-item" href="#ui-photoviewer">PhotoViewer</a>
 			</div>
 		</div>
 	</div>
 </div>
+

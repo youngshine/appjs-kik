@@ -1,5 +1,11 @@
 App._Form = function (window, document, App, Utils) {
 	App.form = function (form, callback) {
+		if ( Utils.isjQueryElem(form) ) {
+			form.each(function () {
+				App.form(this, callback);
+			});
+			return;
+		}
 		if ( !Utils.isNode(form) ) {
 			throw TypeError('form must be a DOM node, got ' + form);
 		}

@@ -2,6 +2,11 @@ body {
 	padding-top: 70px;
 }
 
+pre {
+	word-break: normal;
+	word-wrap: normal;
+}
+
 footer {
 	margin: 5em 0;
 }

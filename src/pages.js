@@ -278,15 +278,15 @@ App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Even
 		Utils.forEach(
 			page.querySelectorAll('.app-button'),
 			function (button) {
-				if (button.getAttribute('data-no-click') === 'true') {
+				if (button.getAttribute('data-no-click') !== null) {
 					return;
 				}
 				Clickable(button);
 				button.addEventListener('click', function () {
 					var target     = button.getAttribute('data-target'),
 						targetArgs = button.getAttribute('data-target-args'),
-						back       = (button.getAttribute('data-back') === 'true'),
-						manualBack = (button.getAttribute('data-manual-back') === 'true'),
+						back       = (button.getAttribute('data-back') !== null),
+						manualBack = (button.getAttribute('data-manual-back') !== null),
 						args;
 
 					try {
@@ -464,7 +464,7 @@ App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Even
 		}
 		var backButton = page.querySelector('.app-topbar .left.app-button'),
 			oldTitle   = oldPage.querySelector('.app-topbar .app-title');
-		if (!backButton || !oldTitle || (backButton.getAttribute('data-autotitle') !== 'true')) {
+		if (!backButton || !oldTitle || (backButton.getAttribute('data-autotitle') === null)) {
 			return;
 		}
 		var oldText = oldTitle.textContent,

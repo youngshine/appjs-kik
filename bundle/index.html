@@ -2,7 +2,7 @@
 <html>
   <head>
     <title>My App</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, , minimal-ui">
     <link rel="stylesheet" href="app.min.css">
     <style>
       /* TODO */
@@ -23,7 +23,7 @@
 
     <div class="app-page" data-page="page2">
       <div class="app-topbar">
-        <div class="app-button left" data-back="true" data-autotitle="true"></div>
+        <div class="app-button left" data-back data-autotitle></div>
         <div class="app-title">Page 2</div>
       </div>
       <div class="app-content">
@@ -44,8 +44,7 @@
 
       try {
         App.restore();
-      }
-      catch (err) {
+      } catch (err) {
         App.load('home');
       }
     </script>

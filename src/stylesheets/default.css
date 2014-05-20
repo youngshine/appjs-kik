@@ -36,7 +36,7 @@
 	width: auto;
 	text-align: left;
 }
-.app-android .app-topbar .app-button[data-back="true"].left.active ~ .app-title {
+.app-android .app-topbar .app-button[data-back].left.active ~ .app-title {
 	background: #3C3C3C;
 }
 
@@ -46,7 +46,7 @@
 .app-android .app-topbar .app-button {
 	padding: 0 16px;
 }
-.app-android .app-topbar .app-button[data-back="true"].left {
+.app-android .app-topbar .app-button[data-back].left {
 	padding: 0;
 	height: 100%;
 	width: 33%;
@@ -57,7 +57,7 @@
 	background-size: 8px 14px;
 	color: transparent;
 }
-.app-android .app-topbar .app-button[data-back="true"].left.active {
+.app-android .app-topbar .app-button[data-back].left.active {
 	background-color: transparent;
 }
 .app-ios .app-topbar .app-button {
@@ -74,7 +74,7 @@
 	font-size: 12px;
 	line-height: 28px;
 }
-.app-ios .app-topbar .app-button[data-back="true"].left {
+.app-ios .app-topbar .app-button[data-back].left {
 	padding: 5px 5px 5px 3px;
 	height: 16px;
 	background: transparent;
@@ -102,7 +102,7 @@
 	background-color: rgba(0,0,0,0.2);
 	color: #C8C8C8;
 }
-.app-ios .app-topbar .app-button[data-back="true"].left.active {
+.app-ios .app-topbar .app-button[data-back].left.active {
 	background: transparent;
 	-webkit-box-shadow: none;
 	box-shadow: none;

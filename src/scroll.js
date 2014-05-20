@@ -12,6 +12,17 @@ App._Scroll = function (Scrollable, Utils) {
 		PAGE_MANAGER_VAR = '__appjsPageManager';
 
 	App.infiniteScroll = function (elem, options, generator) {
+		if ( Utils.isjQueryElem(elem) ) {
+			if (elem.length) {
+				var l = elem.length-1;
+				for (var i=0; i<l; i++) {
+					App.infiniteScroll(elem[i], options, generator);
+				}
+				return App.infiniteScroll(elem[l], options, generator);
+			} else {
+				return;
+			}
+		}
 		if ( !Utils.isNode(elem) ) {
 			throw TypeError('infinite scroll container must be a DOM node, got ' + elem);
 		}
@@ -33,7 +44,7 @@ App._Scroll = function (Scrollable, Utils) {
 		Utils.forEach(
 			page.querySelectorAll('.'+TAGS.APP_CONTENT),
 			function (content) {
-				if ( !content.getAttribute(TAGS.NO_SCROLL) ) {
+				if (content.getAttribute(TAGS.NO_SCROLL) === null) {
 					setupScroller(content);
 				}
 			}

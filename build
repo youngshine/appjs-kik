@@ -4,22 +4,38 @@ PROJECT="app"
 LICENSE="LICENSE.txt"
 MAJOR_VERSION="2"
 MINOR_VERSION="0"
-BUG_VERSION="0"
+BUG_VERSION="1"
 ZIP_FILE="appjs-v${MAJOR_VERSION}.zip"
 ZIP_DIR="appjs"
 AWS_BUCKET="cdn.kik.com"
 AWS_CFG="${HOME}/.s3cfg-kik"
 
 buildProject () {
-	APP_JS="src/lib/swapper.js src/lib/clickable.js src/lib/scrollable.js src/app.js src/utils.js src/events.js src/metrics.js src/dialog.js src/form.js src/scroll.js src/pages.js src/stack.js src/transitions.js src/navigation.js"
+	APP_JS="
+		src/lib/swapper.js
+		src/lib/clickable.js
+		src/lib/scrollable.js
+		src/app.js
+		src/utils.js
+		src/events.js
+		src/metrics.js
+		src/dialog.js
+		src/form.js
+		src/scroll.js
+		src/pages.js
+		src/stack.js
+		src/transitions.js
+		src/navigation.js
+	"
+	APP_CSS="src/stylesheets/base.css"
 	buildDebugJS  "app.js"          "${APP_JS}"
 	buildJS       "app.min.js"      "${APP_JS}"
-	buildDebugCSS "base.css"        "src/stylesheets/base.css"
-	buildCSS      "base.min.css"    "src/stylesheets/base.css"
-	buildDebugCSS "app.css"         "src/stylesheets/base.css src/stylesheets/app.css"
-	buildCSS      "app.min.css"     "src/stylesheets/base.css src/stylesheets/app.css"
-	buildDebugCSS "default.css"     "src/stylesheets/base.css src/stylesheets/default.css"
-	buildCSS      "default.min.css" "src/stylesheets/base.css src/stylesheets/default.css"
+	buildDebugCSS "base.css"        "${APP_CSS}"
+	buildCSS      "base.min.css"    "${APP_CSS}"
+	buildDebugCSS "app.css"         "${APP_CSS} src/stylesheets/app.css"
+	buildCSS      "app.min.css"     "${APP_CSS} src/stylesheets/app.css"
+	buildDebugCSS "default.css"     "${APP_CSS} src/stylesheets/default.css"
+	buildCSS      "default.min.css" "${APP_CSS} src/stylesheets/default.css"
 }
 
 buildZip () {

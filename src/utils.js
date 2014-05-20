@@ -114,6 +114,14 @@ App._Utils = function (window, document, App) {
 		return true;
 	}
 
+	function isjQueryElem($elem) {
+		if (typeof $elem !== 'object' || $elem === null) {
+			return false;
+		} else {
+			return ($elem.val && $elem.addClass && $elem.css && $elem.html && $elem.show);
+		}
+	}
+
 	function onReady (func) {
 		if (document.readyState === 'complete') {
 			setTimeout(function () {
@@ -297,6 +305,7 @@ App._Utils = function (window, document, App) {
 		forEach       : forEach       ,
 		isArray       : isArray       ,
 		isNode        : isNode        ,
+		isjQueryElem  : isjQueryElem  ,
 		setTransform  : setTransform  ,
 		setTransition : setTransition ,
 		animate       : transitionElems ,

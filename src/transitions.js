@@ -248,10 +248,10 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll, Page
 			return;
 		}
 
-		if (currentBack && currentBack.getAttribute('data-noslide')) {
+		if (currentBack && (currentBack.getAttribute('data-noslide') !== null)) {
 			currentBack = undefined;
 		}
-		if (newBack && newBack.getAttribute('data-noslide')) {
+		if (newBack && (newBack.getAttribute('data-noslide') !== null)) {
 			newBack = undefined;
 		}
 

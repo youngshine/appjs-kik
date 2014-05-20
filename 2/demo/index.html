@@ -1,22 +1,14 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>Basic App</title>
+		<title>Demo App</title>
 
-		<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+		<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
 		<link rel="stylesheet" href="../../src/stylesheets/base.css">
 		<link rel="stylesheet" href="../../src/stylesheets/app.css">
 		<style>
-			body.demo-cursor {
-				cursor: pointer;
-				cursor: url(finger.png) 25 25, pointer;
-			}
-			body.demo-cursor:active {
-				cursor: pointer;
-				cursor: url(finger-active.png) 25 25, pointer;
-			}
-			ul.colour-picker {}
 			ul.colour-picker li {
+				position: relative;
 				display: block;
 				float: left;
 				height: 54px;
@@ -47,6 +39,13 @@
 			}
 			ul.colour-picker li[data-colour="white"] {
 				background: #FFF;
+			}
+			ul.colour-picker li.active:before {
+				position: absolute;
+				height: 100%;
+				width: 100%;
+				background: rgba(0,0,0,0.1);
+				content: "";
 			}
 
 			@-webkit-keyframes pulse {
@@ -82,7 +81,7 @@
 	<body>
 		<div class="app-page" data-page="home">
 			<div class="app-topbar">
-				<div class="app-title"><span class="app-icon"></span>Basic App</div>
+				<div class="app-title"><span class="app-icon"></span>Demo App</div>
 			</div>
 
 			<div class="app-content">
@@ -116,7 +115,7 @@
 
 		<div class="app-page" data-page="lists">
 			<div class="app-topbar">
-				<div class="left app-button" data-back="true" data-autotitle="true"></div>
+				<div class="left app-button" data-back data-autotitle></div>
 				<div class="app-title"><span class="app-icon"></span>Lists</div>
 			</div>
 
@@ -148,7 +147,7 @@
 
 		<div class="app-page" data-page="buttons">
 			<div class="app-topbar">
-				<div class="left app-button" data-back="true" data-autotitle="true"></div>
+				<div class="left app-button" data-back data-autotitle></div>
 				<div class="app-title"><span class="app-icon"></span>Buttons</div>
 				<div class="right app-button app-menu">Dialog</div>
 			</div>
@@ -173,7 +172,7 @@
 		<div class="app-page" data-page="inputs">
 			<div class="app-topbar">
 				<div class="app-title"><span class="app-icon"></span>Inputs</div>
-				<div class="right app-button" data-back="true">Done</div>
+				<div class="right app-button" data-back>Done</div>
 			</div>
 
 			<div class="app-content">
@@ -193,7 +192,7 @@
 
 		<div class="app-page scroll-page" data-page="scroll">
 			<div class="app-topbar">
-				<div class="left app-button" data-back="true" data-autotitle="true"></div>
+				<div class="left app-button" data-back data-autotitle></div>
 				<div class="app-title"><span class="app-icon"></span>Scrolling</div>
 			</div>
 			<div class="app-content">
@@ -205,6 +204,9 @@
 		</div>
 
 
+
+		<!-- Not necessary, but will make our lives a little easier -->
+		<script src="../js/zepto.min.js"          ></script>
 
 		<script src="../../src/lib/swapper.js"    ></script>
 		<script src="../../src/lib/clickable.js"  ></script>
@@ -227,52 +229,47 @@
 			var colourPages = [],
 				colour      = localStorage[COLOUR_KEY] || 'teal';
 
-			function setupPageColour (page) {
-				var topbar = page.querySelector('.app-topbar');
-				colourPages.push(topbar);
+			function setupPageColour(page) {
+				var $topbar = $(page).find('.app-topbar');
+				colourPages.push($topbar);
 				if (colour) {
-					topbar.classList.add(colour);
+					$topbar.addClass(colour);
 				}
 			}
-
 
 
 			App.controller('home', function (page) {
 				setupPageColour(page);
 
-				var inputsButton = page.querySelector('[data-target="inputs"]');
-				inputsButton.removeAttribute('data-target');
-				Clickable.sticky(inputsButton, function (unlock) {
-					App.pick('inputs', function (params) {
-						console.log(JSON.stringify(params));
-						unlock();
+				$(page).find('[data-target="inputs"]')
+					.attr('data-target', null)
+					.stickyClick(function (unlock) {
+						App.pick('inputs', function (params) {
+							console.log(JSON.stringify(params));
+							unlock();
+						});
 					});
-				});
 
-				App._Utils.forEach(
-					page.querySelectorAll('ul.colour-picker li'),
-					function (colourButton) {
-						colourButton
-							.addEventListener('touchstart', function () {
-								var oldColour = colour;
-								colour = this.getAttribute('data-colour');
+				$(page).find('ul.colour-picker li')
+					.clickable()
+					.on('click', function () {
+						var oldColour = colour;
+						colour = $(this).data('colour');
 
-								if (oldColour === colour) {
-									return;
-								}
-								localStorage[COLOUR_KEY] = colour;
+						if (oldColour === colour) {
+							return;
+						}
+						localStorage[COLOUR_KEY] = colour;
 
-								App._Utils.forEach(colourPages, function (colourPage) {
-									if (oldColour) {
-										colourPage.classList.remove(oldColour);
-									}
-									if (colour) {
-										colourPage.classList.add(colour);
-									}
-								});
-							}, false);
-					}
-				);
+						for (var i=0; i<colourPages.length; i++) {
+							if (oldColour) {
+								colourPages[i].removeClass(oldColour);
+							}
+							if (colour) {
+								colourPages[i].addClass(colour);
+							}
+						}
+					});
 			});
 
 			App.controller('lists', function (page) {
@@ -298,15 +295,17 @@
 			App.controller('buttons', function (page) {
 				setupPageColour(page);
 
-				page.querySelector('.app-menu').addEventListener('click', function () {
-					App.dialog({
-						tweetButton  : 'Share on Facebook' ,
-						fbButton     : 'Share on Twitter'  ,
-						gpButton     : 'Share on Google+'  ,
-						okButton     : 'Share on Kik' ,
-						cancelButton : 'Cancel'
+				$(page).find('.app-menu')
+					.on('click', function () {
+						App.dialog({
+							doButton     : 'Do Something' ,
+							otherButton  : 'Or Another Thing'  ,
+							okButton     : 'Share on Kik' ,
+							cancelButton : 'Cancel'
+						}, function (choice) {
+							console.log(choice);
+						});
 					});
-				}, false);
 			});
 
 			App.controller('inputs', function (page) {
@@ -314,30 +313,30 @@
 				if (App.platform === 'ios') {
 					this.transition = 'slideon-down';
 				}
-				App.form(page.querySelector('form'), this.reply);
+				App.form($(page).find('form'), this.reply);
 			});
 
 			App.controller('scroll', function (page) {
 				setupPageColour(page);
 
-				var loading  = page.querySelector('.loading'),
-					list     = page.querySelector('.app-list'),
-					listItem = page.querySelector('.app-list li'),
+				var $loading  = $(page).find('.loading'),
+					$list     = $(page).find('.app-list'),
+					$listItem = $(page).find('.app-list li'),
 					i = 1;
 
-				loading.parentNode.removeChild(loading);
-				listItem.parentNode.removeChild(listItem);
+				$loading.remove();
+				$listItem.remove();
 
-				App.infiniteScroll(list, { loading: loading }, function (callback) {
+				App.infiniteScroll($list, { loading: $loading }, function (callback) {
 					if (i >= 40) {
 						return null;
 					}
 					setTimeout(function () {
 						var list = [];
 						for (var j=0; j<12; j++) {
-							var node = listItem.cloneNode(true);
-							node.querySelector('span').textContent = i+j;
-							list.push(node);
+							var $node = $listItem.clone();
+							$node.find('span').text(i+j);
+							list.push($node);
 						}
 						i += 12;
 						callback(list);
@@ -349,12 +348,9 @@
 
 			try {
 				App.restore();
-			}
-			catch (err) {
+			} catch (err) {
 				App.load('home');
 			}
 		</script>
-
-		<script src="http://cdn.kik.com/kik/1/kik.js"></script>
 	</body>
 </html>
