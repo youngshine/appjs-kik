@@ -1,24 +1,34 @@
-App._Pages = function (window, document, Clickable, Scrollable, App, utils, metrics) {
-	var PAGE_NAME  = 'data-page',
-		PAGE_CLASS = 'app-page',
-		APP_LOADED = 'app-loaded',
+App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Events, Metrics, Scroll) {
+	var PAGE_NAME        = 'data-page',
+		PAGE_CLASS       = 'app-page',
+		APP_LOADED       = 'app-loaded',
+		APP_STATUSBAR    = 'app-ios-statusbar',
+		PAGE_READY_VAR   = '__appjsFlushReadyQueue',
+		PAGE_MANAGER_VAR = '__appjsPageManager',
 		EVENTS = {
-			SHOW    : 'appShow'    ,
-			HIDE    : 'appHide'    ,
-			BACK    : 'appBack'    ,
-			FORWARD : 'appForward' ,
-			LAYOUT  : 'appLayout'  ,
-			ONLINE  : 'appOnline'  ,
-			OFFLINE : 'appOffline'
+			SHOW        : 'show'    ,
+			HIDE        : 'hide'    ,
+			BACK        : 'back'    ,
+			FORWARD     : 'forward' ,
+			BEFORE_BACK : 'beforeBack' ,
+			READY       : 'ready'   ,
+			DESTROY     : 'destroy' ,
+			LAYOUT      : 'layout'  ,
+			ONLINE      : 'online'  ,
+			OFFLINE     : 'offline'
 		};
 
-	var preloaded       = false,
-		hasCustomEvents = null,
-		customEvents    = null,
-		forceIScroll    = !!window['APP_FORCE_ISCROLL'],
-		pages           = {},
-		populators      = [],
-		unpopulators    = [];
+	var preloaded        = false,
+		forceIScroll     = !!window['APP_FORCE_ISCROLL'],
+		pages            = {},
+		controllers      = {},
+		cleanups         = {},
+		statusBarEnabled = false;
+
+	setupPageListeners();
+	if (window.APP_ENABLE_IOS_STATUSBAR) {
+		enableIOSStatusBar();
+	}
 
 
 	App.add = function (pageName, page) {
@@ -27,41 +37,42 @@ App._Pages = function (window, document, Clickable, Scrollable, App, utils, metr
 			pageName = undefined;
 		}
 
-		if ( !utils.isNode(page) ) {
+		if ( !Utils.isNode(page) ) {
 			throw TypeError('page template node must be a DOM node, got ' + page);
 		}
 
 		addPage(page, pageName);
 	};
 
-	App.populator = function (pageName, populator, unpopulator) {
+	App.controller = function (pageName, controller, cleanup) {
 		if (typeof pageName !== 'string') {
 			throw TypeError('page name must be a string, got ' + pageName);
 		}
 
-		if (typeof populator !== 'function') {
-			throw TypeError('page populator must be a function, got ' + populator);
+		if (typeof controller !== 'function') {
+			throw TypeError('page controller must be a function, got ' + controller);
 		}
 
-		switch (typeof unpopulator) {
+		switch (typeof cleanup) {
 			case 'undefined':
-				unpopulator = function () {};
+				cleanup = function(){};
 				break;
 
 			case 'function':
 				break;
 
 			default:
-				throw TypeError('page unpopulator must be a function, got ' + unpopulator);
+				throw TypeError('page cleanup handler must be a function, got ' + cleanup);
 		}
 
-		if (populator) {
-			addPopulator(pageName, populator);
+		if (controller) {
+			addController(pageName, controller);
 		}
-		if (unpopulator) {
-			addUnpopulator(pageName, unpopulator);
+		if (cleanup) {
+			addCleanup(pageName, cleanup);
 		}
 	};
+	App.populator = App.controller; // backwards compat
 
 	App.generate = function (pageName, args) {
 		if (typeof pageName !== 'string') {
@@ -84,27 +95,28 @@ App._Pages = function (window, document, Clickable, Scrollable, App, utils, metr
 	};
 
 	App.destroy = function (page) {
-		if ( !utils.isNode(page) ) {
+		if ( !Utils.isNode(page) ) {
 			throw TypeError('page node must be a DOM node, got ' + page);
 		}
 
 		return destroyPage(page);
 	};
 
+	App._layout             = triggerPageSizeFix;
+	App._enableIOSStatusBar = enableIOSStatusBar;
+
 
 	return {
-		EVENTS                : EVENTS                    ,
-		fire                  : firePageEvent             ,
-		has                   : hasPage                   ,
-		startGeneration       : startPageGeneration       ,
-		finishGeneration      : finishPageGeneration      ,
-		startDestruction      : startPageDestruction      ,
-		finishDestruction     : finishPageDestruction     ,
-		fixContent            : fixContentHeight          ,
-		saveScrollPosition    : savePageScrollPosition    ,
-		saveScrollStyle       : savePageScrollStyle       ,
-		restoreScrollPosition : restorePageScrollPosition ,
-		restoreScrollStyle    : restorePageScrollStyle
+		EVENTS                : EVENTS                 ,
+		has                   : hasPage                ,
+		createManager         : createPageManager      ,
+		startGeneration       : startPageGeneration    ,
+		finishGeneration      : finishPageGeneration   ,
+		fire                  : firePageEvent          ,
+		startDestruction      : startPageDestruction   ,
+		finishDestruction     : finishPageDestruction  ,
+		fixContent            : fixContentHeight       ,
+		populateBackButton    : populatePageBackButton
 	};
 
 
@@ -156,43 +168,83 @@ App._Pages = function (window, document, Clickable, Scrollable, App, utils, metr
 
 
 
-	/* Page populators */
+	/* Page controllers */
 
-	function addPopulator (pageName, populator) {
-		if ( !populators[pageName] ) {
-			populators[pageName] = [ populator ];
-		}
-		else {
-			populators[pageName].push(populator);
-		}
+	function addController (pageName, controller) {
+		controllers[pageName] = controller;
 	}
 
-	function addUnpopulator (pageName, unpopulator) {
-		if ( !unpopulators[pageName] ) {
-			unpopulators[pageName] = [ unpopulator ];
-		}
-		else {
-			unpopulators[pageName].push(unpopulator);
-		}
+	function addCleanup (pageName, cleanup) {
+		cleanups[pageName] = cleanup;
 	}
 
 	function populatePage (pageName, pageManager, page, args) {
-		var pagePopulators = populators[pageName] || [];
-		pagePopulators.forEach(function (populator) {
-			populator.call(pageManager, page, args);
-		});
+		var controller = controllers[pageName];
+		if ( !controller ) {
+			return;
+		}
+		for (var prop in controller) {
+			pageManager[prop] = controller[prop];
+		}
+		for (var prop in controller.prototype) {
+			pageManager[prop] = controller.prototype[prop];
+		}
+		pageManager.page = page; //TODO: getter
+		pageManager.args = args; //TODO: getter (dont want this to hit localStorage)
+		controller.call(pageManager, page, args);
 	}
 
 	function unpopulatePage (pageName, pageManager, page, args) {
-		var pageUnpopulators = unpopulators[pageName] || [];
-		pageUnpopulators.forEach(function (unpopulator) {
-			unpopulator.call(pageManager, page, args);
-		});
+		var cleanup = cleanups[pageName];
+		if (cleanup) {
+			cleanup.call(pageManager, page, args);
+		}
+		firePageEvent(pageManager, page, EVENTS.DESTROY);
 	}
 
 
 
 	/* Page generation */
+
+	function createPageManager (restored) {
+		var pageManager = {
+			restored : restored ,
+			showing  : false ,
+			online   : navigator.onLine
+		};
+
+		var readyQueue = [];
+
+		pageManager.ready = function (func) {
+			if (typeof func !== 'function') {
+				throw TypeError('ready must be called with a function, got ' + func);
+			}
+
+			if (readyQueue) {
+				readyQueue.push(func);
+			} else {
+				func.call(pageManager);
+			}
+		};
+
+		pageManager[PAGE_READY_VAR] = function () {
+			Utils.ready(function () {
+				if ( !readyQueue ) {
+					return;
+				}
+				var queue = readyQueue.slice();
+				readyQueue = null;
+				if ( Utils.isNode(pageManager.page) ) {
+					firePageEvent(pageManager, pageManager.page, EVENTS.READY);
+				}
+				Utils.forEach(queue, function (func) {
+					func.call(pageManager);
+				});
+			});
+		};
+
+		return pageManager;
+	}
 
 	function generatePage (pageName, args) {
 		var pageManager = {},
@@ -212,54 +264,115 @@ App._Pages = function (window, document, Clickable, Scrollable, App, utils, metr
 	function startPageGeneration (pageName, pageManager, args) {
 		var page = clonePage(pageName);
 
-		insureCustomEventing(page);
+		var eventNames = [];
+		for (var evt in EVENTS) {
+			eventNames.push( eventTypeToName(EVENTS[evt]) );
+		}
+		Events.init(page, eventNames);
+		Metrics.watchPage(page, pageName, args);
 
-		metrics.watchPage(page, pageName, args);
+		page[PAGE_MANAGER_VAR] = pageManager;
 
 		fixContentHeight(page);
 
-		utils.forEach(
+		Utils.forEach(
 			page.querySelectorAll('.app-button'),
 			function (button) {
+				if (button.getAttribute('data-no-click') !== null) {
+					return;
+				}
 				Clickable(button);
+				button.addEventListener('click', function () {
+					var target     = button.getAttribute('data-target'),
+						targetArgs = button.getAttribute('data-target-args'),
+						back       = (button.getAttribute('data-back') !== null),
+						manualBack = (button.getAttribute('data-manual-back') !== null),
+						args;
 
-				var target = button.getAttribute('data-target'),
-					back   = button.getAttribute('data-back');
+					try {
+						args = JSON.parse(targetArgs);
+					} catch (err) {}
+					if ((typeof args !== 'object') || (args === null)) {
+						args = {};
+					}
 
-				if (back) {
-					Clickable.sticky(button, function (callback) {
-						//TODO: make this nicer
-						return App.back({}, callback);
-					});
-				}
-				else if (target) {
-					Clickable.sticky(button, function (callback) {
-						//TODO: make this nicer
-						return App.load(target, {}, {}, callback);
-					});
-				}
+					if (!back && !target) {
+						return;
+					}
+					if (back && manualBack) {
+						return;
+					}
+
+					var clickableClass = button.getAttribute('data-clickable-class');
+					if (clickableClass) {
+						button.disabled = true;
+						button.classList.add(clickableClass);
+					}
+
+					if (back) {
+						App.back(finish);
+					}
+					else if (target) {
+						App.load(target, args, {}, finish);
+					}
+
+					function finish () {
+						if (clickableClass) {
+							button.disabled = false;
+							button.classList.remove(clickableClass);
+						}
+					}
+				}, false);
 			}
 		);
 
 		populatePage(pageName, pageManager, page, args);
 
-		firePageEvent(page, EVENTS.LAYOUT);
-
-		page.addEventListener('DOMNodeInsertedIntoDocument', function () {
-			fixPageTitle(page);
-			firePageEvent(page, EVENTS.LAYOUT);
+		page.addEventListener(eventTypeToName(EVENTS.SHOW), function () {
+			setTimeout(function () {
+				if (typeof pageManager[PAGE_READY_VAR] === 'function') {
+					pageManager[PAGE_READY_VAR]();
+				}
+			}, 0);
 		}, false);
 
 		return page;
 	}
 
+	function firePageEvent (pageManager, page, eventType) {
+		var eventName = eventTypeToName(eventType),
+			funcName  = eventTypeToFunctionName(eventType),
+			success   = true;
+		if ( !Events.fire(page, eventName) ) {
+			success = false;
+		}
+		if (typeof pageManager[funcName] === 'function') {
+			if (pageManager[funcName]() === false) {
+				success = false;
+			}
+		}
+		return success;
+	}
+
+	function eventTypeToName (eventType) {
+		return 'app' + eventType[0].toUpperCase() + eventType.slice(1);
+	}
+
+	function eventTypeToFunctionName (eventType) {
+		return 'on' + eventType[0].toUpperCase() + eventType.slice(1);
+	}
+
 	function finishPageGeneration (pageName, pageManager, page, args) {
-		setupScrollers(page);
+		Scroll.setup(page);
 	}
 
 	function startPageDestruction (pageName, pageManager, page, args) {
-		if (!utils.os.ios || utils.os.version < 6) {
-			disableScrolling(page);
+		if (!Utils.os.ios || Utils.os.version < 6) {
+			Scroll.disable(page);
+		}
+		if (typeof pageManager.reply === 'function') {
+			pageManager._appNoBack = true;
+			pageManager.reply();
 		}
 	}
 
@@ -271,288 +384,108 @@ App._Pages = function (window, document, Clickable, Scrollable, App, utils, metr
 
 	/* Page layout */
 
+	function setupPageListeners () {
+		window.addEventListener('orientationchange', triggerPageSizeFix);
+		window.addEventListener('resize'           , triggerPageSizeFix);
+		window.addEventListener('load'             , triggerPageSizeFix);
+		setTimeout(triggerPageSizeFix, 0);
+
+		window.addEventListener('online', function () {
+			if (App._Stack) {
+				Utils.forEach(App._Stack.get(), function (pageInfo) {
+					pageInfo[2].online = true;
+					firePageEvent(pageInfo[2], pageInfo[3], EVENTS.ONLINE);
+				});
+			}
+		}, false);
+		window.addEventListener('offline', function () {
+			if (App._Stack) {
+				Utils.forEach(App._Stack.get(), function (pageInfo) {
+					pageInfo[2].online = false;
+					firePageEvent(pageInfo[2], pageInfo[3], EVENTS.OFFLINE);
+				});
+			}
+		}, false);
+	}
+
+	function triggerPageSizeFix () {
+		fixContentHeight();
+		var pageData;
+		if (App._Stack) {
+			pageData = App._Stack.getCurrent();
+		}
+		if (pageData) {
+			firePageEvent(pageData[2], pageData[3], EVENTS.LAYOUT);
+		}
+
+		//TODO: turns out this isnt all that expensive, but still, lets kill it if we can
+		setTimeout(fixContentHeight,   0);
+		setTimeout(fixContentHeight,  10);
+		setTimeout(fixContentHeight, 100);
+	}
+
 	function fixContentHeight (page) {
+		if ( !page ) {
+			if (App._Navigation) {
+				page = App._Navigation.getCurrentNode();
+			}
+			if ( !page ) {
+				return;
+			}
+		}
+
 		var topbar  = page.querySelector('.app-topbar'),
-			content = page.querySelector('.app-content');
+			content = page.querySelector('.app-content'),
+			height  = window.innerHeight;
 
 		if ( !content ) {
 			return;
 		}
-
-		var height = window.innerHeight;
-
 		if ( !topbar ) {
 			content.style.height = height + 'px';
 			return;
 		}
 
 		var topbarStyles = document.defaultView.getComputedStyle(topbar, null),
-			topbarHeight = utils.os.android ? 48 : 44;
-
+			topbarHeight = Utils.os.android ? 48 : 44;
 		if (topbarStyles.height) {
-			topbarHeight = parseInt(topbarStyles.height) || 0;
+			topbarHeight = (parseInt(topbarStyles.height) || 0);
+			if ((topbarStyles.boxSizing || topbarStyles.webkitBoxSizing) !== 'border-box') {
+				topbarHeight += (parseInt(topbarStyles.paddingBottom) || 0) + (parseInt(topbarStyles.paddingTop) || 0);
+				topbarHeight += (parseInt(topbarStyles.borderBottomWidth) || 0) + (parseInt(topbarStyles.borderTopWidth) || 0);
+			}
 		}
-
 		content.style.height = (height - topbarHeight) + 'px';
 	}
 
-	function fixPageTitle (page) {
-		var topbar = page.querySelector('.app-topbar');
-
-		if ( !topbar ) {
+	function populatePageBackButton (page, oldPage) {
+		if ( !oldPage ) {
 			return;
 		}
-
-		var title = topbar.querySelector('.app-title');
-
-		if (!title || !title.getAttribute('data-autosize') ) {
+		var backButton = page.querySelector('.app-topbar .left.app-button'),
+			oldTitle   = oldPage.querySelector('.app-topbar .app-title');
+		if (!backButton || !oldTitle || (backButton.getAttribute('data-autotitle') === null)) {
 			return;
 		}
-
-		var margin      = 0,
-			leftButton  = topbar.querySelector('.left.app-button'),
-			rightButton = topbar.querySelector('.right.app-button');
-
-		if (leftButton) {
-			var leftStyles = utils.getStyles(leftButton),
-				leftPos    = utils.getTotalWidth(leftStyles) + parseInt(leftStyles.left || 0) + 4;
-			margin = Math.max(margin, leftPos);
-		}
-
-		if (rightButton) {
-			var rightStyles = utils.getStyles(rightButton),
-				rightPos    = utils.getTotalWidth(rightStyles) + parseInt(rightStyles.right || 0) + 4;
-			margin = Math.max(margin, rightPos);
-		}
-
-		title.style.width = (window.innerWidth-margin*2) + 'px';
-	}
-
-
-
-	/* Page scrolling */
-
-	function setupScrollers (page) {
-		utils.forEach(
-			page.querySelectorAll('.app-content'),
-			function (content) {
-				if ( !content.getAttribute('data-no-scroll') ) {
-					setupScroller(content);
-				}
-			}
-		);
-
-		utils.forEach(
-			page.querySelectorAll('[data-scrollable]'),
-			function (content) {
-				setupScroller(content);
-			}
-		);
-	}
-
-	function setupScroller (content) {
-		Scrollable(content, forceIScroll);
-		content.className += ' app-scrollable';
-		if (!forceIScroll && utils.os.ios && utils.os.version < 6) {
-			content.className += ' app-scrollhack';
-		}
-	}
-
-	function disableScrolling (page) {
-		utils.forEach(
-			page.querySelectorAll('*'),
-			function (elem) {
-				elem.style['-webkit-overflow-scrolling'] = '';
-			}
-		);
-	}
-
-	function getScrollableElems (page) {
-		var elems = [];
-
-		if (page) {
-			utils.forEach(
-				page.querySelectorAll('.app-scrollable'),
-				function (elem) {
-					if (elem._scrollable) {
-						elems.push(elem);
-					}
-				}
-			);
-		}
-
-		return elems;
-	}
-
-	function savePageScrollPosition (page) {
-		utils.forEach(
-			getScrollableElems(page),
-			function (elem) {
-				if (elem._iScroll) {
-					return;
-				}
-
-				var scrollTop = elem._scrollTop();
-				elem.setAttribute('data-last-scroll', scrollTop+'');
-			}
-		);
-	}
-
-	function savePageScrollStyle (page) {
-		utils.forEach(
-			getScrollableElems(page),
-			function (elem) {
-				if (elem._iScroll) {
-					return;
-				}
-
-				var scrollStyle = elem.style['-webkit-overflow-scrolling'] || '';
-				elem.style['-webkit-overflow-scrolling'] = '';
-				elem.setAttribute('data-scroll-style', scrollStyle);
-			}
-		);
-	}
-
-	function restorePageScrollPosition (page, noTimeout) {
-		utils.forEach(
-			getScrollableElems(page),
-			function (elem) {
-				if (elem._iScroll) {
-					return;
-				}
-
-				var scrollTop = parseInt( elem.getAttribute('data-last-scroll') );
-
-				if (scrollTop) {
-					if ( !noTimeout ) {
-						setTimeout(function () {
-							elem._scrollTop(scrollTop);
-						}, 0);
-					}
-					else {
-						elem._scrollTop(scrollTop);
-					}
-				}
-			}
-		);
-	}
-
-	function restorePageScrollStyle (page) {
-		utils.forEach(
-			getScrollableElems(page),
-			function (elem) {
-				if (elem._iScroll) {
-					return;
-				}
-
-				var scrollStyle = elem.getAttribute('data-scroll-style') || '';
-
-				if (scrollStyle) {
-					elem.style['-webkit-overflow-scrolling'] = scrollStyle;
-				}
-
-			}
-		);
-
-		restorePageScrollPosition(page, true);
-	}
-
-
-
-	/* Page eventing */
-
-	function supportsCustomEventing () {
-		if (hasCustomEvents === null) {
-			try {
-				var elem = document.createElement('div'),
-					evt  = document.createEvent('CustomEvent');
-				evt.initEvent('fooBarFace', false, true);
-				elem.dispatchEvent(evt);
-				hasCustomEvents = true;
-			}
-			catch (err) {
-				hasCustomEvents = false;
-			}
-		}
-
-		return hasCustomEvents;
-	}
-
-	function getCustomEvents () {
-		if ( !customEvents ) {
-			customEvents = [];
-			for (var eventKey in EVENTS) {
-				customEvents.push( EVENTS[eventKey] );
-			}
-		}
-
-		return customEvents;
-	}
-
-	function insureCustomEventing (page) {
-		if (page._brokenEvents || supportsCustomEventing()) {
+		var oldText = oldTitle.textContent,
+			newText = backButton.textContent;
+		if (!oldText || newText) {
 			return;
 		}
+		if (oldText.length > 13) {
+			oldText = oldText.substr(0, 12) + '..';
+		}
+		backButton.textContent = oldText;
+	}
 
-		page._brokenEvents = true;
-		page._addEventListener    = page.addEventListener;
-		page._removeEventListener = page.removeEventListener;
-
-		var listeners = {},
-			names     = getCustomEvents();
-
-		names.forEach(function (name) {
-			listeners[name] = [];
+	function enableIOSStatusBar () {
+		if (statusBarEnabled) {
+			return;
+		}
+		statusBarEnabled = true;
+		document.body.className += ' ' + APP_STATUSBAR;
+		Utils.ready(function () {
+			setTimeout(triggerPageSizeFix, 6);
 		});
-
-		page.addEventListener = function (name, listener) {
-			if (names.indexOf(name) === -1) {
-				page._addEventListener.apply(this, arguments);
-				return;
-			}
-
-			var eventListeners = listeners[name];
-
-			if (eventListeners.indexOf(listener) === -1) {
-				eventListeners.push(listener);
-			}
-		};
-
-		page.removeEventListener = function (name, listener) {
-			if (names.indexOf(name) === -1) {
-				page._removeEventListener.apply(this, arguments);
-				return;
-			}
-
-			var eventListeners = listeners[name],
-				index          = eventListeners.indexOf(listener);
-
-			if (index !== -1) {
-				eventListeners.splice(index, 1);
-			}
-		};
-
-		page._trigger = function (name) {
-			if (names.indexOf(name) === -1) {
-				return;
-			}
-
-			listeners[name].forEach(function (listener) {
-				setTimeout(function () {
-					listener.call(page, {});
-				}, 0);
-			});
-		};
 	}
-
-	function firePageEvent (page, eventName) {
-		if (page._brokenEvents) {
-			page._trigger(eventName);
-			return;
-		}
-
-		var event = document.createEvent('CustomEvent');
-		event.initEvent(eventName, false, true);
-		page.dispatchEvent(event);
-	}
-}(window, document, Clickable, Scrollable, App, App._utils, App._metrics);
+}(window, document, Clickable, Scrollable, App, App._Utils, App._Events, App._Metrics, App._Scroll);

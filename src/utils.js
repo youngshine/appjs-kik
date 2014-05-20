@@ -1,4 +1,4 @@
-App._utils = function (window, document, App) {
+App._Utils = function (window, document, App) {
 	var query = function (queryString) {
 		var re           = /([^&=]+)=([^&]+)/g,
 			decodedSpace = /\+/g;
@@ -26,12 +26,12 @@ App._utils = function (window, document, App) {
 		if (query['_app_platform'] === 'android') {
 			faked   = true;
 			name    = 'android';
-			version = '4.2';
+			version = '4.4';
 		}
 		else if (query['_app_platform'] === 'ios') {
 			faked   = true;
 			name    = 'ios';
-			version = '6.0';
+			version = '7.0';
 		}
 		else if (match = /\bCPU.*OS (\d+(_\d+)?)/i.exec(userAgent)) {
 			name    = 'ios';
@@ -52,12 +52,12 @@ App._utils = function (window, document, App) {
 		data[ name ] = true;
 
 		if (data.ios) {
-			document.body.className += ' app-ios';
+			document.body.className += ' app-ios app-ios-'+parseInt(version);
 		}
 		else if (data.android) {
-			document.body.className += ' app-android';
+			document.body.className += ' app-android app-android-'+parseInt(version);
 		}
-		if (data.faked || (!data.ios && !data.android)) {
+		if (data.faked || !data.ios) {
 			document.body.className += ' app-no-scrollbar';
 		}
 
@@ -114,6 +114,33 @@ App._utils = function (window, document, App) {
 		return true;
 	}
 
+	function isjQueryElem($elem) {
+		if (typeof $elem !== 'object' || $elem === null) {
+			return false;
+		} else {
+			return ($elem.val && $elem.addClass && $elem.css && $elem.html && $elem.show);
+		}
+	}
+
+	function onReady (func) {
+		if (document.readyState === 'complete') {
+			setTimeout(function () {
+				func();
+			}, 0);
+			return;
+		}
+
+		window.addEventListener('load', runCallback, false);
+
+		function runCallback () {
+			window.removeEventListener('load', runCallback);
+
+			setTimeout(function () {
+				func();
+			}, 0);
+		}
+	}
+
 	function setTransform (elem, transform) {
 		elem.style['-webkit-transform'] = transform;
 		elem.style[   '-moz-transform'] = transform;
@@ -166,16 +193,9 @@ App._utils = function (window, document, App) {
 		};
 	}
 
-	function getTotalWidth (styles) {
-		var width = 0;
-		width += parseInt(styles.width            || 0);
-		width += parseInt(styles.paddingLeft      || 0);
-		width += parseInt(styles.paddingRight     || 0);
-		width += parseInt(styles.borderLeftWidth  || 0);
-		width += parseInt(styles.borderRightWidth || 0);
-		width += parseInt(styles.marginLeft       || 0);
-		width += parseInt(styles.marginRight      || 0);
-		return width;
+	function isVisible (elem) {
+		var styles = getStyles(elem);
+		return (styles.display !== 'none' && styles.opacity !== '0');
 	}
 
 	// this is tuned for use with the iOS transition
@@ -198,7 +218,7 @@ App._utils = function (window, document, App) {
 		});
 
 		function setInitialStyles (callback) {
-			transitions.forEach(function (transition) {
+			forEach(transitions, function (transition) {
 				if (typeof transition.transitionStart !== 'undefined') {
 					setTransform(transition.elem, transition.transitionStart);
 				}
@@ -208,8 +228,9 @@ App._utils = function (window, document, App) {
 			});
 
 			setTimeout(function () {
-				var transitionString = 'transform '+(timeout/1000)+'s ease-in-out, opacity '+(timeout/1000)+'s ease-in-out';
-				transitions.forEach(function (transition) {
+				forEach(transitions, function (transition) {
+					var e                = transition.easing||easing,
+						transitionString = 'transform '+(timeout/1000)+'s '+e+', opacity '+(timeout/1000)+'s '+e;
 					setTransition(transition.elem, transitionString);
 				});
 
@@ -218,7 +239,7 @@ App._utils = function (window, document, App) {
 		}
 
 		function animateElems (callback) {
-			transitions.forEach(function (transition) {
+			forEach(transitions, function (transition) {
 				if (typeof transition.transitionEnd !== 'undefined') {
 					setTransform(transition.elem, transition.transitionEnd);
 				}
@@ -227,39 +248,29 @@ App._utils = function (window, document, App) {
 				}
 			});
 
-			transitions.forEach(function (transition) {
-				transition.elem.addEventListener('webkitTransitionEnd' , transitionFinished , false);
-				transition.elem.addEventListener('transitionend'       , transitionFinished , false);
-				transition.elem.addEventListener('oTransitionEnd'      , transitionFinished , false);
-				transition.elem.addEventListener('otransitionend'      , transitionFinished , false);
-				transition.elem.addEventListener('MSTransitionEnd'     , transitionFinished , false);
-				transition.elem.addEventListener('transitionend'       , transitionFinished , false);
-			});
+			var lastTransition = transitions[transitions.length-1];
+			lastTransition.elem.addEventListener('webkitTransitionEnd' , transitionFinished , false);
+			lastTransition.elem.addEventListener('transitionend'       , transitionFinished , false);
+			lastTransition.elem.addEventListener('onTransitionEnd'     , transitionFinished , false);
+			lastTransition.elem.addEventListener('ontransitionend'     , transitionFinished , false);
+			lastTransition.elem.addEventListener('MSTransitionEnd'     , transitionFinished , false);
+			lastTransition.elem.addEventListener('transitionend'       , transitionFinished , false);
 
 			var done = false;
 
-			function isTransitionElem (elem) {
-				for (var i=0, l=transitions.length; i<l; i++) {
-					if (elem === transitions[i].elem) {
-						return true;
-					}
-				}
-				return false;
-			}
-
 			function transitionFinished (e) {
-				if (done || !isTransitionElem(e.target)) {
+				if (done || (e.target !== lastTransition.elem)) {
 					return;
 				}
 				done = true;
 
-				transitions.forEach(function (transition) {
-					transition.elem.removeEventListener('webkitTransitionEnd' , transitionFinished);
-					transition.elem.removeEventListener('transitionend'       , transitionFinished);
-					transition.elem.removeEventListener('oTransitionEnd'      , transitionFinished);
-					transition.elem.removeEventListener('otransitionend'      , transitionFinished);
-					transition.elem.removeEventListener('MSTransitionEnd'     , transitionFinished);
-					transition.elem.removeEventListener('transitionend'       , transitionFinished);
+				forEach(transitions, function (transition) {
+					lastTransition.elem.removeEventListener('webkitTransitionEnd' , transitionFinished);
+					lastTransition.elem.removeEventListener('transitionend'       , transitionFinished);
+					lastTransition.elem.removeEventListener('onTransitionEnd'     , transitionFinished);
+					lastTransition.elem.removeEventListener('ontransitionend'     , transitionFinished);
+					lastTransition.elem.removeEventListener('MSTransitionEnd'     , transitionFinished);
+					lastTransition.elem.removeEventListener('transitionend'       , transitionFinished);
 				});
 
 				callback();
@@ -267,12 +278,12 @@ App._utils = function (window, document, App) {
 		}
 
 		function restoreStyles (callback) {
-			transitions.forEach(function (transition) {
+			forEach(transitions, function (transition) {
 				setTransition(transition.elem, '');
 			});
 
 			setTimeout(function () {
-				transitions.forEach(function (transition, i) {
+				forEach(transitions, function (transition, i) {
 					setTransform(transition.elem, '');
 					transition.elem.style.opacity = opacities[i];
 				});
@@ -290,13 +301,15 @@ App._utils = function (window, document, App) {
 	return {
 		query         : query         ,
 		os            : os            ,
+		ready         : onReady       ,
 		forEach       : forEach       ,
 		isArray       : isArray       ,
 		isNode        : isNode        ,
+		isjQueryElem  : isjQueryElem  ,
 		setTransform  : setTransform  ,
 		setTransition : setTransition ,
 		animate       : transitionElems ,
 		getStyles     : getStyles     ,
-		getTotalWidth : getTotalWidth
+		isVisible     : isVisible
 	};
 }(window, document, App);
