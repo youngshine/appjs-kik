@@ -188,7 +188,7 @@ App.load('home', function () {
 				<pre class="prettyprint lang-html">
 &lt;!-- in your html --&gt;
 &lt;div class="app-button" data-target="page2"&gt;Go to page 2&lt;/div&gt;
-&lt;div class="app-button" data-target="contact" data-args='{"firstName":"Bruce","lastName":"Lee"}'&gt;Open contact&lt;/div&gt;
+&lt;div class="app-button" data-target="contact" data-target-args='{"firstName":"Bruce","lastName":"Lee"}'&gt;Open contact&lt;/div&gt;
 </pre>
 				<p>When the first button is clicked <code>App.load('page2')</code> will automatically get called. The second button is similar but also provides page arguments to be pass along (<code>App.load('contact', { firstName : 'Bruce' , lastName : 'Lee' })</code>)</p>
 
