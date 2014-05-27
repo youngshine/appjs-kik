@@ -22,6 +22,7 @@ buildProject () {
 		src/dialog.js
 		src/form.js
 		src/scroll.js
+		src/scroll-fix.js
 		src/pages.js
 		src/stack.js
 		src/transitions.js
