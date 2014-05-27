@@ -1,21 +1,6 @@
 /**
- * App.js v2.0.1
+ * App.js vDEVBUILD
  * Instant mobile web app creation
- * Copyright (c) 2012 Kik Interactive, http://kik.com
- * Released under the MIT license
- *
- * swapper.js 1.1.1
- * UI navigation and transition utility
- * Copyright (c) 2012 Kik Interactive, http://kik.com
- * Released under the MIT license
- *
- * clickable.js v1.3.4
- * Seamless buttons for mobile devices
- * Copyright (c) 2012 Kik Interactive, http://kik.com
- * Released under the MIT license
- *
- * scrollable.js v1.0.0
- * Seamless scrolling for mobile devices
  * Copyright (c) 2012 Kik Interactive, http://kik.com
  * Released under the MIT license
  *
