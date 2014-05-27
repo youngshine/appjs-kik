@@ -84,7 +84,8 @@ createBuildDir () {
 preprendLicense () {
 	tmpFile="${1}.tmp"
 	if [ -n "${LICENSE}" ] ; then
-		cat "${LICENSE}" "${1}" > "${tmpFile}"
+		cat "${LICENSE}" | sed "s/DEVBUILD/${VERSION}/" > "${tmpFile}"
+		cat "${1}" >> "${tmpFile}"
 		mv "${tmpFile}" "${1}"
 	fi
 }
