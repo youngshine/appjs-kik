@@ -177,6 +177,12 @@ elif [ "$1" = "zip" ] ; then
 	clean &&
 	exit 0
 	exit 1
+elif [ "$1" = "dist" ] ; then
+	createBuildDir &&
+	build &&
+	mv "${BUILD_DIR}" "dist"
+	exit 0
+	exit 1
 else
 	createBuildDir &&
 	build &&

@@ -18,7 +18,7 @@ body {
 
 .features {}
 .feature {
-	margin-top: 16px;
+	/*margin-top: 16px;*/
 	height: 92px;
 }
 .feature:after {
@@ -26,6 +26,7 @@ body {
 	clear: both;
 	content: "";
 }
+/*
 .feature .icon {
 	float: left;
 	display: block;
@@ -45,9 +46,10 @@ body {
 .feature.stack-management .icon {
 	background-image: url(../img/stack-management.png);
 }
+*/
 .feature .text {
-	padding-top: 6px;
-	padding-left: 12px;
+	/*padding-top: 6px;*/
+	/*padding-left: 12px;*/
 	height: 80px;
 	font-size: 20px;
 	font-weight: 300;
