@@ -161,6 +161,13 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll, Page
 		if (!options.easing && isIOS7SlideUp) {
 			options.easing = 'cubic-bezier(0.4,0.6,0.05,1)';
 		}
+		if (Utils.os.ios && !options.easing && (options.transition === 'slideon-left-ios' || options.transition === 'slideoff-right-ios')) {
+			if (Utils.os.version < 7) {
+				options.easing = 'ease-in-out';
+			} else {
+				options.easing = 'cubic-bezier(0.4,0.6,0.2,1)';
+			}
+		}
 
 		document.body.className += ' ' + TRANSITION_CLASS;
 
