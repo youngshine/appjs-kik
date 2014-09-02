@@ -34,7 +34,6 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll, Page
 			'slideoff-up'       : 'slideon-up'        ,
 			'slideoff-down'     : 'slideon-down'      ,
 			'slideon-left-ios'  : 'slideoff-right-ios',
-			'slideon-right-ios' : 'slideoff-left-ios' ,
 			'glideon-right'     : 'glideoff-right'    ,
 			'glideoff-right'    : 'slideon-right'     ,
 			'glideon-left'      : 'glideoff-left'     ,
