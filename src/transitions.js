@@ -404,7 +404,7 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll, Page
 			return;
 		}
 
-		var dragableTransitions = ['slide-left', 'slide-left-ios'];
+		var dragableTransitions = ['slide-left', 'slideon-left-ios'];
 		if ((dragableTransitions.indexOf(currentPage[4].transition) === -1) && (currentPage[4].transition || dragableTransitions.indexOf(defaultTransition) === -1)) {
 			return;
 		} else if ((currentPage[4].transition === 'slide-left') || (!currentPage[4].transition && 'slide-left' === defaultTransition)) {
