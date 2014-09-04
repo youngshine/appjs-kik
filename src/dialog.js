@@ -66,14 +66,6 @@ App._Dialog = function (window, document, Clickable, App, Utils) {
 
 
 
-	function preventDefault (e) {
-		var node = e.target && e.target.nodeName;
-		if (node === 'INPUT' || node === 'TEXTAREA') {
-			return;
-		}
-		e.preventDefault();
-	}
-
 	function createDialog (options, callback) {
 		var dialogContainer = document.createElement('div');
 		dialogContainer.className += ' app-dialog-container';
@@ -81,7 +73,11 @@ App._Dialog = function (window, document, Clickable, App, Utils) {
 			dialogContainer.className += ' ios5';
 		}
 		if (!Utils.os.android || (Utils.os.version >= 4)) {
-			dialogContainer.addEventListener('touchstart', preventDefault, false);
+			dialogContainer.addEventListener('touchstart', function (e) {
+				if (e.target === dialogContainer) {
+					e.preventDefault();
+				}
+			}, false);
 		}
 
 		if (options.cancelButton) {
