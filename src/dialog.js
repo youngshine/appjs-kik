@@ -67,6 +67,10 @@ App._Dialog = function (window, document, Clickable, App, Utils) {
 
 
 	function preventDefault (e) {
+		var node = e.target && e.target.nodeName;
+		if (node === 'INPUT' || node === 'TEXTAREA') {
+			return;
+		}
 		e.preventDefault();
 	}
 
