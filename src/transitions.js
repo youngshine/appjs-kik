@@ -5,42 +5,43 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll, Page
 		DEFAULT_TRANSITION_ANDROID_OLD    = 'fade-on',
 		DEFAULT_TRANSITION_ANDROID_GHETTO = 'instant',
 		REVERSE_TRANSITION = {
-			'instant'        : 'instant'        ,
-			'fade'           : 'fade'           ,
-			'fade-on'        : 'fade-off'       ,
-			'fade-off'       : 'fade-on'        ,
-			'scale-in'       : 'scale-out'      ,
-			'scale-out'      : 'scale-in'       ,
-			'rotate-left'    : 'rotate-right'   ,
-			'rotate-right'   : 'rotate-left'    ,
-			'cube-left'      : 'cube-right'     ,
-			'cube-right'     : 'cube-left'      ,
-			'swap-left'      : 'swap-right'     ,
-			'swap-right'     : 'swap-left'      ,
-			'explode-in'     : 'explode-out'    ,
-			'explode-out'    : 'explode-in'     ,
-			'implode-in'     : 'implode-out'    ,
-			'implode-out'    : 'implode-in'     ,
-			'slide-left'     : 'slide-right'    ,
-			'slide-right'    : 'slide-left'     ,
-			'slide-up'       : 'slide-down'     ,
-			'slide-down'     : 'slide-up'       ,
-			'slideon-left'   : 'slideoff-left'  ,
-			'slideon-right'  : 'slideoff-right' ,
-			'slideon-up'     : 'slideoff-up'    ,
-			'slideon-down'   : 'slideoff-down'  ,
-			'slideoff-left'  : 'slideon-left'   ,
-			'slideoff-right' : 'slideon-right'  ,
-			'slideoff-up'    : 'slideon-up'     ,
-			'slideoff-down'  : 'slideon-down'   ,
-			'glideon-right'  : 'glideoff-right' ,
-			'glideoff-right' : 'slideon-right'  ,
-			'glideon-left'   : 'glideoff-left'  ,
-			'glideoff-left'  : 'slideon-left'   ,
-			'glideon-down'   : 'glideoff-down'  ,
-			'glideoff-down'  : 'slideon-down'   ,
-			'glideon-up'     : 'glideoff-up'    ,
-			'glideoff-up'    : 'slideon-up'
+			'instant'           : 'instant'           ,
+			'fade'              : 'fade'              ,
+			'fade-on'           : 'fade-off'          ,
+			'fade-off'          : 'fade-on'           ,
+			'scale-in'          : 'scale-out'         ,
+			'scale-out'         : 'scale-in'          ,
+			'rotate-left'       : 'rotate-right'      ,
+			'rotate-right'      : 'rotate-left'       ,
+			'cube-left'         : 'cube-right'        ,
+			'cube-right'        : 'cube-left'         ,
+			'swap-left'         : 'swap-right'        ,
+			'swap-right'        : 'swap-left'         ,
+			'explode-in'        : 'explode-out'       ,
+			'explode-out'       : 'explode-in'        ,
+			'implode-in'        : 'implode-out'       ,
+			'implode-out'       : 'implode-in'        ,
+			'slide-left'        : 'slide-right'       ,
+			'slide-right'       : 'slide-left'        ,
+			'slide-up'          : 'slide-down'        ,
+			'slide-down'        : 'slide-up'          ,
+			'slideon-left'      : 'slideoff-left'     ,
+			'slideon-right'     : 'slideoff-right'    ,
+			'slideon-up'        : 'slideoff-up'       ,
+			'slideon-down'      : 'slideoff-down'     ,
+			'slideoff-left'     : 'slideon-left'      ,
+			'slideoff-right'    : 'slideon-right'     ,
+			'slideoff-up'       : 'slideon-up'        ,
+			'slideoff-down'     : 'slideon-down'      ,
+			'slideon-left-ios'  : 'slideoff-right-ios',
+			'glideon-right'     : 'glideoff-right'    ,
+			'glideoff-right'    : 'slideon-right'     ,
+			'glideon-left'      : 'glideoff-left'     ,
+			'glideoff-left'     : 'slideon-left'      ,
+			'glideon-down'      : 'glideoff-down'     ,
+			'glideoff-down'     : 'slideon-down'      ,
+			'glideon-up'        : 'glideoff-up'       ,
+			'glideoff-up'       : 'slideon-up'
 		},
 		WALL_RADIUS = 10;
 
@@ -159,6 +160,13 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll, Page
 		}
 		if (!options.easing && isIOS7SlideUp) {
 			options.easing = 'cubic-bezier(0.4,0.6,0.05,1)';
+		}
+		if (Utils.os.ios && !options.easing && (options.transition === 'slideon-left-ios' || options.transition === 'slideoff-right-ios')) {
+			if (Utils.os.version < 7) {
+				options.easing = 'ease-in-out';
+			} else {
+				options.easing = 'cubic-bezier(0.4,0.6,0.2,1)';
+			}
 		}
 
 		document.body.className += ' ' + TRANSITION_CLASS;
@@ -376,7 +384,7 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll, Page
 		var pages        = Stack.get().slice(-2),
 			previousPage = pages[0],
 			currentPage  = pages[1],
-			draggingTouch, lastTouch, navigationLock, dead;
+			draggingTouch, lastTouch, navigationLock, dead, slideLeft;
 		if (!previousPage || !currentPage) {
 			return;
 		}
@@ -396,8 +404,11 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll, Page
 			return;
 		}
 
-		if ((currentPage[4].transition !== 'slide-left') && (currentPage[4].transition || defaultTransition !== 'slide-left')) {
+		var dragableTransitions = ['slide-left', 'slideon-left-ios'];
+		if ((dragableTransitions.indexOf(currentPage[4].transition) === -1) && (currentPage[4].transition || dragableTransitions.indexOf(defaultTransition) === -1)) {
 			return;
+		} else if ((currentPage[4].transition === 'slide-left') || (!currentPage[4].transition && 'slide-left' === defaultTransition)) {
+			slideLeft = true;
 		}
 
 		var oldPosition   = currentPage[3].style.position,
@@ -609,20 +620,25 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll, Page
 		}
 
 		function setDragPosition (progress) {
-			currentBar.style.opacity = 1-progress;
-			if (currentTitle) {
-				currentTitle.style.webkitTransform = 'translate3d('+(progress*window.innerWidth/2)+'px,0,0)';
-			}
-			if (currentBack) {
-				currentBack.style.webkitTransform = 'translate3d('+(progress*(window.innerWidth-currentBack.textContent.length*12)/2)+'px,0,0)';
+			if (slideLeft) {
+				currentBar.style.opacity = 1-progress;
+				if (currentTitle) {
+					currentTitle.style.webkitTransform = 'translate3d('+(progress*window.innerWidth/2)+'px,0,0)';
+				}
+				if (currentBack) {
+					currentBack.style.webkitTransform = 'translate3d('+(progress*(window.innerWidth-currentBack.textContent.length*12)/2)+'px,0,0)';
+				}
+				if (oldTitle) {
+					oldTitle.style.webkitTransform = 'translate3d('+((1-progress)*(window.innerWidth-currentBack.textContent.length*12)/-2)+'px,0,0)';
+				}
+				if (oldBack) {
+					oldBack.style.webkitTransform = 'translate3d('+((1-progress)*-150)+'%,0,0)';
+				}
+			} else {
+				currentBar.style.webkitTransform = 'translate3d('+(progress*100)+'%,0,0)';
+				oldBar.style.webkitTransform = 'translate3d('+((1-progress)*-30)+'%,0,0)';
 			}
 			currentContent.style.webkitTransform = 'translate3d('+(progress*100)+'%,0,0)';
-			if (oldTitle) {
-				oldTitle.style.webkitTransform = 'translate3d('+((1-progress)*(window.innerWidth-currentBack.textContent.length*12)/-2)+'px,0,0)';
-			}
-			if (oldBack) {
-				oldBack.style.webkitTransform = 'translate3d('+((1-progress)*-150)+'%,0,0)';
-			}
 			oldContent.style.webkitTransform = 'translate3d('+((1-progress)*-30)+'%,0,0)';
 		}
 	}

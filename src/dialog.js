@@ -66,10 +66,6 @@ App._Dialog = function (window, document, Clickable, App, Utils) {
 
 
 
-	function preventDefault (e) {
-		e.preventDefault();
-	}
-
 	function createDialog (options, callback) {
 		var dialogContainer = document.createElement('div');
 		dialogContainer.className += ' app-dialog-container';
@@ -77,7 +73,11 @@ App._Dialog = function (window, document, Clickable, App, Utils) {
 			dialogContainer.className += ' ios5';
 		}
 		if (!Utils.os.android || (Utils.os.version >= 4)) {
-			dialogContainer.addEventListener('touchstart', preventDefault, false);
+			dialogContainer.addEventListener('touchstart', function (e) {
+				if (e.target === dialogContainer) {
+					e.preventDefault();
+				}
+			}, false);
 		}
 
 		if (options.cancelButton) {
