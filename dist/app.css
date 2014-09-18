@@ -343,6 +343,9 @@ textarea.app-input {
 	-webkit-transition: background 0.425s cubic-bezier(0.4,0.6,0.05,1);
 	transition: background 0.425s cubic-bezier(0.4,0.6,0.05,1);
 }
+.app-android-4 .app-dialog-container.fancy {
+	opacity: 1;
+}
 .app-dialog-container.fancy.enabled {
 	background-color: rgba(0,0,0,0.8);
 }
