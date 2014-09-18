@@ -1,4 +1,4 @@
-App._Scroll = function (Scrollable, Utils) {
+App._Scroll = function (Scrollable, App, Utils) {
 	var TAGS = {
 			APP_CONTENT    : 'app-content' ,
 			APP_SCROLLABLE : 'app-scrollable' ,
@@ -238,4 +238,4 @@ App._Scroll = function (Scrollable, Utils) {
 			return page[PAGE_MANAGER_VAR];
 		}
 	}
-}(Scrollable, App._Utils);
+}(Scrollable, App, App._Utils);
