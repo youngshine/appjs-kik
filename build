@@ -178,6 +178,7 @@ elif [ "$1" = "zip" ] ; then
 	exit 0
 	exit 1
 elif [ "$1" = "dist" ] ; then
+	rm -rf "dist" &&
 	createBuildDir &&
 	build &&
 	mv "${BUILD_DIR}" "dist"
