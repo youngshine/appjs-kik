@@ -30,6 +30,7 @@ buildProject () {
 	"
 	APP_CSS="src/stylesheets/base.css"
 	buildDebugJS  "app.js"          "${APP_JS}"
+	buildDebugNoLicenseJS  "app.js"          "${APP_JS}"
 	buildJS       "app.min.js"      "${APP_JS}"
 	buildDebugCSS "base.css"        "${APP_CSS}"
 	buildCSS      "base.min.css"    "${APP_CSS}"
@@ -102,6 +103,12 @@ buildDebugJS () {
 	fileName="${BUILD_DIR}/${1}"
 	cat ${2} | sed "s/DEVBUILD/${VERSION}/" > "${fileName}"
 	preprendLicense "${fileName}"
+}
+
+buildDebugNoLicenseJS () {
+	echo "Building ${1}"
+	fileName="${BUILD_DIR}/${1}"
+	cat ${2} | sed "s/DEVBUILD/${VERSION}/" > "${fileName}"
 }
 
 buildCSS () {
