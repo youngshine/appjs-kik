@@ -1,5 +1,5 @@
 /**
- * App.js v2.0.10
+ * App.js v2.0.13
  * Instant mobile web app creation
  * Copyright (c) 2012 Kik Interactive, http://kik.com
  * Released under the MIT license
@@ -320,6 +320,13 @@ textarea.app-input {
 	-webkit-transition: opacity 0.282s ease-in-out;
 	transition: opacity 0.282s ease-in-out;
 }
+.app-android-4 .app-dialog-container {
+	/*
+		When performing opacity transitions (from opacity 0 to 1) on android 4.4.4
+		initial opacity must be set to a value other than zero
+	*/
+	opacity: 0.01;
+}
 .app-dialog-container.fancy {
 	-webkit-transition: opacity 0.425s cubic-bezier(0.4,0.6,0.05,1);
 	transition: opacity 0.425s cubic-bezier(0.4,0.6,0.05,1);
@@ -330,11 +337,17 @@ textarea.app-input {
 .app-dialog-container.enabled {
 	opacity: 1;
 }
+.app-android-4 .app-dialog-container.enabled {
+	opacity: 1;
+}
 .app-dialog-container.fancy {
 	background-color: rgba(0,0,0,0);
 	opacity: 1;
 	-webkit-transition: background 0.425s cubic-bezier(0.4,0.6,0.05,1);
 	transition: background 0.425s cubic-bezier(0.4,0.6,0.05,1);
+}
+.app-android-4 .app-dialog-container.fancy {
+	opacity: 1;
 }
 .app-dialog-container.fancy.enabled {
 	background-color: rgba(0,0,0,0.8);
