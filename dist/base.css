@@ -1,5 +1,5 @@
 /**
- * App.js v2.0.13
+ * App.js v2.1.2
  * Instant mobile web app creation
  * Copyright (c) 2012 Kik Interactive, http://kik.com
  * Released under the MIT license
@@ -90,7 +90,8 @@ body {
 .app-loaded .app-page {
 	display: block;
 }
-.app-ios-7 .app-page {
+.app-ios-7 .app-page,
+.app-ios-8 .app-page {
 	box-shadow: 0 0 12px rgba(0,0,0,0.2);
 }
 
@@ -155,7 +156,8 @@ body {
 	background-color: #FFF;
 	overflow: auto;
 }
-.app-ios-7 .app-content {
+.app-ios-7 .app-content,
+.app-ios-8 .app-content {
 	box-shadow: 0 0 12px rgba(0,0,0,0.2);
 }
 .app-scrollhack > * {

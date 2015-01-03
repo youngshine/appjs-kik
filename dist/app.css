@@ -1,5 +1,5 @@
 /**
- * App.js v2.0.13
+ * App.js v2.1.2
  * Instant mobile web app creation
  * Copyright (c) 2012 Kik Interactive, http://kik.com
  * Released under the MIT license
@@ -90,7 +90,8 @@ body {
 .app-loaded .app-page {
 	display: block;
 }
-.app-ios-7 .app-page {
+.app-ios-7 .app-page,
+.app-ios-8 .app-page {
 	box-shadow: 0 0 12px rgba(0,0,0,0.2);
 }
 
@@ -155,7 +156,8 @@ body {
 	background-color: #FFF;
 	overflow: auto;
 }
-.app-ios-7 .app-content {
+.app-ios-7 .app-content,
+.app-ios-8 .app-content {
 	box-shadow: 0 0 12px rgba(0,0,0,0.2);
 }
 .app-scrollhack > * {
@@ -452,7 +454,8 @@ textarea.app-input {
 		0 1px 7px rgba(0,0,0,0.18);
 	color: #F3F4F5;
 }
-.app-ios-7 .app-topbar.teal {
+.app-ios-7 .app-topbar.teal,
+.app-ios-8 .app-topbar.teal {
 	box-shadow: inset 0 -1px 0 #197;
 }
 .app-topbar.green {
@@ -467,7 +470,8 @@ textarea.app-input {
 		0 1px 7px rgba(0,0,0,0.18);
 	color: #F3F4F5;
 }
-.app-ios-7 .app-topbar.green {
+.app-ios-7 .app-topbar.green,
+.app-ios-8 .app-topbar.green {
 	box-shadow: inset 0 -1px 0 #2A6;
 }
 .app-topbar.yellow {
@@ -482,7 +486,8 @@ textarea.app-input {
 		0 1px 7px rgba(0,0,0,0.18);
 	color: #F3F4F5;
 }
-.app-ios-7 .app-topbar.yellow {
+.app-ios-7 .app-topbar.yellow,
+.app-ios-8 .app-topbar.yellow {
 	box-shadow: inset 0 -1px 0 #DB0;
 }
 .app-topbar.orange {
@@ -497,7 +502,8 @@ textarea.app-input {
 		0 1px 7px rgba(0,0,0,0.18);
 	color: #F3F4F5;
 }
-.app-ios-7 .app-topbar.orange {
+.app-ios-7 .app-topbar.orange,
+.app-ios-8 .app-topbar.orange {
 	box-shadow: inset 0 -1px 0 #C50;
 }
 .app-topbar.red {
@@ -512,7 +518,8 @@ textarea.app-input {
 		0 1px 7px rgba(0,0,0,0.18);
 	color: #F3F4F5;
 }
-.app-ios-7 .app-topbar.red {
+.app-ios-7 .app-topbar.red,
+.app-ios-8 .app-topbar.red {
 	box-shadow: inset 0 -1px 0 #C43;
 }
 .app-topbar.blue {
@@ -527,7 +534,8 @@ textarea.app-input {
 		0 1px 7px rgba(0,0,0,0.18);
 	color: #F3F4F5;
 }
-.app-ios-7 .app-topbar.blue {
+.app-ios-7 .app-topbar.blue,
+.app-ios-8 .app-topbar.blue {
 	box-shadow: inset 0 -1px 0 #4486F0;
 }
 .app-topbar.dark-blue {
@@ -542,7 +550,8 @@ textarea.app-input {
 		0 1px 7px rgba(0,0,0,0.18);
 	color: #F3F4F5;
 }
-.app-ios-7 .app-topbar.dark-blue {
+.app-ios-7 .app-topbar.dark-blue,
+.app-ios-8 .app-topbar.dark-blue {
 	box-shadow: inset 0 -1px 0 #234;
 }
 .app-topbar.white {
@@ -557,7 +566,8 @@ textarea.app-input {
 		0 1px 7px rgba(0,0,0,0.18);
 	color: #444;
 }
-.app-ios-7 .app-topbar.white {
+.app-ios-7 .app-topbar.white,
+.app-ios-8 .app-topbar.white {
 	box-shadow: inset 0 -1px 0 rgba(0,0,0,0.18);
 }
 .dark-page .app-topbar {
@@ -569,7 +579,8 @@ textarea.app-input {
 		0 1px 0 rgba(0,0,0,0.1),
 		0 1px 7px rgba(0,0,0,0.18);
 }
-.app-ios-7 .dark-page .app-topbar {
+.app-ios-7 .dark-page .app-topbar,
+.app-ios-8 .dark-page .app-topbar {
 	box-shadow: inset 0 -1px 0 rgba(0,0,0,0.1);
 }
 
@@ -586,7 +597,8 @@ textarea.app-input {
 	font-weight: 400;
 	text-align: left;
 }
-.app-ios-7 .app-topbar .app-title {
+.app-ios-7 .app-topbar .app-title,
+.app-ios-8 .app-topbar .app-title {
 	font-size: 17px;
 }
 .app-topbar .app-title .app-icon {
@@ -612,7 +624,8 @@ textarea.app-input {
 .app-topbar .app-button.active {
 	opacity: 0.65;
 }
-.app-ios-7 .app-topbar .app-button {
+.app-ios-7 .app-topbar .app-button,
+.app-ios-8 .app-topbar .app-button {
 	-webkit-transition: opacity 0.15s ease-out;
 	transition: opacity 0.15s ease-out;
 }
@@ -707,7 +720,8 @@ textarea.app-input {
 	-webkit-border-radius: 6px;
 	border-radius: 6px;
 }
-.app-ios-7 .app-section {
+.app-ios-7 .app-section,
+.app-ios-8 .app-section {
 	border-bottom: none;
 }
 .app-section.app-button {
