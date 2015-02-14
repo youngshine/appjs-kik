@@ -151,7 +151,7 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll, Page
 		var isIOS7SlideUp = (Utils.os.ios && (Utils.os.version >= 7) && { 'slideon-down':1, 'slideoff-down':1 }[options.transition]);
 		if ( !options.duration ) {
 			if ( !Utils.os.ios ) {
-				options.duration = 270;
+				options.duration = 180;
 			} else if (Utils.os.version < 7) {
 				options.duration = 325;
 			} else if (isIOS7SlideUp) {
@@ -160,14 +160,23 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll, Page
 				options.duration = 425;
 			}
 		}
-		if (!options.easing && isIOS7SlideUp) {
-			options.easing = 'cubic-bezier(0.4,0.6,0.05,1)';
-		}
-		if (Utils.os.ios && !options.easing && (options.transition === 'slideon-left-ios' || options.transition === 'slideoff-right-ios')) {
-			if (Utils.os.version < 7) {
-				options.easing = 'ease-in-out';
-			} else {
-				options.easing = 'cubic-bezier(0.4,0.6,0.2,1)';
+		if ( !options.easing ) {
+			if (Utils.os.ios) {
+				if (isIOS7SlideUp) {
+					options.easing = 'cubic-bezier(0.4,0.6,0.05,1)';
+				} else if (options.transition === 'slideon-left-ios' || options.transition === 'slideoff-right-ios') {
+					if (Utils.os.version < 7) {
+						options.easing = 'ease-in-out';
+					} else {
+						options.easing = 'cubic-bezier(0.4,0.6,0.2,1)';
+					}
+				}
+			} else if (Utils.os.android) {
+				if (options.transition === 'android-l-in') {
+					options.easing = 'ease-out';
+				} else if (options.transition === 'android-l-out') {
+					options.easing = 'ease-in';
+				}
 			}
 		}
 
