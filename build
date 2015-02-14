@@ -2,9 +2,9 @@
 
 PROJECT="app"
 LICENSE="LICENSE.txt"
-MAJOR_VERSION="2"
+MAJOR_VERSION="3"
 MINOR_VERSION="0"
-BUG_VERSION="7"
+BUG_VERSION="0"
 ZIP_FILE="appjs-v${MAJOR_VERSION}.zip"
 ZIP_DIR="appjs"
 AWS_BUCKET="cdn.kik.com"
@@ -27,6 +27,7 @@ buildProject () {
 		src/stack.js
 		src/transitions.js
 		src/navigation.js
+		src/android-touch-fix.js
 	"
 	APP_CSS="src/stylesheets/base.css"
 	buildDebugJS  "app.js"          "${APP_JS}"
@@ -178,6 +179,7 @@ elif [ "$1" = "zip" ] ; then
 	exit 0
 	exit 1
 elif [ "$1" = "dist" ] ; then
+	rm -rf "dist" &&
 	createBuildDir &&
 	build &&
 	mv "${BUILD_DIR}" "dist"

@@ -8,20 +8,6 @@ App._Dialog = function (window, document, Clickable, App, Utils) {
 		if ((typeof options !== 'object') || (options === null)) {
 			throw TypeError('dialog options must be an object, got ' + options);
 		}
-		switch (typeof options.dark) {
-			case 'undefined':
-			case 'boolean':
-				break;
-			default:
-				throw TypeError('dialog dark mode must a boolean if defined, got ' + options.dark);
-		}
-		switch (typeof options.title) {
-			case 'undefined':
-			case 'string':
-				break;
-			default:
-				throw TypeError('dialog title must be a string if defined, got ' + options.title);
-		}
 		switch (typeof options.text) {
 			case 'undefined':
 			case 'string':
@@ -32,7 +18,7 @@ App._Dialog = function (window, document, Clickable, App, Utils) {
 				}
 		}
 		for (var key in options) {
-			if ((key !== 'dark') && (key !== 'rawText') && (key !== 'text')) {
+			if ((key === 'theme') || (key === 'title') || (key.substr(key.length-6) === 'Button')) {
 				switch (typeof options[key]) {
 					case 'undefined':
 					case 'string':
@@ -69,9 +55,6 @@ App._Dialog = function (window, document, Clickable, App, Utils) {
 	function createDialog (options, callback) {
 		var dialogContainer = document.createElement('div');
 		dialogContainer.className += ' app-dialog-container';
-		if (Utils.os.ios && (Utils.os.version <= 5)) {
-			dialogContainer.className += ' ios5';
-		}
 		if (!Utils.os.android || (Utils.os.version >= 4)) {
 			dialogContainer.addEventListener('touchstart', function (e) {
 				if (e.target === dialogContainer) {
@@ -80,18 +63,10 @@ App._Dialog = function (window, document, Clickable, App, Utils) {
 			}, false);
 		}
 
-		if (options.cancelButton) {
-			dialogContainer.addEventListener('touchstart', function (e) {
-				if (e.target === dialogContainer) {
-					closeDialog();
-				}
-			}, false);
-		}
-
 		var dialog = document.createElement('div');
 		dialog.className = 'app-dialog';
-		if (options.dark) {
-			dialog.className += ' dark';
+		if (options.theme) {
+			dialog.className += ' '+options.theme;
 		}
 		dialogContainer.appendChild(dialog);
 
@@ -107,32 +82,24 @@ App._Dialog = function (window, document, Clickable, App, Utils) {
 			text.className = 'text';
 			if ( Utils.isNode(options.text) ) {
 				text.appendChild(options.text);
-			}
-			else if (options.rawText) {
+			} else if (options.rawText) {
 				text.innerHTML = options.rawText;
-			}
-			else {
+			} else {
 				text.textContent = options.text;
 			}
 			dialog.appendChild(text);
 		}
 
-		for (var key in options) {
-			if (options[key] && (key.substr(key.length-6) === 'Button') && (key !== 'okButton') && (key !== 'cancelButton')) {
-				var buttonName = key.substr(0, key.length-6),
-					button     = document.createElement('div');
-				button.className = 'button';
-				button.setAttribute('data-button', buttonName);
-				button.textContent = options[key];
-				Clickable(button);
-				button.addEventListener('click', handleChoice, false);
-				dialog.appendChild(button);
-			}
+		if (options.rawHTML) {
+			dialog.appendChild(options.rawHTML);
 		}
 
 		if (options.okButton) {
 			var button = document.createElement('div');
-			button.className = 'button ok';
+			button.className = 'button ok last';
+			if ( !options.cancelButton ) {
+				button.className += ' first';
+			}
 			button.setAttribute('data-button', 'ok');
 			button.textContent = options.okButton;
 			Clickable(button);
@@ -142,7 +109,10 @@ App._Dialog = function (window, document, Clickable, App, Utils) {
 
 		if (options.cancelButton) {
 			var button = document.createElement('div');
-			button.className = 'button cancel';
+			button.className = 'button cancel first';
+			if ( !options.okButton ) {
+				button.className += ' last';
+			}
 			button.setAttribute('data-button', 'cancel');
 			button.textContent = options.cancelButton;
 			Clickable(button);
@@ -173,14 +143,13 @@ App._Dialog = function (window, document, Clickable, App, Utils) {
 			innerDialog = dialog.firstChild;
 		currentCallback = dialogClosed;
 
-		if (Utils.os.ios) {
-			dialog.className += ' fancy';
-		}
-		document.body.appendChild(dialog);
-		setTimeout(function () {
-			dialog.className += ' enabled';
-			document.body.className += ' ' + DIALOG_INDICATOR_CLASS;
-		}, 50);
+		Utils.ready(function () {
+			document.body.appendChild(dialog);
+			setTimeout(function () {
+				dialog.className += ' enabled';
+				document.body.className += ' ' + DIALOG_INDICATOR_CLASS;
+			}, 50);
+		});
 
 		function dialogClosed (status) {
 			if (dialogLock) {
@@ -188,14 +157,14 @@ App._Dialog = function (window, document, Clickable, App, Utils) {
 			}
 			dialogLock = true;
 
-			if ((typeof status !== 'string') && !options.cancelButton) {
-				dialogLock = false;
-				return true;
-			}
-
 			currentCallback = null;
 
-			dialog.className = dialog.className.replace(/\benabled\b/g, '');
+			dialog.className = dialog.className.replace(/\benabled\b/g, '')+' closing';
+			if (status) {
+				dialog.className += ' closing-success';
+			} else {
+				dialog.className += ' closing-fail';
+			}
 			document.body.className = document.body.className.replace(new RegExp('\\b'+DIALOG_INDICATOR_CLASS+'\\b', 'g'), '');
 
 			setTimeout(function () {
