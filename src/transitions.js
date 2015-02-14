@@ -1,7 +1,7 @@
 App._Transitions = function (window, document, Swapper, App, Utils, Scroll, Pages, Stack) {
 	var TRANSITION_CLASS                  = 'app-transition',
 		DEFAULT_TRANSITION_IOS            = 'slide-left',
-		DEFAULT_TRANSITION_ANDROID        = 'implode-out',
+		DEFAULT_TRANSITION_ANDROID        = 'android-l-in',
 		DEFAULT_TRANSITION_ANDROID_OLD    = 'fade-on',
 		DEFAULT_TRANSITION_ANDROID_GHETTO = 'instant',
 		REVERSE_TRANSITION = {
@@ -41,7 +41,9 @@ App._Transitions = function (window, document, Swapper, App, Utils, Scroll, Page
 			'glideon-down'      : 'glideoff-down'     ,
 			'glideoff-down'     : 'slideon-down'      ,
 			'glideon-up'        : 'glideoff-up'       ,
-			'glideoff-up'       : 'slideon-up'
+			'glideoff-up'       : 'slideon-up'        ,
+			'android-l-in'      : 'android-l-out'     ,
+			'android-l-out'     : 'android-l-in'
 		},
 		WALL_RADIUS = 10;
 

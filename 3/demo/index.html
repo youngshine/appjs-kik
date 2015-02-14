@@ -5,7 +5,8 @@
 
 		<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
 		<meta name="kik-transparent-statusbar" content="true">
-		<link rel="stylesheet" href="//cdn.kik.com/app/2/app.min.css">
+		<link rel="stylesheet" href="../../src/stylesheets/base.css">
+		<link rel="stylesheet" href="../../src/stylesheets/app.css">
 		<style>
 			ul.colour-picker li {
 				position: relative;
@@ -81,7 +82,7 @@
 	<body>
 		<div class="app-page" data-page="home">
 			<div class="app-topbar">
-				<div class="app-title"><span class="app-icon"></span>Demo App</div>
+				<div class="app-title">Demo App</div>
 			</div>
 
 			<div class="app-content">
@@ -116,7 +117,7 @@
 		<div class="app-page" data-page="lists">
 			<div class="app-topbar">
 				<div class="left app-button" data-back data-autotitle></div>
-				<div class="app-title"><span class="app-icon"></span>Lists</div>
+				<div class="app-title">Lists</div>
 			</div>
 
 			<div class="app-content">
@@ -148,8 +149,8 @@
 		<div class="app-page" data-page="buttons">
 			<div class="app-topbar">
 				<div class="left app-button" data-back data-autotitle></div>
-				<div class="app-title"><span class="app-icon"></span>Buttons</div>
-				<div class="right app-button app-menu">Dialog</div>
+				<div class="app-title">Buttons</div>
+				<div class="right app-button menu">Dialog</div>
 			</div>
 
 			<div class="app-content">
@@ -171,7 +172,7 @@
 
 		<div class="app-page" data-page="inputs">
 			<div class="app-topbar">
-				<div class="app-title"><span class="app-icon"></span>Inputs</div>
+				<div class="app-title">Inputs</div>
 				<div class="right app-button" data-back>Done</div>
 			</div>
 
@@ -193,7 +194,7 @@
 		<div class="app-page scroll-page" data-page="scroll">
 			<div class="app-topbar">
 				<div class="left app-button" data-back data-autotitle></div>
-				<div class="app-title"><span class="app-icon"></span>Scrolling</div>
+				<div class="app-title">Scrolling</div>
 			</div>
 			<div class="app-content">
 				<div class="loading"></div>
@@ -206,9 +207,24 @@
 
 
 		<!-- Not necessary, but will make our lives a little easier -->
-		<script src="../js/zepto.min.js"            ></script>
+		<script src="../js/zepto.min.js"          ></script>
 
-		<script src="//cdn.kik.com/app/2/app.min.js"></script>
+		<script src="../../src/lib/swapper.js"    ></script>
+		<script src="../../src/lib/clickable.js"  ></script>
+		<script src="../../src/lib/scrollable.js" ></script>
+		<script src="../../src/app.js"            ></script>
+		<script src="../../src/utils.js"          ></script>
+		<script src="../../src/events.js"         ></script>
+		<script src="../../src/metrics.js"        ></script>
+		<script src="../../src/dialog.js"         ></script>
+		<script src="../../src/form.js"           ></script>
+		<script src="../../src/scroll.js"         ></script>
+		<script src="../../src/scroll-fix.js"     ></script>
+		<script src="../../src/pages.js"          ></script>
+		<script src="../../src/stack.js"          ></script>
+		<script src="../../src/transitions.js"    ></script>
+		<script src="../../src/navigation.js"     ></script>
+
 		<script>
 			var COLOUR_KEY = '__BASIC_APP_COLOUR__';
 
@@ -281,12 +297,12 @@
 			App.controller('buttons', function (page) {
 				setupPageColour(page);
 
-				$(page).find('.app-menu')
+				$(page).find('.menu')
 					.on('click', function () {
 						App.dialog({
-							doButton     : 'Do Something' ,
-							otherButton  : 'Or Another Thing'  ,
-							okButton     : 'Share on Kik' ,
+							title        : 'This is a Dialog',
+							text         : 'Say stuff to the user and get them to respond',
+							okButton     : 'Submit',
 							cancelButton : 'Cancel'
 						}, function (choice) {
 							console.log(choice);
