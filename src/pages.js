@@ -1,10 +1,11 @@
 App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Events, Metrics, Scroll) {
-	var PAGE_NAME        = 'data-page',
-		PAGE_CLASS       = 'app-page',
-		APP_LOADED       = 'app-loaded',
-		APP_STATUSBAR    = 'app-ios-statusbar',
-		PAGE_READY_VAR   = '__appjsFlushReadyQueue',
-		PAGE_MANAGER_VAR = '__appjsPageManager',
+	var PAGE_NAME             = 'data-page',
+		PAGE_CLASS            = 'app-page',
+		APP_LOADED            = 'app-loaded',
+		APP_IOS_STATUSBAR     = 'app-ios-statusbar',
+		APP_ANDROID_STATUSBAR = 'app-android-statusbar',
+		PAGE_READY_VAR        = '__appjsFlushReadyQueue',
+		PAGE_MANAGER_VAR      = '__appjsPageManager',
 		EVENTS = {
 			SHOW        : 'show'    ,
 			HIDE        : 'hide'    ,
@@ -26,8 +27,8 @@ App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Even
 		statusBarEnabled = false;
 
 	setupPageListeners();
-	if (window.APP_ENABLE_IOS_STATUSBAR) {
-		enableIOSStatusBar();
+	if (window.APP_ENABLE_STATUSBAR || window.APP_ENABLE_IOS_STATUSBAR) {
+		enableStatusBar();
 	}
 
 
@@ -103,7 +104,8 @@ App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Even
 	};
 
 	App._layout             = triggerPageSizeFix;
-	App._enableIOSStatusBar = enableIOSStatusBar;
+	App._enableStatusBar    = enableStatusBar;
+	App._enableIOSStatusBar = enableStatusBar;
 
 
 	return {
@@ -447,7 +449,7 @@ App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Even
 		}
 
 		var topbarStyles = document.defaultView.getComputedStyle(topbar, null),
-			topbarHeight = Utils.os.android ? 48 : 44;
+			topbarHeight = Utils.os.android ? 56 : 44;
 		if (topbarStyles.height) {
 			topbarHeight = (parseInt(topbarStyles.height) || 0);
 			if ((topbarStyles.boxSizing || topbarStyles.webkitBoxSizing) !== 'border-box') {
@@ -478,12 +480,16 @@ App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Even
 		backButton.textContent = oldText;
 	}
 
-	function enableIOSStatusBar () {
+	function enableStatusBar () {
 		if (statusBarEnabled) {
 			return;
 		}
 		statusBarEnabled = true;
-		document.body.className += ' ' + APP_STATUSBAR;
+		if (Utils.os.android) {
+			document.body.className += ' ' + APP_ANDROID_STATUSBAR;
+		} else {
+			document.body.className += ' ' + APP_IOS_STATUSBAR;
+		}
 		Utils.ready(function () {
 			setTimeout(triggerPageSizeFix, 6);
 		});

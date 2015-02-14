@@ -26,12 +26,12 @@ App._Utils = function (window, document, App) {
 		if (query['_app_platform'] === 'android') {
 			faked   = true;
 			name    = 'android';
-			version = '4.4';
+			version = '5.0';
 		}
 		else if (query['_app_platform'] === 'ios') {
 			faked   = true;
 			name    = 'ios';
-			version = '7.0';
+			version = '8.1';
 		}
 		else if (match = /\bCPU.*OS (\d+(_\d+)?)/i.exec(userAgent)) {
 			name    = 'ios';
@@ -140,6 +140,48 @@ App._Utils = function (window, document, App) {
 			}, 0);
 		}
 	}
+
+	var queueAnimation = function () {
+		var animationQueue;
+		return queueAnimation;
+
+		function queueAnimation(func) {
+			if (animationQueue) {
+				animationQueue.push(func);
+			} else {
+				animationQueue = [func];
+				foregroundFlush();
+			}
+		}
+
+		function foregroundFlush() {
+			if (typeof kik === 'object' && typeof kik.browser === 'object' && kik.browser.background && typeof kik.browser.once === 'function') {
+				kik.browser.once('foreground', flushAnimations);
+			} else {
+				flushAnimations();
+			}
+		}
+
+		function flushAnimations() {
+			var anim = animationQueue.shift();
+			if (anim) {
+				onReady(function () {
+					var unlocked = false;
+					function unlock() {
+						// prevent unlocking mult. times
+						if (unlocked) {
+							return;
+						}
+						unlocked = true;
+						setTimeout(foregroundFlush, 0);
+					}
+					anim(unlock);
+				});
+			} else {
+				animationQueue = null;
+			}
+		}
+	}();
 
 	function setTransform (elem, transform) {
 		elem.style['-webkit-transform'] = transform;
@@ -297,19 +339,20 @@ App._Utils = function (window, document, App) {
 
 	App.platform        = os.name;
 	App.platformVersion = os.version;
+	App.queue           = queueAnimation;
 
 	return {
-		query         : query         ,
-		os            : os            ,
-		ready         : onReady       ,
-		forEach       : forEach       ,
-		isArray       : isArray       ,
-		isNode        : isNode        ,
-		isjQueryElem  : isjQueryElem  ,
-		setTransform  : setTransform  ,
-		setTransition : setTransition ,
-		animate       : transitionElems ,
-		getStyles     : getStyles     ,
-		isVisible     : isVisible
+		query          : query         ,
+		os             : os            ,
+		ready          : onReady       ,
+		forEach        : forEach       ,
+		isArray        : isArray       ,
+		isNode         : isNode        ,
+		isjQueryElem   : isjQueryElem  ,
+		setTransform   : setTransform  ,
+		setTransition  : setTransition ,
+		animate        : transitionElems,
+		getStyles      : getStyles     ,
+		isVisible      : isVisible
 	};
 }(window, document, App);
