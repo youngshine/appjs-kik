@@ -189,7 +189,7 @@ App._Scroll = function (Scrollable, App, Utils) {
 		var scroller    = Scrollable.infinite(elem, options, generator),
 			scrollReady = false;
 		Utils.ready(function () {
-			if ( !scrollReady ) {
+			if (!scrollReady && !scroller.isEnabled()) {
 				scroller.enable();
 				scroller.forceLayout();
 				scroller.disable();
