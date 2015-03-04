@@ -179,22 +179,14 @@ App._Scroll = function (Scrollable, App, Utils) {
 		if ( !options ) {
 			options = {};
 		}
-		if (typeof options.autoStart !== 'boolean') {
-			options.autoStart = false;
-		}
 		if (typeof options.scroller === 'undefined') {
 			options.scroller = getParentScroller(elem);
 		}
+		options.autoStart = false;
 
-		var scroller    = Scrollable.infinite(elem, options, generator),
-			scrollReady = false;
-		Utils.ready(function () {
-			if (!scrollReady && !scroller.isEnabled()) {
-				scroller.enable();
-				scroller.forceLayout();
-				scroller.disable();
-			}
-		});
+		var scroller = Scrollable.infinite(elem, options, generator);
+		scroller.forceLayout();
+		scroller.disable();
 		pageManager.ready(function () {
 			scrollReady = true;
 			try {
