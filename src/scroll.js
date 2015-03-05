@@ -219,7 +219,7 @@ App._Scroll = function (Scrollable, App, Utils) {
 	function getParentScroller (elem) {
 		var parent = elem;
 		do {
-			if ( /\bapp\-content\b/.test(parent.className) ) {
+			if (parent._scrollable || /\bapp\-content\b/.test(parent.className)) {
 				return parent;
 			}
 		} while (parent = parent.parentNode);
