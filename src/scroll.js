@@ -169,7 +169,7 @@ App._Scroll = function (Scrollable, App, Utils) {
 
 
 	function setupInfiniteScroll (elem, options, generator) {
-		var page        = getParentPage(elem),
+		var page        = options.page || getParentPage(elem),
 			pageManager = getPageManager(page);
 
 		if (!page || !pageManager) {
