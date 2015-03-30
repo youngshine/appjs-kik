@@ -284,6 +284,7 @@ App._Navigation = function (window, document, App, Dialog, Scroll, Pages, Stack,
 		var navigatedImmediately = navigate(function (unlock) {
 			if (Stack.size() < 2) {
 				unlock();
+				callback();
 				return;
 			}
 
@@ -292,6 +293,7 @@ App._Navigation = function (window, document, App, Dialog, Scroll, Pages, Stack,
 			if ( !Pages.fire(oldPage[2], oldPage[3], Pages.EVENTS.BEFORE_BACK) ) {
 				cancelled = true;
 				unlock();
+				callback();
 				return;
 			}
 			else {

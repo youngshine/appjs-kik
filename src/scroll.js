@@ -169,7 +169,7 @@ App._Scroll = function (Scrollable, App, Utils) {
 
 
 	function setupInfiniteScroll (elem, options, generator) {
-		var page        = getParentPage(elem),
+		var page        = options.page || getParentPage(elem),
 			pageManager = getPageManager(page);
 
 		if (!page || !pageManager) {
@@ -179,22 +179,14 @@ App._Scroll = function (Scrollable, App, Utils) {
 		if ( !options ) {
 			options = {};
 		}
-		if (typeof options.autoStart !== 'boolean') {
-			options.autoStart = false;
-		}
 		if (typeof options.scroller === 'undefined') {
 			options.scroller = getParentScroller(elem);
 		}
+		options.autoStart = false;
 
-		var scroller    = Scrollable.infinite(elem, options, generator),
-			scrollReady = false;
-		Utils.ready(function () {
-			if ( !scrollReady ) {
-				scroller.enable();
-				scroller.forceLayout();
-				scroller.disable();
-			}
-		});
+		var scroller = Scrollable.infinite(elem, options, generator);
+		scroller.forceLayout();
+		scroller.disable();
 		pageManager.ready(function () {
 			scrollReady = true;
 			try {
@@ -227,7 +219,7 @@ App._Scroll = function (Scrollable, App, Utils) {
 	function getParentScroller (elem) {
 		var parent = elem;
 		do {
-			if ( /\bapp\-content\b/.test(parent.className) ) {
+			if (parent._scrollable || /\bapp\-content\b/.test(parent.className)) {
 				return parent;
 			}
 		} while (parent = parent.parentNode);

@@ -12,6 +12,7 @@ App.js is a lightweight JavaScript UI library for creating mobile webapps that b
 The goal of App.js is to provide a robust starting point for mobile webapps, handling general scenarios, and maintaining compatiblity with other common JavaScript libraries.
 
 
+##[Check out the documentation here](http://code.kik.com/app/)
 
-[Check out the documentation here](http://code.kik.com/app/)
---------------------------------
+
+##[Changelog](/CHANGELOG.md)

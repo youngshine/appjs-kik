@@ -450,6 +450,9 @@ App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Even
 
 		var topbarStyles = document.defaultView.getComputedStyle(topbar, null),
 			topbarHeight = Utils.os.android ? 56 : 44;
+		if (statusBarEnabled) {
+			topbarHeight += Utils.os.android ? 24 : 20;
+		}
 		if (topbarStyles.height) {
 			topbarHeight = (parseInt(topbarStyles.height) || 0);
 			if ((topbarStyles.boxSizing || topbarStyles.webkitBoxSizing) !== 'border-box') {

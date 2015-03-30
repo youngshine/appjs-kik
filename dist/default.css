@@ -1,5 +1,5 @@
 /**
- * App.js v3.0.0
+ * App.js v3.0.1
  * Instant mobile web app creation
  * Copyright (c) 2012 Kik Interactive, http://kik.com
  * Released under the MIT license
@@ -63,6 +63,11 @@ body {
 }
 .clear {
 	clear: both;
+}
+
+.app-android .app-ios-only,
+.app-ios .app-android-only {
+	display: none;
 }
 
 
