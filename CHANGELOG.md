@@ -1,6 +1,6 @@
 # Changelog
 
-### [v3.0.4](https://github.com/kikinteractive/app/releases/tag/3.0.4)
+### [v3.0.5](https://github.com/kikinteractive/app/releases/tag/3.0.5)
 
 - Android L transitions are supported by default
 - Topbar UI uses the material design theme

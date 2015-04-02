@@ -1,5 +1,5 @@
 /**
- * App.js v3.0.4
+ * App.js v3.0.5
  * Instant mobile web app creation
  * Copyright (c) 2012 Kik Interactive, http://kik.com
  * Released under the MIT license
@@ -1531,7 +1531,7 @@ App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Even
 		//Attach click events for buttons added later on
 		page.addEventListener('DOMNodeInserted', function (e) {
 			var element = e.srcElement;
-			if ( element.classList.contains('app-button') ) {
+			if ( element.classList && element.classList.contains('app-button') ) {
 				attachButtonEvent(element);
 			}
 		});
