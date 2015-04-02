@@ -304,12 +304,9 @@ App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Even
 	}
 
 	function attachButtonEvent(button) {
-		if (button.getAttribute('data-no-click') !== null || button.getAttribute('data-button-eventattached') !== null) {
+		if (button.getAttribute('data-no-click') !== null || button._clickable) {
             return;
         }
-
-        //Mark this button, so it will not have events added to it again.
-        button.setAttribute('data-button-eventattached', '');
 
         Clickable(button);
         button.addEventListener('click', function () {
