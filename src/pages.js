@@ -279,54 +279,16 @@ App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Even
 
 		Utils.forEach(
 			page.querySelectorAll('.app-button'),
-			function (button) {
-				if (button.getAttribute('data-no-click') !== null) {
-					return;
-				}
-				Clickable(button);
-				button.addEventListener('click', function () {
-					var target     = button.getAttribute('data-target'),
-						targetArgs = button.getAttribute('data-target-args'),
-						back       = (button.getAttribute('data-back') !== null),
-						manualBack = (button.getAttribute('data-manual-back') !== null),
-						args;
-
-					try {
-						args = JSON.parse(targetArgs);
-					} catch (err) {}
-					if ((typeof args !== 'object') || (args === null)) {
-						args = {};
-					}
-
-					if (!back && !target) {
-						return;
-					}
-					if (back && manualBack) {
-						return;
-					}
-
-					var clickableClass = button.getAttribute('data-clickable-class');
-					if (clickableClass) {
-						button.disabled = true;
-						button.classList.add(clickableClass);
-					}
-
-					if (back) {
-						App.back(finish);
-					}
-					else if (target) {
-						App.load(target, args, {}, finish);
-					}
-
-					function finish () {
-						if (clickableClass) {
-							button.disabled = false;
-							button.classList.remove(clickableClass);
-						}
-					}
-				}, false);
-			}
+			attachButtonEvent
 		);
+
+        //Attach click events for buttons added later on
+        page.addEventListener('DOMNodeInserted', function (e) {
+            var element = e.srcElement;
+            if(element.classList.contains('app-button')){
+                attachButtonEvent(element);
+            }
+        });
 
 		populatePage(pageName, pageManager, page, args);
 
@@ -339,6 +301,56 @@ App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Even
 		}, false);
 
 		return page;
+	}
+
+	function attachButtonEvent(button) {
+		if (button.getAttribute('data-no-click') !== null || button._clickable) {
+            return;
+        }
+
+        Clickable(button);
+        button.addEventListener('click', function () {
+            var target     = button.getAttribute('data-target'),
+                targetArgs = button.getAttribute('data-target-args'),
+                back       = (button.getAttribute('data-back') !== null),
+                manualBack = (button.getAttribute('data-manual-back') !== null),
+                args;
+
+            try {
+                args = JSON.parse(targetArgs);
+            } catch (err) {}
+            if ((typeof args !== 'object') || (args === null)) {
+                args = {};
+            }
+
+            if (!back && !target) {
+                return;
+            }
+            if (back && manualBack) {
+                return;
+            }
+
+            var clickableClass = button.getAttribute('data-clickable-class');
+            if (clickableClass) {
+                button.disabled = true;
+                button.classList.add(clickableClass);
+            }
+
+            if (back) {
+                App.back(finish);
+            }
+            else if (target) {
+                App.load(target, args, {}, finish);
+            }
+
+            function finish () {
+                if (clickableClass) {
+                    button.disabled = false;
+                    button.classList.remove(clickableClass);
+                }
+            }
+
+        }, false);
 	}
 
 	function firePageEvent (pageManager, page, eventType) {
