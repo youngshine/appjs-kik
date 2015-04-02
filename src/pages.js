@@ -283,9 +283,9 @@ App._Pages = function (window, document, Clickable, Scrollable, App, Utils, Even
 		);
 
         //Attach click events for buttons added later on
-        $(page).on('DOMNodeInserted', function (e) {
+        page.addEventListener('DOMNodeInserted', function (e) {
             var element = e.srcElement;
-            if (element.classList.contains('app-button')) {
+            if((' ' + element.className + ' ').indexOf(' app-button ') > -1){
                 attachButtonEvent(element);
             }
         });
