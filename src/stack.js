@@ -238,6 +238,9 @@ App._Stack = function (window, document, App, Utils, Scroll, Pages) {
 			if (!pageData[2].transition && pageManager.transition) {
 				pageData[2].transition = pageManager.transition;
 			}
+			if (!pageData[2].duration && pageManager.duration) {
+				pageData[2].duration = pageManager.duration;
+			}
 
 			Pages.populateBackButton(page, lastPage);
 

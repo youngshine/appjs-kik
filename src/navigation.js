@@ -191,6 +191,9 @@ App._Navigation = function (window, document, App, Dialog, Scroll, Pages, Stack,
 			if (!options.transition && pageManager.transition) {
 				options.transition = pageManager.transition;
 			}
+			if (!options.duration && pageManager.duration) {
+				options.duration = pageManager.duration;
+			}
 
 			Pages.populateBackButton(page, oldNode || restoreNode);
 
