@@ -120,6 +120,14 @@ App._Dialog = function (window, document, Clickable, App, Utils) {
 			dialog.appendChild(button);
 		}
 
+		if (options.dismissible) {
+			dialogContainer.addEventListener('touchstart', function (e) {
+				if (e.target === dialogContainer) {
+					closeDialog();
+				}
+			}, false);
+		}
+
 		function handleChoice () {
 			var buttonName = this.getAttribute('data-button');
 			if (buttonName === 'cancel') {
