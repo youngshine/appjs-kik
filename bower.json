@@ -1,6 +1,6 @@
 {
   "name": "appjs",
-  "version": "2.0.12",
+  "version": "3.0.8",
   "homepage": "http://code.kik.com/app/",
   "authors": [
     "Jairaj Sethi <j@jairaj.org>"
@@ -31,11 +31,14 @@
     ".gitignore",
     "1",
     "2",
+    "3",
     "LICENSE.txt",
+    "CHANGELOG.md",
     "README.md",
     "_layouts",
     "_site",
     "appjs-v2.zip",
+    "appjs-v3.zip",
     "bower.json",
     "build",
     "bundle",

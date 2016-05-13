@@ -65,8 +65,8 @@ BUILD_VERSION="${VERSION}.${BUILD_NUMBER}"
 
 BUILD_DIR="builds"
 BUILD_ZIP="${PROJECT}.zip"
-JS_COMPILER="yui-compressor --type js"
-CSS_COMPILER="yui-compressor --type css"
+JS_COMPILER="yuicompressor --type js"
+CSS_COMPILER="yuicompressor --type css"
 
 S3CMD="s3cmd -c ${AWS_CFG}"
 NO_CACHE="--add-header=Cache-Control:no-cache"
