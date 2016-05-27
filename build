@@ -130,7 +130,9 @@ gzipDir () {
 	echo "Gziping files"
 	files="`find ${BUILD_DIR} -name '*' | sed 's/.*\/\..*//' | grep -I './'`"
 	for file in ${files}; do
-		cat "$file" | gzip -fc - | tee "$file" >/dev/null
+		tmpFile="${file}.tmp"
+		cat "$file" | gzip -fc - | tee "$tmpFile" >/dev/null
+		mv "$tmpFile" "$file"
 	done
 }
 
