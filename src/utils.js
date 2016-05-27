@@ -53,6 +53,9 @@ App._Utils = function (window, document, App) {
 
 		if (data.ios) {
 			document.body.className += ' app-ios app-ios-'+parseInt(version);
+			if (version < 7.1) {
+				document.body.className += ' no-flexbox';
+			}
 		}
 		else if (data.android) {
 			document.body.className += ' app-android app-android-'+parseInt(version);
