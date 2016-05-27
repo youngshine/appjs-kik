@@ -160,7 +160,6 @@ body {
 	-webkit-box-shadow: 0 0 12px rgba(0,0,0,0.2);
 	box-shadow: 0 0 12px rgba(0,0,0,0.2);
 }
-
 .app-scrollhack > * {
 	/*
 		terrible hack to make elements render
