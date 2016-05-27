@@ -56,6 +56,9 @@ App._Utils = function (window, document, App) {
 		}
 		else if (data.android) {
 			document.body.className += ' app-android app-android-'+parseInt(version);
+			if (version < 4.4) {
+				document.body.className += ' no-flexbox';
+			}
 		}
 		if (data.faked || !data.ios) {
 			document.body.className += ' app-no-scrollbar';
