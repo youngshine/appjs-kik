@@ -155,6 +155,12 @@ body {
 	-webkit-box-shadow: none;
 	box-shadow: none;
 }
+.app-transition.app-android-2 .app-content,
+.app-transition.app-android-4 .app-content {
+	-webkit-box-shadow: 0 0 12px rgba(0,0,0,0.2);
+	box-shadow: 0 0 12px rgba(0,0,0,0.2);
+}
+
 .app-scrollhack > * {
 	/*
 		terrible hack to make elements render
